@@ -101,6 +101,10 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
 .sl.locked{cursor:default;opacity:.55;box-shadow:none}
 .sl.locked:active{transform:none}
 .sl.locked .sn{background:var(--shut-deep);color:var(--muted)}
+.sl .rec{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:3px;font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums}
+.sl .rs{font-size:13px;letter-spacing:1px;color:var(--amber)}
+.sl .rs .off{color:var(--shut)}
+.card .savenote{font-size:12px;color:var(--muted);line-height:1.6}
 .lock{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:700;color:var(--muted);white-space:nowrap}
 .stars{font-size:30px;letter-spacing:6px;color:var(--amber);text-align:center}
 .stars .off{color:var(--shut)}
@@ -145,6 +149,7 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
     <h1>サーバー門番</h1>
     <p class="lead">サーバーを守る仕事を、1面ずつ体で覚えよう。</p>
     <div class="stagelist" id="stageList"></div>
+    <p class="savenote" id="saveNote" hidden>この端末では記録を保存できない設定になっています。遊ぶことはできますが、ページを閉じると記録は消えます。</p>
   </div>
 </div>
 
@@ -210,6 +215,22 @@ const STAGES=[
 ];
 const LOCK='<svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path fill="currentColor" d="M7 10V7a5 5 0 0 1 10 0v3h1a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1v-9a1 1 0 0 1 1-1zm2 0h6V7a3 3 0 0 0-6 0z"/></svg>';
 let cur=1;
+
+/* ---------- records（localStorage が使えない環境では、開いている間だけメモリに覚える） ---------- */
+const REC_KEY='gk-records-v1';
+const canSave=(()=>{try{localStorage.setItem('gk-test','1');localStorage.removeItem('gk-test');return true}catch(e){return false}})();
+function readStore(k){try{return localStorage.getItem(k)}catch(e){return null}}
+let REC={};
+try{const r=JSON.parse(readStore(REC_KEY)||'{}');if(r&&typeof r==='object')REC=r}catch(e){}
+{ // 前の版で保存していた最高★（gk-best-1）を引き継ぐ
+  const old=+(readStore('gk-best-1')||0);
+  if(old>0){const r=rec(1);r.best=Math.max(r.best,old)}
+}
+function rec(id){return REC[id]={best:0,clears:0,last:null,...(REC[id]||{})}}
+function saveRec(){try{localStorage.setItem(REC_KEY,JSON.stringify(REC))}catch(e){}}
+function today(){const d=new Date(),z=n=>String(n).padStart(2,'0');return `${d.getFullYear()}-${z(d.getMonth()+1)}-${z(d.getDate())}`}
+function dayLabel(s){return s===today()?'今日':s.replace(/-/g,'/')}
+function starsHtml(n){return [0,1,2].map(k=>`<span class="${k<n?'':'off'}">★</span>`).join('')}
 const doorsEl=document.getElementById('doors'),cv=document.getElementById('cv'),ctx=cv.getContext('2d');
 const sky=document.getElementById('sky'),app=document.getElementById('app'),room=document.getElementById('room');
 const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -337,10 +358,10 @@ function end(win){
   const rows=PORTS.map((pt,i)=>{const ok=S.open[i]===pt.open;if(ok)correct++;
     return `<div class="rv"><span class="pt">${pt.p}</span><span class="why">${pt.open?'開ける':'閉める'}：${pt.why}</span><span class="mk ${ok?'ok':'ng'}">${ok?'○':'×'}</span></div>`}).join('');
   const st=win?1+(S.hp===3?1:0)+(correct===5?1:0):0;
-  try{const k='gk-best-1',best=+(localStorage.getItem(k)||0);if(st>best)localStorage.setItem(k,st)}catch(e){}
+  const r=rec(cur);r.best=Math.max(r.best,st);if(win)r.clears++;r.last=today();saveRec();
   document.getElementById('rEyebrow').textContent=win?'STAGE 1 CLEAR':'STAGE 1';
   document.getElementById('rTitle').textContent=win?'守りきった！':(S.hp<=0?'侵入されちゃった':'お客さんが帰っちゃった');
-  document.getElementById('rStars').innerHTML=[0,1,2].map(k=>`<span class="${k<st?'':'off'}">★</span>`).join('');
+  document.getElementById('rStars').innerHTML=starsHtml(st);
   document.getElementById('rSummary').textContent=win
     ?`来客 ${S.served}人を通して、攻撃を ${S.blocked}回止めました。最後のドアの状態はこうでした。`
     :'全部開けっぱなしだと攻撃者が入るし、全部閉めるとお客さんも入れない。正解はこうです。';
@@ -358,8 +379,14 @@ function end(win){
 function show(id){['select','intro','result'].forEach(k=>document.getElementById(k).hidden=k!==id)}
 function renderList(){
   document.getElementById('stageList').innerHTML=STAGES.map(s=>s.ready
-    ?`<button class="sl" data-id="${s.id}"><span class="sn">${s.id}</span><span class="sm"><b>${s.name}</b><small>${s.sub}</small></span><span class="go">›</span></button>`
+    ?`<button class="sl" data-id="${s.id}"><span class="sn">${s.id}</span><span class="sm"><b>${s.name}</b><small>${s.sub}</small>${recHtml(s.id)}</span><span class="go">›</span></button>`
     :`<button class="sl locked" disabled><span class="sn">${s.id}</span><span class="sm"><b>${s.name}</b><small>${s.sub}</small></span><span class="lock">${LOCK}準備中</span></button>`).join('');
+  document.getElementById('saveNote').hidden=canSave;
+}
+function recHtml(id){
+  const r=REC[id];
+  if(!r||(!r.last&&!r.best))return '<span class="rec">まだ遊んでいません</span>';
+  return `<span class="rec"><span class="rs">${starsHtml(r.best)}</span>クリア ${r.clears}回${r.last?` ・ 最後に遊んだ日 ${dayLabel(r.last)}`:''}</span>`;
 }
 function openList(){if(S)S.running=false;renderList();show('select');const f=document.querySelector('.sl:not(.locked)');f&&f.focus()}
 function openStage(id){cur=id;show('intro');document.getElementById('start').focus()}
