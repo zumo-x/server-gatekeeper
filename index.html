@@ -236,11 +236,31 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
 .zi:active{transform:translateY(2px);box-shadow:0 1px 0 #14183a}
 .zi:focus-visible{outline:3px solid var(--ink);outline-offset:2px}
 .zi b{font-weight:700;font-size:14px}.zi span{grid-column:1/-1;font-size:12px;color:var(--muted);line-height:1.5}
-.zi.locked{cursor:default;box-shadow:none;opacity:.6}.zi.locked:active{transform:none}
+.mp{font-style:normal;font-size:11px;letter-spacing:1px;color:var(--ok);white-space:nowrap}.mp .off{color:var(--shut)}
+.mp em{font-style:normal;font-weight:700;margin-left:4px;letter-spacing:0}.mp em.up{color:var(--ok)}.mp em.dn{color:var(--attacker)}
+.gmem .mp{font-size:13px;letter-spacing:2px;color:var(--ok)}.gmem .mp .off{color:var(--shut)}
+/* word drill: tap a word, then its meaning (same push-in feel as the game buttons) */
+.dstat{margin-left:auto;font-family:var(--f-term);font-size:14px;color:var(--muted)}
+.dbar{height:6px;border-radius:3px;background:var(--night);overflow:hidden}.dbar i{display:block;height:100%;width:0;background:var(--amber)}
+.pairs{display:grid;grid-template-columns:.8fr 1.2fr;gap:8px}
+.pcol{display:grid;gap:8px;align-content:start}
+.pt{all:unset;box-sizing:border-box;cursor:pointer;touch-action:manipulation;display:grid;place-items:center;text-align:center;min-height:58px;padding:8px 8px 10px;border-radius:12px;font-weight:700;line-height:1.35;
+  transform:translateY(0);transition:transform .06s,box-shadow .06s,filter .1s}
+.pt.L{background:var(--amber);color:#3a2300;font-size:13px;box-shadow:0 5px 0 var(--amber-deep)}
+.pt.R{background:var(--night);color:var(--ink);font-size:12px;font-weight:500;box-shadow:0 5px 0 #14183a}
+.pt:active,.pt.sel{transform:translateY(4px)}
+.pt.L:active,.pt.L.sel{box-shadow:0 1px 0 var(--amber-deep)}.pt.R:active,.pt.R.sel{box-shadow:0 1px 0 #14183a}
+.pt.sel{outline:3px solid #fff;outline-offset:1px;filter:brightness(1.12)}
+.pt:focus-visible{outline:3px solid var(--ink);outline-offset:2px}
+.pt.sad{animation:sad .4s}
+.pt.gone{animation:pop .28s ease-in forwards;pointer-events:none}
+@keyframes pop{40%{transform:scale(1.08);filter:brightness(1.4)}100%{transform:scale(.6);opacity:0;visibility:hidden}}
+.dres{display:grid;gap:6px}
+.dres .rv .why b{display:block}.zi.locked:active{transform:none}
 .zi.locked b{font-family:var(--f-term);letter-spacing:.2em;color:var(--muted)}
 .shake{animation:shk .35s}
 @keyframes shk{20%{transform:translate(-6px,2px)}40%{transform:translate(5px,-3px)}60%{transform:translate(-4px,1px)}80%{transform:translate(3px,0)}}
-@media (prefers-reduced-motion:reduce){.shake,.door.hit,.door.sad,.act.hit,.act.sad,.act.guide,.ip.guide,.ln,.bin.hit,.bin.sad,.bin.guide,.acts.hint .act,.pointer,.cue,.cue i{animation:none}.door,.big,.act,.bin{transition:none}}
+@media (prefers-reduced-motion:reduce){.shake,.door.hit,.door.sad,.act.hit,.act.sad,.act.guide,.ip.guide,.pt.sad,.pt.gone,.ln,.bin.hit,.bin.sad,.bin.guide,.acts.hint .act,.pointer,.cue,.cue i{animation:none}.door,.big,.act,.bin{transition:none}}
 </style>
 </head>
 <body>
@@ -287,7 +307,7 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
     <div class="eyebrow">SERVER GATEKEEPER</div>
     <h1>サーバー門番</h1>
     <p class="lead">サーバーを守る仕事を、1面ずつ体で覚えよう。</p>
-    <div class="btns two" id="wordBtns"><button class="sub" id="toZukan">用語図鑑 <small id="zN"></small></button></div>
+    <div class="btns two" id="wordBtns"><button class="sub" id="toZukan">用語図鑑 <small id="zN"></small></button><button class="sub" id="toDrill">用語ドリル</button></div>
     <div class="stagelist" id="stageList"></div>
     <p class="savenote" id="saveNote" hidden>この端末では記録を保存できない設定になっています。遊ぶことはできますが、ページを閉じると記録は消えます。</p>
   </div>
@@ -300,6 +320,22 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
     <h1>用語図鑑</h1>
     <p class="lead" id="zCount"></p>
     <div class="zlist" id="zList"></div>
+  </div>
+</div>
+
+<div class="overlay" id="drill" hidden>
+  <div class="card">
+    <div class="btop"><button class="sub small" id="dBack">‹ ステージ一覧</button><span class="dstat" id="dStat"></span></div>
+    <div class="eyebrow">WORD DRILL</div>
+    <h1>用語ドリル</h1>
+    <p class="lead" id="dLead"></p>
+    <div class="dbar" id="dBar" hidden><i id="dTime"></i></div>
+    <div class="pairs" id="pairs" hidden><div class="pcol" id="colL"></div><div class="pcol" id="colR"></div></div>
+    <div class="dres" id="dRes" hidden></div>
+    <div class="btns" id="dBtns">
+      <button class="big" id="dStart">はじめる</button>
+      <button class="sub" id="dZukan">用語図鑑を見る</button>
+    </div>
   </div>
 </div>
 
@@ -577,7 +613,7 @@ function openCard(id,from){
   cardExtra(g);
   document.getElementById('gcard').hidden=false;document.getElementById('gClose').focus({preventScroll:true});
 }
-function cardExtra(g){document.getElementById('gMem').innerHTML=WORDS.got[g.id]?'':'<span class="gat">まだ図鑑に入っていない言葉（出てくるステージをクリアすると入る）</span>'}
+function cardExtra(g){document.getElementById('gMem').innerHTML=WORDS.got[g.id]?`<span class="gat">覚えた度 </span>${memHtml(g.id)}`:'<span class="gat">まだ図鑑に入っていない言葉（出てくるステージをクリアすると入る）</span>'}
 function closeCard(){document.getElementById('gcard').hidden=true;PAUSE=false;if(gBack&&gBack.isConnected)gBack.focus({preventScroll:true});gBack=null}
 document.addEventListener('click',e=>{const b=e.target.closest('.gw');if(b){e.preventDefault();e.stopPropagation();openCard(b.dataset.g,b)}},true);
 document.getElementById('gClose').addEventListener('click',closeCard);
@@ -649,6 +685,7 @@ const sfx={
   breach(){tone(300,.35,'sawtooth',.09,70)},
   win(){[523,659,784,1047].forEach((f,i)=>tone(f,.18,'triangle',.11,null,i*.1))},
   done(){tone(880,.08,'triangle',.09);tone(1320,.12,'triangle',.08,null,.07)},
+  click(){noise(.015,.32);tone(1600,.03,'square',.05)},
   lose(){[392,330,262].forEach((f,i)=>tone(f,.25,'triangle',.1,null,i*.14))}
 };
 function buzz(ms){try{navigator.vibrate&&navigator.vibrate(ms)}catch(e){}}
@@ -1397,7 +1434,8 @@ function setLayout(){
   app.dataset.stage=key;
 }
 /* 用語図鑑：初めて出てくるステージごとに並べる。まだの用語は「？？？」 */
-function memHtml(id){return ''}
+function lvOf(id){return (WORDS.mem[id]||{}).lv||0}
+function memHtml(id){const lv=lvOf(id);return `<i class="mp" aria-label="覚えた度 ${lv}/5">${[0,1,2,3,4].map(k=>`<span class="${k<lv?'':'off'}">●</span>`).join('')}${lv>=4?'<em>覚えた</em>':''}</i>`}
 function openZukan(){
   const groups={};for(const g of GLOSSARY)(groups[g.at[0]]=groups[g.at[0]]||[]).push(g);
   document.getElementById('zCount').textContent=`集めた言葉 ${gotCount()} / ${GLOSSARY.length}。ステージやラウンドをクリアすると増える。`;
@@ -1409,6 +1447,92 @@ function openZukan(){
 document.getElementById('toZukan').addEventListener('click',openZukan);
 document.getElementById('zBack').addEventListener('click',openList);
 document.getElementById('zList').addEventListener('click',e=>{const b=e.target.closest('.zi[data-g]');if(b)openCard(b.dataset.g,b)});
+
+/* ---------- 用語ドリル（ペアそろえ）：図鑑に入った用語だけを使う ---------- */
+const DUR_D=30;
+let DR=null;
+function memOf(id){return WORDS.mem[id]=WORDS.mem[id]||{lv:0,miss:0,n:0}}
+// よくまちがえる言葉ほど多く、覚えた言葉（覚えた度4以上）はたまにだけ出す
+function drillWeight(id){const m=WORDS.mem[id]||{lv:0,miss:0};return m.lv>=4?.25:(5-m.lv)+Math.min(m.miss||0,4)*.5}
+function pickTerms(n){
+  const pool=GLOSSARY.filter(g=>WORDS.got[g.id]),out=[];
+  while(out.length<n&&pool.length){
+    let r=Math.random()*pool.reduce((a,g)=>a+drillWeight(g.id),0),i=0;
+    for(;i<pool.length-1;i++){r-=drillWeight(pool[i].id);if(r<=0)break}
+    out.push(pool.splice(i,1)[0]);
+  }
+  return out;
+}
+const shuffle=a=>{for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+function openDrill(){
+  if(S)S.running=false;if(DR)DR.running=false;
+  const n=gotCount(),ok=n>=4;
+  document.getElementById('dLead').textContent=ok
+    ?'左の言葉と、右の「ひとことで言うと」を、タップでつなごう。30秒で全部そろえたらクリア。'
+    :`本編を進めると言葉が増えるよ。今は ${n}個。4個そろうとドリルができる。`;
+  ['dBar','pairs','dRes'].forEach(id=>document.getElementById(id).hidden=true);document.getElementById('dBtns').hidden=false;
+  document.getElementById('dStat').textContent='';
+  const st=document.getElementById('dStart');st.textContent=ok?'はじめる':'ステージ一覧へ';st.dataset.mode=ok?'go':'list';
+  show('drill');document.getElementById('drill').scrollTop=0;st.focus({preventScroll:true});
+}
+function startDrill(){
+  audio();
+  const items=pickTerms(Math.min(5,gotCount()));
+  DR={running:true,items,t:0,last:performance.now(),selL:null,selR:null,matched:new Set(),wrong:new Set(),mist:0,before:Object.fromEntries(items.map(g=>[g.id,lvOf(g.id)])),endAt:0};
+  const L=shuffle([...items]),R=shuffle([...items]);
+  document.getElementById('colL').innerHTML=L.map(g=>`<button type="button" class="pt L" data-g="${g.id}">${g.w}</button>`).join('');
+  document.getElementById('colR').innerHTML=R.map(g=>`<button type="button" class="pt R" data-g="${g.id}">${g.s}</button>`).join('');
+  ['dBar','pairs'].forEach(id=>document.getElementById(id).hidden=false);
+  document.getElementById('dRes').hidden=true;document.getElementById('dBtns').hidden=true;
+  document.getElementById('dLead').textContent='左の言葉と、右の「ひとことで言うと」を、タップでつなごう。';
+  statDrill();requestAnimationFrame(loopDrill);
+}
+function statDrill(){document.getElementById('dStat').textContent=`${DR.matched.size}/${DR.items.length}ペア`}
+document.getElementById('pairs').addEventListener('click',e=>{
+  const b=e.target.closest('.pt');if(!b||!DR||!DR.running||DR.endAt||b.classList.contains('gone'))return;
+  const side=b.classList.contains('L')?'selL':'selR';
+  noise(.012,.12);buzz(8);
+  if(DR[side]===b){b.classList.remove('sel');DR[side]=null;return}
+  if(DR[side])DR[side].classList.remove('sel');
+  DR[side]=b;b.classList.add('sel');
+  if(!(DR.selL&&DR.selR))return;
+  const l=DR.selL,r=DR.selR;DR.selL=DR.selR=null;l.classList.remove('sel');r.classList.remove('sel');
+  if(l.dataset.g===r.dataset.g){   // 正しいペア：カチッとはまって消える
+    const id=l.dataset.g;DR.matched.add(id);sfx.click();buzz(15);l.classList.add('gone');r.classList.add('gone');
+    if(!DR.wrong.has(id)){const m=memOf(id);m.lv=Math.min(5,m.lv+1)}
+    statDrill();if(DR.matched.size>=DR.items.length){sfx.done();DR.endAt=DR.t+.45}
+  }else{                            // まちがい：2つともブルッとして、覚えた度が下がる
+    DR.mist++;sfx.sad();buzz([20,30,20]);pulseEl(l,'sad');pulseEl(r,'sad');
+    for(const id of [l.dataset.g,r.dataset.g])if(!DR.wrong.has(id)){DR.wrong.add(id);const m=memOf(id);m.lv=Math.max(0,m.lv-1);m.miss=(m.miss||0)+1}
+  }
+});
+function loopDrill(now){
+  if(!DR||!DR.running)return;
+  const dt=Math.min(.05,(now-DR.last)/1000);DR.last=now;
+  if(PAUSE)return requestAnimationFrame(loopDrill);
+  DR.t+=dt;document.getElementById('dTime').style.width=Math.min(100,DR.t/DUR_D*100)+'%';
+  if(DR.endAt&&DR.t>=DR.endAt)return endDrill(true);
+  if(DR.t>=DUR_D&&!DR.endAt)return endDrill(false);
+  requestAnimationFrame(loopDrill);
+}
+function endDrill(win){
+  DR.running=false;win?sfx.win():sfx.lose();buzz(win?[20,60,20,60,40]:[80]);
+  for(const g of DR.items){const m=memOf(g.id);m.n++;m.last=today();
+    if(!DR.matched.has(g.id)&&!DR.wrong.has(g.id)){m.lv=Math.max(0,m.lv-1);m.miss=(m.miss||0)+1}}   // そろえられなかった言葉も、もう一度出やすくする
+  saveWords();
+  const rows=DR.items.map(g=>{const a=DR.before[g.id],b=lvOf(g.id),ok=DR.matched.has(g.id)&&!DR.wrong.has(g.id);
+    return `<div class="rv"><span class="pt0 mk ${ok?'ok':'ng'}">${ok?'○':'×'}</span><span class="why"><b>${g.w}</b>${g.s}</span>${memHtml(g.id).replace('</i>',b>a?'<em class="up">↑</em></i>':b<a?'<em class="dn">↓</em></i>':'</i>')}</div>`}).join('');
+  const r=document.getElementById('dRes');
+  r.innerHTML=`<p><b>${win?`${DR.items.length}ペア そろえた！`:`時間切れ（${DR.matched.size}/${DR.items.length}ペア）`}</b> ${DR.t.toFixed(1)}秒・まちがい ${DR.mist}回</p>`+rows+
+    '<p class="lead">右の●が「覚えた度」。まちがえた言葉は、次のドリルで多めに出る。</p>';
+  ['dBar','pairs'].forEach(id=>document.getElementById(id).hidden=true);
+  r.hidden=false;document.getElementById('dBtns').hidden=false;document.getElementById('drill').scrollTop=0;
+  const st=document.getElementById('dStart');st.textContent='もう一回';st.dataset.mode='go';st.focus({preventScroll:true});
+}
+document.getElementById('toDrill').addEventListener('click',openDrill);
+document.getElementById('dStart').addEventListener('click',e=>e.currentTarget.dataset.mode==='list'?openList():startDrill());
+document.getElementById('dZukan').addEventListener('click',()=>{if(DR)DR.running=false;openZukan()});
+document.getElementById('dBack').addEventListener('click',()=>{if(DR)DR.running=false;openList()});
 
 const GAMES={
   '1':()=>{newGame();requestAnimationFrame(loop)},
