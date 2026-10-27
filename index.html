@@ -104,6 +104,18 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
 .sl .rec{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:3px;font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums}
 .sl .rs{font-size:13px;letter-spacing:1px;color:var(--amber)}
 .sl .rs .off{color:var(--shut)}
+.btop{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+.sub.small{padding:8px 12px;font-size:13px;border-radius:10px}
+.sub.skip{margin-left:auto;background:var(--amber);color:#3a2300;box-shadow:0 4px 0 var(--amber-deep)}
+.sub.skip:active{box-shadow:0 1px 0 var(--amber-deep)}
+.secs{display:grid;gap:18px}
+.sec{display:grid;gap:8px}
+.sec h2{margin:0;font-family:var(--f-display);font-weight:800;font-size:16px;color:var(--amber)}
+.sec b{color:var(--ink)}
+.ports{display:grid;gap:6px}
+.pr{display:grid;grid-template-columns:48px 1fr;gap:8px;align-items:start;background:var(--night);border-radius:10px;padding:8px 10px;font-size:13px;line-height:1.6;color:var(--muted)}
+.pr .pt{font-family:var(--f-term);font-size:16px;color:var(--ink)}
+.pr b{display:block;font-size:13px}
 .card .savenote{font-size:12px;color:var(--muted);line-height:1.6}
 .lock{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:700;color:var(--muted);white-space:nowrap}
 .stars{font-size:30px;letter-spacing:6px;color:var(--amber);text-align:center}
@@ -153,20 +165,17 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
   </div>
 </div>
 
-<div class="overlay" id="intro" hidden>
+<div class="overlay" id="brief" hidden>
   <div class="card">
-    <div class="eyebrow">STAGE 1</div>
-    <h1>門番</h1>
-    <p>あなたのサーバーには、外とつながるドア（ポート）が5つあります。外からは玉が飛んできます。</p>
-    <div class="legend">
-      <div><span class="dot g"></span>丸い青い玉 ＝ お客さん。通してあげる</div>
-      <div><span class="dot r"></span>トゲのある赤い玉 ＝ 攻撃者。止める</div>
-      <div><span class="dot d"></span>ドアはタップで開け閉め（キーボードなら1〜5）</div>
+    <div class="btop">
+      <button class="sub small" id="briefBack">‹ ステージ一覧</button>
+      <button class="sub small skip" id="briefSkip" hidden>スキップしてはじめる ›</button>
     </div>
-    <p>玉に書いてある数字が、向かってるドアの番号です。40秒守りきったらクリア。</p>
+    <div class="eyebrow" id="bEyebrow"></div>
+    <h1 id="bTitle"></h1>
+    <div class="secs" id="bBody"></div>
     <div class="btns">
       <button class="big" id="start">はじめる</button>
-      <button class="sub" id="introBack">ステージ一覧に戻る</button>
     </div>
   </div>
 </div>
@@ -186,6 +195,7 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
     <div class="btns">
       <button class="big" id="nextStage"></button>
       <button class="big" id="again">もう一回</button>
+      <button class="sub" id="reread">ブリーフィングを読み返す</button>
       <button class="sub" id="resultBack">ステージ一覧に戻る</button>
     </div>
   </div>
@@ -202,7 +212,27 @@ const PORTS=[
 const DUR=40;
 /* ステージ一覧。ready:true のステージだけ遊べる（CLAUDE.md の「ステージ計画」と合わせる） */
 const STAGES=[
-  {id:1, name:'門番',         sub:'使ってないドア（ポート）を閉める', ready:true},
+  {id:1, name:'門番',         sub:'使ってないドア（ポート）を閉める', ready:true,
+    brief:{
+      situation:['あなたはWebアプリを動かすサーバーの管理人。サーバーには外とつながるドア（ポート）がたくさんあって、作ったばかりのときは使わないドアまで開いたままになっていることがよくある。世界中のボットは、サーバーを見つけると数分で全部のドアをノックしに来る。'],
+      doors:[
+        [80,  'HTTP',     'Webの入口。暗号化なし。来た人を443へ案内する役'],
+        [443, 'HTTPS',    'Webの本命の入口。通信が暗号化される'],
+        [3000,'Node直通', 'プログラムに直接つながる裏口。本来は受付係（nginx）が中で取り次ぐので、外に開ける必要はない'],
+        [5432,'DB',       'データベース。データの倉庫。外から触れたら全部盗まれる'],
+        [8080,'テスト用', '開発中に使ったまま放置されがちなドア']
+      ],
+      real:[
+        'ゲームでは敵が赤くトゲトゲだけど、本物の通信に色はついていない。だから門番（ファイアウォール）は「誰が敵か」ではなく<b>「このドアは誰のためにあるか」</b>で判断する。お客さんが使うドアだけ開けて、それ以外は全部閉める。これが基本（<b>「最小限だけ開ける」の原則</b>）。',
+        'ほかにも「どこから来たか（IPアドレス）」「ふるまい（何度もパスワードを間違える）」「中身（命令文が混ざっている）」で見分ける方法があり、それは次のステージ以降で学ぶ。'
+      ],
+      howto:`<div class="legend">
+          <div><span class="dot g"></span>丸い青い玉 ＝ お客さん。通してあげる</div>
+          <div><span class="dot r"></span>トゲのある赤い玉 ＝ 攻撃者。止める</div>
+          <div><span class="dot d"></span>ドアはタップで開け閉め（キーボードなら1〜5）</div>
+        </div>
+        <p>玉に書いてある数字が、向かってるドアの番号です。40秒守りきったらクリア。</p>`
+    }},
   {id:2, name:'鍵',           sub:'SSHへのパスワード総当たり'},
   {id:3, name:'緊急パッチ',   sub:'脆弱性を確認して更新する'},
   {id:4, name:'古い料理人',   sub:'サポート終了版には修正が出ない'},
@@ -226,7 +256,7 @@ try{const r=JSON.parse(readStore(REC_KEY)||'{}');if(r&&typeof r==='object')REC=r
   const old=+(readStore('gk-best-1')||0);
   if(old>0){const r=rec(1);r.best=Math.max(r.best,old)}
 }
-function rec(id){return REC[id]={best:0,clears:0,last:null,...(REC[id]||{})}}
+function rec(id){return REC[id]={best:0,clears:0,last:null,seen:false,...(REC[id]||{})}}
 function saveRec(){try{localStorage.setItem(REC_KEY,JSON.stringify(REC))}catch(e){}}
 function today(){const d=new Date(),z=n=>String(n).padStart(2,'0');return `${d.getFullYear()}-${z(d.getMonth()+1)}-${z(d.getDate())}`}
 function dayLabel(s){return s===today()?'今日':s.replace(/-/g,'/')}
@@ -376,7 +406,7 @@ function end(win){
 }
 
 /* ---------- screens ---------- */
-function show(id){['select','intro','result'].forEach(k=>document.getElementById(k).hidden=k!==id)}
+function show(id){['select','brief','result'].forEach(k=>document.getElementById(k).hidden=k!==id)}
 function renderList(){
   document.getElementById('stageList').innerHTML=STAGES.map(s=>s.ready
     ?`<button class="sl" data-id="${s.id}"><span class="sn">${s.id}</span><span class="sm"><b>${s.name}</b><small>${s.sub}</small>${recHtml(s.id)}</span><span class="go">›</span></button>`
@@ -389,13 +419,39 @@ function recHtml(id){
   return `<span class="rec"><span class="rs">${starsHtml(r.best)}</span>クリア ${r.clears}回${r.last?` ・ 最後に遊んだ日 ${dayLabel(r.last)}`:''}</span>`;
 }
 function openList(){if(S)S.running=false;renderList();show('select');const f=document.querySelector('.sl:not(.locked)');f&&f.focus()}
-function openStage(id){cur=id;show('intro');document.getElementById('start').focus()}
-function start(){audio();show(null);resize();newGame();S.last=performance.now();requestAnimationFrame(loop)}
+/* ブリーフィング。mode='play'：遊ぶ前（2回目からはスキップできる）／'review'：結果画面から読み返す */
+let briefMode='play';
+function openBrief(id,mode){
+  const s=STAGES.find(x=>x.id===id),b=s.brief;cur=id;briefMode=mode;
+  document.getElementById('bEyebrow').textContent=`STAGE ${s.id} ブリーフィング`;
+  document.getElementById('bTitle').textContent=s.name;
+  document.getElementById('bBody').innerHTML=
+    `<section class="sec"><h2>状況</h2>${b.situation.map(t=>`<p>${t}</p>`).join('')}</section>`+
+    `<section class="sec"><h2>ドアの番号の意味</h2><div class="ports">${b.doors.map(([p,n,t])=>`<div class="pr"><span class="pt">${p}</span><span><b>${n}</b>${t}</span></div>`).join('')}</div></section>`+
+    `<section class="sec"><h2>現実ではどう見分けるか</h2>${b.real.map(t=>`<p>${t}</p>`).join('')}</section>`+
+    `<section class="sec"><h2>遊び方</h2>${b.howto}</section>`;
+  const review=mode==='review';
+  document.getElementById('briefBack').textContent=review?'‹ 結果にもどる':'‹ ステージ一覧';
+  document.getElementById('briefSkip').hidden=review||!rec(id).seen;
+  document.getElementById('start').textContent=review?'もう一回':'はじめる';
+  show('brief');
+  document.getElementById('brief').scrollTop=0;
+  document.getElementById('briefBack').focus({preventScroll:true});
+}
+function openStage(id){openBrief(id,'play')}
+function start(){
+  audio();show(null);
+  const r=rec(cur);if(!r.seen){r.seen=true;saveRec()}
+  resize();newGame();S.last=performance.now();requestAnimationFrame(loop);
+}
 document.getElementById('stageList').addEventListener('click',e=>{const b=e.target.closest('.sl:not(.locked)');if(b)openStage(+b.dataset.id)});
 document.getElementById('start').addEventListener('click',start);
+document.getElementById('briefSkip').addEventListener('click',start);
+document.getElementById('briefBack').addEventListener('click',()=>briefMode==='review'?show('result'):openList());
+document.getElementById('reread').addEventListener('click',()=>openBrief(cur,'review'));
 document.getElementById('again').addEventListener('click',start);
 document.getElementById('nextStage').addEventListener('click',()=>{const nx=STAGES.find(s=>s.id===cur+1);if(nx&&nx.ready)openStage(nx.id)});
-['hudBack','introBack','resultBack'].forEach(id=>document.getElementById(id).addEventListener('click',openList));
+['hudBack','resultBack'].forEach(id=>document.getElementById(id).addEventListener('click',openList));
 resize();draw(0);renderList();
 </script>
 </body>
