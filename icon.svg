@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- サーバー門番のアイコン：夜空・半分閉めたオレンジのドア・はね返される赤いトゲ玉 -->
+  <clipPath id="c"><rect width="512" height="512" rx="112"/></clipPath>
+  <g clip-path="url(#c)">
+    <rect width="512" height="512" fill="#1b2040"/>
+    <g fill="#c9ccff" opacity=".7"><rect x="70" y="92" width="10" height="10"/><rect x="150" y="54" width="7" height="7"/><rect x="62" y="236" width="7" height="7"/><rect x="448" y="262" width="8" height="8"/></g>
+    <rect y="408" width="512" height="104" fill="#383e6e"/>
+    <rect y="408" width="512" height="10" fill="#4b5290"/>
+    <path d="M126 428V228a130 130 0 0 1 260 0v200z" fill="#c97c12"/>
+    <path d="M126 412V220a130 130 0 0 1 260 0v192z" fill="#ffb547"/>
+    <path d="M172 412V232a84 84 0 0 1 168 0v180z" fill="#3a2300"/>
+    <rect x="172" y="292" width="168" height="120" fill="#3a3f6b"/>
+    <g fill="#5c6195"><rect x="172" y="292" width="168" height="20"/><rect x="172" y="322" width="168" height="20"/><rect x="172" y="352" width="168" height="20"/><rect x="172" y="382" width="168" height="20"/></g>
+    <polygon points="398.0,58.0 416.2,82.2 446.5,81.3 438.9,110.7 458.4,133.8 430.8,146.2 424.9,175.9 398.0,162.0 371.1,175.9 365.2,146.2 337.6,133.8 357.1,110.7 349.5,81.3 379.8,82.2" fill="#ff6f6b"/>
+  </g>
+</svg>
