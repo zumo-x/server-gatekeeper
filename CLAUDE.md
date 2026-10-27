@@ -45,6 +45,7 @@
 - スマホ縦画面が最優先。パソコンでも遊べるようにする
 - 外部の画像やライブラリにはなるべく頼らない
 - アイコンは icon.svg（ブラウザのタブ用）と apple-touch-icon.png（スマホのホーム画面用、180×180の四角）。絵を変えるときは両方そろえる
+- GitHub Pages が公開するのは main だけ。作業用ブランチに入れただけでは公開ページ（スマホのホーム画面のアイコンも）は変わらない
 - index.html の外枠（<!doctype html>〜</html>、charset、viewport、[hidden]{display:none!important}）は消さない。これが無いとGitHub Pagesで正しく動かない
 
 ## 安全のルール
