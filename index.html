@@ -177,12 +177,29 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
 .app[data-stage="2-1"] .skywrap{touch-action:none}
 .dot.y{background:var(--amber);border-radius:50%}
 .sec code{font-family:var(--f-term);color:var(--ok)}
+/* stage 2-3: log lines flow in; tap an IP to block it */
+.logs{position:absolute;inset:26px 6px 6px;display:flex;flex-direction:column;justify-content:flex-end;gap:3px;overflow:hidden}
+.ln{display:grid;grid-template-columns:auto auto 1fr auto;gap:6px;align-items:center;min-height:30px;padding:2px 6px;border-radius:8px;background:rgba(15,18,41,.72);font-size:12px;overflow:hidden;animation:lnin .22s ease-out}
+@keyframes lnin{from{opacity:0;max-height:0;min-height:0;padding-top:0;padding-bottom:0}to{max-height:40px}}
+.ln .tm{font-family:var(--f-term);font-size:11px;color:var(--muted)}
+.ln .msg{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ln.fail .msg{color:#ffb3b0}.ln.ok .msg{color:var(--ok)}.ln.ban{background:rgba(123,224,164,.12)}.ln.ban .msg{color:var(--ok);font-weight:700}
+.ln .cnt{font-size:10px;letter-spacing:1px;color:var(--attacker);white-space:nowrap}.ln.ok .cnt{color:var(--ok);letter-spacing:0;font-weight:700}
+.ip{all:unset;box-sizing:border-box;cursor:pointer;touch-action:manipulation;font-family:var(--f-term);font-size:12px;padding:3px 8px;border-radius:7px;min-height:26px;display:inline-flex;align-items:center;
+  color:var(--c);background:#0f1229;box-shadow:inset 0 0 0 1.5px var(--c),0 3px 0 #0a0c1f;transition:transform .06s,box-shadow .06s}
+.ip:active{transform:translateY(2px);box-shadow:inset 0 0 0 1.5px var(--c),0 1px 0 #0a0c1f}
+.ip:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+.ip.banned{opacity:.45;text-decoration:line-through;cursor:default}
+.ip.guide{animation:ipguide 1s ease-in-out infinite}
+@keyframes ipguide{50%{box-shadow:inset 0 0 0 1.5px var(--c),0 0 0 3px #fff,0 0 16px var(--c)}}
+.ip.sad{animation:sad .4s}
+.cue.noarrow i{display:none}
 /* round picker in the stage 2 briefing */
 .rtabs{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
 .rtab{all:unset;box-sizing:border-box;cursor:pointer;touch-action:manipulation;display:grid;justify-items:center;gap:1px;padding:7px 4px;border-radius:10px;background:var(--night);color:var(--muted);font-size:11px;box-shadow:0 3px 0 #14183a;text-align:center}
 .rtab b{font-family:var(--f-term);font-size:15px;color:var(--ink)}
 .rtab .rs{font-size:11px;letter-spacing:1px;color:var(--amber)}.rtab .rs .off{color:var(--shut)}
-.rtab.on{background:var(--amber);color:#3a2300;box-shadow:0 3px 0 var(--amber-deep)}.rtab.on b{color:#3a2300}.rtab.on .rs,.rtab.on .rs .off{color:#3a2300}
+.rtab.on{background:var(--amber);color:#3a2300;box-shadow:0 3px 0 var(--amber-deep)}.rtab.on b{color:#3a2300}.rtab.on .rs{color:#3a2300}.rtab.on .rs .off{color:#3a2300;opacity:.25}
 .rtab:disabled{cursor:default;opacity:.5;box-shadow:none}
 .rtab:focus-visible{outline:3px solid var(--ink);outline-offset:2px}
 .meter.tries .tv{font-family:var(--f-term);font-size:14px;color:var(--ink);min-width:44px;text-align:right}
@@ -197,7 +214,7 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
 .rv .mk.na{color:var(--muted)}
 .shake{animation:shk .35s}
 @keyframes shk{20%{transform:translate(-6px,2px)}40%{transform:translate(5px,-3px)}60%{transform:translate(-4px,1px)}80%{transform:translate(3px,0)}}
-@media (prefers-reduced-motion:reduce){.shake,.door.hit,.door.sad,.act.hit,.act.sad,.act.guide,.bin.hit,.bin.sad,.bin.guide,.acts.hint .act,.pointer,.cue,.cue i{animation:none}.door,.big,.act,.bin{transition:none}}
+@media (prefers-reduced-motion:reduce){.shake,.door.hit,.door.sad,.act.hit,.act.sad,.act.guide,.ip.guide,.ln,.bin.hit,.bin.sad,.bin.guide,.acts.hint .act,.pointer,.cue,.cue i{animation:none}.door,.big,.act,.bin{transition:none}}
 </style>
 </head>
 <body>
@@ -210,11 +227,13 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
       <div class="meter hp" id="hp" data-only="1" aria-label="サーバー耐久">耐久 <i class="pip on"></i><i class="pip on"></i><i class="pip on"></i></div>
       <div class="meter tr" id="tr" data-only="1" aria-label="お客さんの信用">信用 <i class="pip on"></i><i class="pip on"></i><i class="pip on"></i></div>
       <div class="meter tries" id="tries" data-only="2-2" hidden aria-label="パスワードの試行回数">試行 <span class="tv" id="triesV">0/40</span><span class="tb"><i id="triesB"></i></span></div>
+      <div class="meter hp" id="lives" data-only="2-3" hidden aria-label="余裕">余裕 <i class="pip on"></i><i class="pip on"></i><i class="pip on"></i></div>
       <div class="meter tries" id="prog" data-only="2-1 2-3" hidden><span id="progL">仕分け</span> <span class="tv" id="progV">0/10</span><span class="tb"><i id="progB"></i></span></div>
     </div>
     <div class="timebar"><i id="time"></i></div>
   </div>
   <div class="skywrap" id="sky"><canvas id="cv"></canvas><div class="skylabel">インターネット</div>
+    <div class="logs" id="logs" data-only="2-3" hidden></div><div class="pointer" id="pointer23" hidden>▼ 次はこれ</div>
     <div class="cue" id="cue" hidden><b id="cueB"></b><span id="cueS"></span><i aria-hidden="true">▼</i></div></div>
   <div class="doors" id="doors" data-only="1"></div>
   <div class="gate" id="gate" data-only="2-2" hidden>
@@ -356,6 +375,28 @@ const STAGES=[
         <p>試行回数が40回になると、パスワードを当てられて乗っ取られる。30秒以内に、パスワードでのログインを安全に禁止できたら、その場でクリア。</p>
         <p>★は「クリア」「パスワードを禁止する前に、何度も失敗する相手の締め出し（fail2ban）も入れる」「ミスなし・試行20回未満」で1つずつ。</p>`
     }}
+,
+      {name:'ふるまい',
+        hud:['2-3 ふるまい','しつこい相手をログから見つける'],
+        room:'<span class="chip">ログ</span><span class="arrow">→</span><span class="chip">fail2ban（今はあなた）</span>',
+        cue:['ログを<br>読もう','同じIPの失敗が5回たまったら、IPをタップ',true],
+        brief:{
+          situation:['鍵でしか入れないようにしても、ドアの前では今日も当てずっぽうが続く。記録（ログ）を読むと、同じ相手が何度も失敗しているのが見える。'],
+          doorsTitle:'画面に出てくるもの',
+          doors:[
+            ['行','ログの1行','「いつ・どのIPから・何が起きたか」が、1行ずつ流れてくる'],
+            ['IP','IPアドレス','通信の差出人の住所。このラウンドの番号は、説明用に決められた例の番号（本物の誰かではない）'],
+            ['●','失敗の回数','そのIPがこれまでに失敗した回数。5個たまったらブロックしていい']
+          ],
+          real:['攻撃者も、打ち間違えた人も、ログではどちらも同じ「パスワード失敗」。1回だけでは見分けられない。だから<b>ふるまい（何回くり返したか）</b>で見分ける。これが fail2ban の仕事。'],
+          howto:`<div class="legend">
+              <div><span class="dot r"></span>失敗が5回たまったIP ＝ しつこい相手。IPをタップしてブロック</div>
+              <div><span class="dot g"></span>1回だけ失敗したIP ＝ 打ち間違えた人。ブロックしない</div>
+              <div><span class="dot k"></span>鍵でログイン成功（あなた・198.51.100.7）。ブロックしない</div>
+            </div>
+            <p>しつこい相手を4つブロックしたら、その場でクリア（30秒以内）。まちがえてブロックしたり、しつこい相手を放っておきすぎると「余裕」が減って、0で失敗。</p>
+            <p>★は「クリア」「まちがいなし」「22秒以内」で1つずつ。</p>`
+        }}
     ]},
   {id:3, name:'緊急パッチ',   sub:'脆弱性を確認して更新する'},
   {id:4, name:'古い料理人',   sub:'サポート終了版には修正が出ない'},
@@ -758,7 +799,7 @@ function newGame2(){
   showCue();
   actsEl.classList.remove('hint');void actsEl.offsetWidth;actsEl.classList.add('hint');
 }
-function showCue(){const c=unit().cue;document.getElementById('cueB').innerHTML=c[0];document.getElementById('cueS').textContent=c[1];document.getElementById('cue').hidden=false}
+function showCue(){const c=unit().cue,el=document.getElementById('cue');document.getElementById('cueB').innerHTML=c[0];document.getElementById('cueS').textContent=c[1];el.classList.toggle('noarrow',!!c[2]);el.hidden=false}
 function hideCue(){document.getElementById('cue').hidden=true;actsEl.classList.remove('hint');if(S){S.cue=false;S.cueT=0}}
 // 初めて遊ぶときだけ、次に押すボタンを光らせて「▼ 次はこれ」を出す
 function nextStep(){for(const k of ['key','check','nopw'])if(!S.done[k])return k;return null}
@@ -950,6 +991,157 @@ function end2(win,why){
   });
 }
 
+/* ---------- stage 2-3: ふるまい（ログを読んで、何度も失敗するIPをブロックする） ---------- */
+// IPは必ず説明用に決められた範囲（192.0.2.x／198.51.100.x／203.0.113.x）だけを使う
+const GOAL23=4,DUR23=30,MAXRETRY=5,YOU_IP='198.51.100.7';
+const logsEl=document.getElementById('logs');
+// 10個のIPが見分けやすいように、となり合う色が似ないように並べる（色で敵かどうかは分からない）
+const IPCOL=['#6cc4ff','#ffb547','#c79bff','#ff9ad5','#b5f07b','#5fe0d0','#eef0ff','#ff8a6b','#8fa8ff','#f3e36b'];
+function newGame23(){
+  const ents={},add=(ip,kind,at)=>ents[ip]={ip,kind,at,fails:0,ok:0,blocked:false,nag:false,c:IPCOL[Object.keys(ents).length%IPCOL.length]};
+  // しつこい相手（5つ）：少しずつ現れる
+  [['203.0.113.5',0],['198.51.100.23',1.5],['192.0.2.77',3.5],['203.0.113.118',6],['198.51.100.140',9]].forEach(([ip,at])=>add(ip,'bot',at));
+  add(YOU_IP,'you',0);
+  // 打ち間違えた人（3人）：1回失敗して、すぐ成功する
+  [['192.0.2.15',4.2],['203.0.113.9',11],['198.51.100.60',18]].forEach(([ip,at])=>add(ip,'typo',at));
+  const sched=[];
+  for(const t of [1.6,8,15.5,23])sched.push({t,ip:YOU_IP,ev:'ok'});
+  for(const e of Object.values(ents))if(e.kind==='typo'){sched.push({t:e.at,ip:e.ip,ev:'fail'});sched.push({t:e.at+1.4,ip:e.ip,ev:'ok'})}
+  sched.sort((a,b)=>a.t-b.t);
+  S={stage:'2-3',running:true,t:0,cueT:2.6,guide:!rrec(3).played,ents,sched,nextLine:.2,blocks:0,lives:3,wrong:[],nags:0,out:false,endAt:0,winAt:0,clearT:0,last:performance.now()};
+  logsEl.innerHTML='';showCue();
+  term('$ sudo journalctl -u ssh -f','# ログを流し読み。同じIPの失敗が5回たまったら、そのIPをタップしてブロック');
+  meterProg('ブロック',0,GOAL23);lives23();count23();guide23();
+}
+function clock23(){const t=Math.floor(S.t),z=n=>String(n).padStart(2,'0');return `10:${z(2+Math.floor(t/60))}:${z(t%60)}`}
+function lives23(){[...document.getElementById('lives').querySelectorAll('.pip')].forEach((p,k)=>p.classList.toggle('on',k<S.lives))}
+function count23(){document.getElementById('count').textContent=`ブロック ${S.blocks} ・ まちがい ${S.wrong.length}`}
+function line23(e,kind,msg,cnt){
+  const d=document.createElement('div');d.className='ln '+kind;
+  d.innerHTML=`<span class="tm">${clock23()}</span><button class="ip${e.blocked?' banned':''}" data-ip="${e.ip}" style="--c:${e.c}">${e.ip}</button><span class="msg">${msg}</span><span class="cnt">${cnt}</span>`;
+  logsEl.appendChild(d);while(logsEl.children.length>18)logsEl.firstChild.remove();
+}
+function dots(n){return '●'.repeat(Math.min(n,MAXRETRY))+'○'.repeat(Math.max(0,MAXRETRY-n))+(n>MAXRETRY?` ${n}`:'')}
+function emit23(){
+  let ev=null;
+  if(S.sched.length&&S.sched[0].t<=S.t)ev=S.sched.shift();
+  else{const bots=Object.values(S.ents).filter(e=>e.kind==='bot'&&!e.blocked&&e.at<=S.t);
+    if(bots.length)ev={ip:bots[Math.floor(Math.random()*bots.length)].ip,ev:'fail'}}
+  if(!ev)return;
+  const e=S.ents[ev.ip];if(e.blocked)return;
+  if(ev.ev==='ok'){e.ok++;line23(e,'ok',e.kind==='you'?'鍵でログイン成功':'ログイン成功',e.kind==='you'?'あなた':'成功')}
+  else{
+    e.fails++;line23(e,'fail','パスワード失敗',dots(e.fails));noise(.02,.05);
+    if(e.kind==='bot'&&e.fails>=12&&!e.nag){   // しつこい相手を放っておきすぎた
+      e.nag=true;S.nags++;S.lives--;lives23();sfx.breach();buzz([30,40,30]);flashRoom('bad');
+      term(`! ${e.ip} が ${e.fails}回も試してる`,'# 放っておきすぎ。5回たまったらブロックしよう');
+      if(S.lives<=0){S.out=true;S.endAt=S.t+.8}
+    }
+  }
+  guide23();
+}
+logsEl.addEventListener('click',e=>{const b=e.target.closest('.ip');if(b)block23(b.dataset.ip,b)});
+// 指でさわっている間は新しい行を止める（行が押し上がって、となりのIPを押してしまわないように）
+logsEl.addEventListener('pointerdown',()=>{if(S&&S.stage==='2-3')S.hold=true});
+['pointerup','pointercancel','pointerleave'].forEach(t=>logsEl.addEventListener(t,()=>{if(S&&S.stage==='2-3')S.hold=false}));
+function block23(ip,btn){
+  if(!S||!S.running||S.stage!=='2-3'||S.winAt||S.out)return;
+  if(S.cueT>0)hideCue();
+  const e=S.ents[ip];if(!e||e.blocked)return;
+  buzz(12);
+  if(e.fails>=MAXRETRY){
+    e.blocked=true;S.blocks++;sfx.close();sfx.block();sfx.done();flashRoom('good');
+    logsEl.querySelectorAll(`.ip[data-ip="${ip}"]`).forEach(x=>x.classList.add('banned'));
+    line23(e,'ban','fail2ban：ブロックした','');
+    term(`$ sudo fail2ban-client set sshd banip ${ip}`,`# ${e.fails}回失敗したIPをブロック（fail2banなら自動でやる）`);
+    meterProg('ブロック',S.blocks,GOAL23);
+    if(S.blocks>=GOAL23){S.clearT=S.t;S.winAt=S.t+.6}   // 目的を達成したら、すぐクリア
+  }else{
+    const why=e.kind==='you'?'you':e.kind==='typo'?'typo':'early';
+    S.wrong.push(why);S.lives--;lives23();sfx.sad();buzz([20,30,20]);shake();btn&&pulseEl(btn,'sad');
+    term(`$ sudo fail2ban-client set sshd unbanip ${ip}`,why==='you'?'# あなた自身のIPだった。自分を締め出すところ。まちがえたので解除した'
+      :why==='typo'?'# 1回打ち間違えただけの人だった。まちがえたので解除した':`# まだ${e.fails}回。5回たまるまで待とう。まちがえたので解除した`);
+    if(S.lives<=0){S.out=true;S.endAt=S.t+.8}
+  }
+  count23();guide23();
+}
+// 初めて遊ぶときだけ、5回たまったIPを光らせて「次はこれ」を出す
+function guide23(){
+  const ready=ip=>{const e=S.ents[ip];return e&&!e.blocked&&e.fails>=MAXRETRY};
+  const on=S.guide&&S.running&&!S.winAt&&!S.out&&S.cueT<=0;let last=null;
+  logsEl.querySelectorAll('.ip').forEach(b=>{const g=on&&ready(b.dataset.ip);b.classList.toggle('guide',g);if(g)last=b});
+  S.gEl=last;document.getElementById('pointer23').hidden=!last;placePointer23();
+}
+// 新しい行はすべり込んでくるので、「次はこれ」の位置は毎フレーム合わせ直す
+function placePointer23(){
+  const b=S&&S.gEl;if(!b||!b.isConnected)return;
+  const pt=document.getElementById('pointer23'),r=sky.getBoundingClientRect(),q=b.getBoundingClientRect();
+  pt.style.left=(q.left+q.width/2-r.left)+'px';pt.style.top=(q.top-r.top)+'px';
+}
+function loop23(now){
+  if(!S||!S.running||S.stage!=='2-3')return;
+  const dt=Math.min(.05,(now-S.last)/1000);S.last=now;
+  drawSky(now);
+  if(S.cueT>0){S.cueT-=dt;if(S.cueT<=0){hideCue();guide23()}return requestAnimationFrame(loop23)}   // 案内の間は止めておく
+  S.t+=dt;
+  document.getElementById('time').style.width=Math.min(100,S.t/DUR23*100)+'%';
+  if(!S.winAt&&!S.out&&!S.hold){S.nextLine-=dt;if(S.nextLine<=0){emit23();S.nextLine=.45+Math.random()*.12}}
+  placePointer23();
+  if(S.winAt&&S.t>=S.winAt)return end23(true);
+  if(S.out&&S.t>=S.endAt)return end23(false,'lives');
+  if(S.t>=DUR23&&!S.winAt&&!S.out)return end23(false,'timeout');
+  requestAnimationFrame(loop23);
+}
+function drawSky(now){
+  ctx.clearRect(0,0,W,H);
+  for(const s of stars){ctx.globalAlpha=.35+.35*Math.sin(now/700+s.p);ctx.fillStyle='#c9ccff';ctx.fillRect(s.x,s.y,s.s,s.s)}
+  ctx.globalAlpha=1;
+}
+const STAGE2_REAL=`<div class="real">
+    <div><b>ステージ2 全体の振り返り</b></div>
+    <div class="m"><b>2-1 鍵のしくみ</b>：公開鍵（.pub）はサーバーへ。秘密鍵は自分のパソコンから出さない</div>
+    <div class="m"><b>2-2 順番</b>：鍵を登録 → 今の接続を切らずに別の窓で確かめる → パスワードを禁止</div>
+    <div class="m"><b>2-3 ふるまい</b>：何度も失敗する相手は、ふるまいで見分けて自動でブロック（fail2ban）</div>
+  </div>
+  <div class="real">
+    <div><b>本物で確かめよう（見るだけ）</b>。どれも設定は何も変えません。結果をClaudeに貼ってみよう。</div>
+    <code>ls ~/.ssh</code>
+    <div class="m">自分のパソコンで。id_ed25519（秘密鍵）と id_ed25519.pub（公開鍵）のペアがあるか見る。貼っていいのはファイル名と .pub の中身だけ</div>
+    <code>sudo sshd -T | grep passwordauthentication</code>
+    <div class="m">サーバーで。パスワードログインが許可されているか見る（yes なら許可、no なら禁止）。設定ファイルを直しても /etc/ssh/sshd_config.d/ の中の別ファイルで上書きされていることがあるので、最終的に効いている設定をこれで確かめる</div>
+    <code>sudo journalctl -u ssh | grep "Failed password" | wc -l</code>
+    <div class="m">今までに何回パスワード攻撃が来たか数える</div>
+    <code>sudo fail2ban-client status sshd</code>
+    <div class="m">fail2ban を入れていれば、今ブロック中のIPが見える</div>
+  </div>`;
+function end23(win,why){
+  S.running=false;hideCue();guide23();win?sfx.win():sfx.lose();buzz(win?[20,60,20,60,40]:[80]);
+  const st=win?1+(S.wrong.length===0&&S.nags===0?1:0)+(S.clearT<=22?1:0):0;
+  const has=k=>S.wrong.includes(k);
+  const R=[
+    ['5回',S.blocks>=GOAL23,'<b>同じIPの失敗が5回たまったら、ブロック。</b>くり返し失敗するのは、当てずっぽうの機械（ボット）のふるまい'],
+    ['1回',!has('typo')&&!has('early'),'<b>1回の失敗ではブロックしない。</b>人は打ち間違える。攻撃者かどうかは、回数を見るまで分からない'],
+    ['成功',!has('you'),'<b>ログイン成功しているIP（あなた）は、ブロックしない。</b>自分を締め出してしまう']
+  ];
+  const rows=R.map(([n,ok,t])=>`<div class="rv"><span class="pt">${n}</span><span class="why">${t}</span><span class="mk ${ok?'ok':'ng'}">${ok?'○':'×'}</span></div>`).join('');
+  finish(win,st,{
+    eyebrow:win?'STAGE 2-3 CLEAR':'STAGE 2-3',
+    title:win?'しつこい相手を止めた！':why==='lives'?'余裕がなくなった':'時間切れ',
+    summary:win?`しつこい相手を ${S.blocks}つ、${S.clearT.toFixed(1)}秒でブロックしました（まちがい ${S.wrong.length}回）。`
+      :why==='lives'?'まちがったブロックや放置が重なった。ブロックしていいのは、同じIPの失敗が5回たまったときだけ。'
+      :`30秒でブロックできたのは ${S.blocks}つ。●が5個そろったIPを探そう。`,
+    review:rows,
+    extra:`<div class="real">
+        <div>振り返り：<b>fail2ban は、このラウンドでやったことを24時間自動でやってくれる</b>。標準の設定では「10分のうちに5回失敗したIPを、10分ブロック」。</div>
+        <code>sudo journalctl -u ssh | grep "Failed password"</code><div class="m">失敗の記録を見る（このラウンドで読んでいたログ）</div>
+        <code>sudo fail2ban-client status sshd</code><div class="m">fail2ban が今ブロック中のIPを見る</div>
+      </div>
+      <div class="warn"><b>安全メモ</b><ul><li>fail2ban は、自分が何度も失敗したときに自分もブロックすることがある。自分のIPは設定の ignoreip に入れておくと安心</li></ul></div>`
+      +(win?STAGE2_REAL:''),
+    next:win?'これでステージ2はおしまい。鍵・順番・ふるまいの3つで、22番を守れるようになった。':''
+  });
+}
+
 /* ---------- screens ---------- */
 function show(id){['select','brief','result'].forEach(k=>document.getElementById(k).hidden=k!==id)}
 function renderList(){
@@ -968,7 +1160,7 @@ function recHtml(id){
   if(!r||(!r.last&&!r.best))return '<span class="rec">まだ遊んでいません</span>';
   return `<span class="rec"><span class="rs">${starsHtml(r.best)}</span>クリア ${r.clears}回${r.last?` ・ 最後に遊んだ日 ${dayLabel(r.last)}`:''}</span>`;
 }
-function openList(){if(S)S.running=false;document.getElementById('cue').hidden=true;renderList();show('select');const f=document.querySelector('.sl:not(.locked)');f&&f.focus()}
+function openList(){if(S)S.running=false;['cue','pointer','pointer21','pointer23'].forEach(id=>document.getElementById(id).hidden=true);renderList();show('select');const f=document.querySelector('.sl:not(.locked)');f&&f.focus()}
 /* ブリーフィング。mode='play'：遊ぶ前（2回目からはスキップできる）／'review'：結果画面から読み返す */
 let briefMode='play';
 function openBrief(id,mode,r){
@@ -998,7 +1190,7 @@ function openStage(id){openBrief(id,'play')}
 function setLayout(){
   const u=unit(),key=unitKey();
   document.querySelectorAll('[data-only]').forEach(el=>el.hidden=!el.dataset.only.split(' ').includes(key));
-  document.getElementById('cue').hidden=true;
+  ['cue','pointer','pointer21','pointer23'].forEach(id=>document.getElementById(id).hidden=true);
   document.getElementById('hudTitle').innerHTML=`${u.hud[0]}<small>${u.hud[1]}</small>`;
   document.getElementById('roomFlow').innerHTML=u.room;
   app.dataset.stage=key;
@@ -1006,7 +1198,8 @@ function setLayout(){
 const GAMES={
   '1':()=>{newGame();requestAnimationFrame(loop)},
   '2-1':()=>{newGame21();requestAnimationFrame(loop21)},
-  '2-2':()=>{newGame2();requestAnimationFrame(loop2)}
+  '2-2':()=>{newGame2();requestAnimationFrame(loop2)},
+  '2-3':()=>{newGame23();requestAnimationFrame(loop23)}
 };
 function start(){
   audio();show(null);
