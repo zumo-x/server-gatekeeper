@@ -225,6 +225,19 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
 .gsec{display:grid;gap:2px}.gsec b{font-size:11px;letter-spacing:.1em;color:var(--amber)}.gsec p{margin:0;font-size:14px;line-height:1.7}
 .gat{font-size:12px;color:var(--muted)}
 .gmem:empty{display:none}
+.btns.two{grid-template-columns:1fr 1fr}
+.btns.two:has(> :only-child){grid-template-columns:1fr}
+.sub small{font-family:var(--f-term);font-size:12px;color:var(--muted);margin-left:4px}
+.newwords{display:grid;gap:8px;padding:12px;border-radius:12px;background:#22404a;animation:cuein .3s ease-out}
+.newwords b{font-family:var(--f-display);font-weight:800;font-size:16px;color:var(--ok)}
+.zlist{display:grid;gap:16px}
+.zsec{display:grid;gap:6px}.zsec h2{margin:0;font-family:var(--f-display);font-weight:800;font-size:15px;color:var(--amber)}
+.zi{all:unset;box-sizing:border-box;cursor:pointer;touch-action:manipulation;display:grid;grid-template-columns:1fr auto;gap:2px 10px;align-items:center;padding:10px 12px;border-radius:12px;background:var(--night);box-shadow:0 3px 0 #14183a;transition:transform .06s,box-shadow .06s}
+.zi:active{transform:translateY(2px);box-shadow:0 1px 0 #14183a}
+.zi:focus-visible{outline:3px solid var(--ink);outline-offset:2px}
+.zi b{font-weight:700;font-size:14px}.zi span{grid-column:1/-1;font-size:12px;color:var(--muted);line-height:1.5}
+.zi.locked{cursor:default;box-shadow:none;opacity:.6}.zi.locked:active{transform:none}
+.zi.locked b{font-family:var(--f-term);letter-spacing:.2em;color:var(--muted)}
 .shake{animation:shk .35s}
 @keyframes shk{20%{transform:translate(-6px,2px)}40%{transform:translate(5px,-3px)}60%{transform:translate(-4px,1px)}80%{transform:translate(3px,0)}}
 @media (prefers-reduced-motion:reduce){.shake,.door.hit,.door.sad,.act.hit,.act.sad,.act.guide,.ip.guide,.ln,.bin.hit,.bin.sad,.bin.guide,.acts.hint .act,.pointer,.cue,.cue i{animation:none}.door,.big,.act,.bin{transition:none}}
@@ -274,8 +287,19 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
     <div class="eyebrow">SERVER GATEKEEPER</div>
     <h1>サーバー門番</h1>
     <p class="lead">サーバーを守る仕事を、1面ずつ体で覚えよう。</p>
+    <div class="btns two" id="wordBtns"><button class="sub" id="toZukan">用語図鑑 <small id="zN"></small></button></div>
     <div class="stagelist" id="stageList"></div>
     <p class="savenote" id="saveNote" hidden>この端末では記録を保存できない設定になっています。遊ぶことはできますが、ページを閉じると記録は消えます。</p>
+  </div>
+</div>
+
+<div class="overlay" id="zukan" hidden>
+  <div class="card">
+    <div class="btop"><button class="sub small" id="zBack">‹ ステージ一覧</button></div>
+    <div class="eyebrow">WORD BOOK</div>
+    <h1>用語図鑑</h1>
+    <p class="lead" id="zCount"></p>
+    <div class="zlist" id="zList"></div>
   </div>
 </div>
 
@@ -300,6 +324,7 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
     <div class="eyebrow" id="rEyebrow">STAGE 1 CLEAR</div>
     <h1 id="rTitle">守りきった！</h1>
     <div class="stars" id="rStars"></div>
+    <div class="newwords" id="rWords" hidden></div>
     <p id="rSummary"></p>
     <div class="review" id="rReview"></div>
     <div class="extra" id="rExtra"></div>
@@ -435,11 +460,12 @@ const STAGES=[
 
 /* ---------- 用語（GLOSSARY） ----------
    w：見出し　s：ひとことで言うと　e：たとえ　at：出てくるステージ（ラウンド）
-   a：本文の中で見つける書き方（長いものから順に探す）　no：この書き方で始まるときは用語ではない */
+   a：本文の中で見つける書き方（長いものから順に探す）　no：この書き方で始まるときは用語ではない
+   nb：すぐ前がこの文字のときは用語ではない（例：「プログラム」の中の「ログ」） */
 const GLOSSARY=[
   {id:'server',  w:'サーバー',        at:['1','2-1','2-2','2-3'],a:['サーバー'],
     s:'ネットにつながって、ずっと働き続けるコンピューター',e:'24時間開いているお店の建物。お客さん（通信）がやって来て、中で店員（プログラム）が働く'},
-  {id:'port',    w:'ポート',          at:['1','2-2'],a:['ポート'],
+  {id:'port',    w:'ポート',          at:['1','2-2'],a:['ポート'],nb:['サ'],
     s:'通信が出入りする、番号つきのドア',e:'マンションの部屋番号。80号室はWeb、22号室はSSH、のように用事ごとに入口が決まっている'},
   {id:'firewall',w:'ファイアウォール',at:['1'],a:['ファイアウォール'],
     s:'どのドアを開けて、どれを閉めるか決める門番',e:'建物の入口の警備員。決められたドアからしか人を通さない'},
@@ -457,7 +483,7 @@ const GLOSSARY=[
     s:'JavaScriptでサーバーのプログラムを動かすしくみ',e:'お店の厨房の料理人。客席（外）から直接は入らせない'},
   {id:'db',      w:'データベース（DB）',at:['1'],a:['データベース','DB'],
     s:'データを整理して、しまっておく倉庫',e:'お店の金庫つき倉庫。外から直接入れたら、全部持っていかれる'},
-  {id:'bot',     w:'ボット',          at:['1','2-3'],a:['ボット'],
+  {id:'bot',     w:'ボット',          at:['1','2-3'],a:['ボット'],nb:['ロ'],
     s:'人の代わりに、自動で動き続けるプログラム',e:'休まずに家々のドアノブを回して回る、ロボットの泥棒'},
   {id:'ip',      w:'IPアドレス',      at:['1','2-3'],a:['IPアドレス','IP'],
     s:'ネットの上での住所（番号）',e:'手紙の差出人の住所。どこから来た通信かが分かる'},
@@ -503,7 +529,7 @@ const GLOSSARY=[
     s:'Linux（Ubuntu）でソフトを入れる・更新するコマンド',e:'アプリストア。名前を言えば取り寄せて入れてくれる'},
   {id:'f2b',     w:'fail2ban',        at:['2-2','2-3'],a:['fail2ban'],
     s:'何度も失敗する相手を、自動でブロックするソフト',e:'同じ人が何度も暗証番号をまちがえたら、しばらく出入り禁止にする警備員'},
-  {id:'log',     w:'ログ',            at:['2-3'],a:['ログ'],no:['ログイン'],
+  {id:'log',     w:'ログ',            at:['2-3'],a:['ログ'],no:['ログイン'],nb:['プ','ブ','タ'],
     s:'いつ・誰が・何をしたかの記録',e:'お店の防犯カメラの録画や、来客ノート'},
   {id:'journalctl',w:'journalctl',    at:['2-2','2-3'],a:['journalctl'],
     s:'サーバーのログを見るコマンド',e:'防犯カメラの録画を再生する機械'},
@@ -529,7 +555,7 @@ function glossify(root,seen=new Set()){
     while(i<t.length){
       const m=GMATCH.find(m=>!seen.has(m.g.id)&&t.startsWith(m.a,i)
         &&!(isWordCh(m.a[0])&&isWordCh(t[i-1]))&&!(isWordCh(m.a[m.a.length-1])&&isWordCh(t[i+m.a.length]))
-        &&!(m.g.no&&m.g.no.some(x=>t.startsWith(x,i))));
+        &&!(m.g.no&&m.g.no.some(x=>t.startsWith(x,i)))&&!(m.g.nb&&m.g.nb.includes(t[i-1])));
       if(!m){i++;continue}
       if(i>last)frag.append(t.slice(last,i));
       const b=document.createElement('button');b.type='button';b.className='gw';b.dataset.g=m.g.id;b.textContent=m.a;frag.append(b);
@@ -551,7 +577,7 @@ function openCard(id,from){
   cardExtra(g);
   document.getElementById('gcard').hidden=false;document.getElementById('gClose').focus({preventScroll:true});
 }
-function cardExtra(g){document.getElementById('gMem').innerHTML=''}
+function cardExtra(g){document.getElementById('gMem').innerHTML=WORDS.got[g.id]?'':'<span class="gat">まだ図鑑に入っていない言葉（出てくるステージをクリアすると入る）</span>'}
 function closeCard(){document.getElementById('gcard').hidden=true;PAUSE=false;if(gBack&&gBack.isConnected)gBack.focus({preventScroll:true});gBack=null}
 document.addEventListener('click',e=>{const b=e.target.closest('.gw');if(b){e.preventDefault();e.stopPropagation();openCard(b.dataset.g,b)}},true);
 document.getElementById('gClose').addEventListener('click',closeCard);
@@ -587,6 +613,18 @@ function saveRec(){try{localStorage.setItem(REC_KEY,JSON.stringify(REC))}catch(e
 function today(){const d=new Date(),z=n=>String(n).padStart(2,'0');return `${d.getFullYear()}-${z(d.getMonth()+1)}-${z(d.getDate())}`}
 function dayLabel(s){return s===today()?'今日':s.replace(/-/g,'/')}
 function starsHtml(n){return [0,1,2].map(k=>`<span class="${k<n?'':'off'}">★</span>`).join('')}
+/* ---------- 用語図鑑の記録（gk-words-v1）：got＝図鑑に入った用語、mem＝覚えた度 ---------- */
+const WKEY='gk-words-v1';
+const WORDS={got:{},mem:{}};
+try{const w=JSON.parse(readStore(WKEY)||'{}');if(w&&typeof w==='object'){WORDS.got=w.got||{};WORDS.mem=w.mem||{}}}catch(e){}
+function saveWords(){try{localStorage.setItem(WKEY,JSON.stringify(WORDS))}catch(e){}}
+const gotCount=()=>GLOSSARY.filter(g=>WORDS.got[g.id]).length;
+// そのステージ（ラウンド）に出てくる用語を図鑑に入れて、新しく入ったものを返す
+function unlockUnit(k){const fresh=unitTerms(k).filter(g=>!WORDS.got[g.id]);fresh.forEach(g=>WORDS.got[g.id]=today());if(fresh.length)saveWords();return fresh}
+// 図鑑ができる前にクリアしていたステージの用語も入れておく
+if(REC[1]&&REC[1].clears>0)unlockUnit('1');
+if(REC[2]&&REC[2].rounds)for(const n in REC[2].rounds)if(REC[2].rounds[n].clears>0)unlockUnit('2-'+n);
+
 const doorsEl=document.getElementById('doors'),cv=document.getElementById('cv'),ctx=cv.getContext('2d');
 const sky=document.getElementById('sky'),app=document.getElementById('app'),room=document.getElementById('room');
 const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -744,6 +782,10 @@ function finish(win,st,o){
     if(s.rounds.every((_,i)=>rrec(i+1).clears>0))r.best=Math.max(r.best,Math.min(...s.rounds.map((_,i)=>rrec(i+1).best)));
   }else{r.best=Math.max(r.best,st);if(win)r.clears++}
   saveRec();
+  const fresh=win?unlockUnit(unitKey()):[],rw=document.getElementById('rWords');
+  rw.hidden=!fresh.length;
+  rw.innerHTML=fresh.length?`<b>新しい言葉が増えた！ ＋${fresh.length}</b><div class="gchips">${fresh.map(g=>`<button type="button" class="gw gchip" data-g="${g.id}">${g.w}</button>`).join('')}</div>`:'';
+  if(fresh.length)setTimeout(()=>{sfx.done();buzz([10,30,10])},750);
   document.getElementById('rEyebrow').textContent=o.eyebrow;
   document.getElementById('rTitle').textContent=o.title;
   document.getElementById('rStars').innerHTML=starsHtml(st);
@@ -1298,12 +1340,13 @@ function end23(win,why){
 }
 
 /* ---------- screens ---------- */
-function show(id){['select','brief','result'].forEach(k=>document.getElementById(k).hidden=k!==id)}
+function show(id){['select','brief','result','zukan','drill'].forEach(k=>{const el=document.getElementById(k);if(el)el.hidden=k!==id})}
 function renderList(){
   document.getElementById('stageList').innerHTML=STAGES.map(s=>s.ready
     ?`<button class="sl" data-id="${s.id}"><span class="sn">${s.id}</span><span class="sm"><b>${s.name}</b><small>${s.sub}</small>${recHtml(s.id)}</span><span class="go">›</span></button>`
     :`<button class="sl locked" disabled><span class="sn">${s.id}</span><span class="sm"><b>${s.name}</b><small>${s.sub}</small></span><span class="lock">${LOCK}準備中</span></button>`).join('');
   document.getElementById('saveNote').hidden=canSave;
+  document.getElementById('zN').textContent=`${gotCount()}/${GLOSSARY.length}`;
 }
 function recHtml(id){
   const r=REC[id],s=stageOf(id);
@@ -1353,6 +1396,20 @@ function setLayout(){
   document.getElementById('roomFlow').innerHTML=u.room;glossify(document.getElementById('roomFlow'));
   app.dataset.stage=key;
 }
+/* 用語図鑑：初めて出てくるステージごとに並べる。まだの用語は「？？？」 */
+function memHtml(id){return ''}
+function openZukan(){
+  const groups={};for(const g of GLOSSARY)(groups[g.at[0]]=groups[g.at[0]]||[]).push(g);
+  document.getElementById('zCount').textContent=`集めた言葉 ${gotCount()} / ${GLOSSARY.length}。ステージやラウンドをクリアすると増える。`;
+  document.getElementById('zList').innerHTML=Object.entries(groups).map(([k,list])=>`<section class="zsec"><h2>${unitLabel(k)}</h2>${list.map(g=>WORDS.got[g.id]
+    ?`<button type="button" class="zi" data-g="${g.id}"><b>${g.w}</b>${memHtml(g.id)}<span>${g.s}</span></button>`
+    :`<div class="zi locked"><b>？？？</b><span>${unitLabel(k)} をクリアすると図鑑に入る</span></div>`).join('')}</section>`).join('');
+  show('zukan');document.getElementById('zukan').scrollTop=0;document.getElementById('zBack').focus({preventScroll:true});
+}
+document.getElementById('toZukan').addEventListener('click',openZukan);
+document.getElementById('zBack').addEventListener('click',openList);
+document.getElementById('zList').addEventListener('click',e=>{const b=e.target.closest('.zi[data-g]');if(b)openCard(b.dataset.g,b)});
+
 const GAMES={
   '1':()=>{newGame();requestAnimationFrame(loop)},
   '2-1':()=>{newGame21();requestAnimationFrame(loop21)},
