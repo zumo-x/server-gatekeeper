@@ -209,7 +209,7 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
     <div class="meters">
       <div class="meter hp" id="hp" data-only="1" aria-label="サーバー耐久">耐久 <i class="pip on"></i><i class="pip on"></i><i class="pip on"></i></div>
       <div class="meter tr" id="tr" data-only="1" aria-label="お客さんの信用">信用 <i class="pip on"></i><i class="pip on"></i><i class="pip on"></i></div>
-      <div class="meter tries" id="tries" data-only="2-2" hidden aria-label="パスワードの試行回数">試行 <span class="tv" id="triesV">0/60</span><span class="tb"><i id="triesB"></i></span></div>
+      <div class="meter tries" id="tries" data-only="2-2" hidden aria-label="パスワードの試行回数">試行 <span class="tv" id="triesV">0/40</span><span class="tb"><i id="triesB"></i></span></div>
       <div class="meter tries" id="prog" data-only="2-1 2-3" hidden><span id="progL">仕分け</span> <span class="tv" id="progV">0/10</span><span class="tb"><i id="progB"></i></span></div>
     </div>
     <div class="timebar"><i id="time"></i></div>
@@ -353,8 +353,8 @@ const STAGES=[
           <div><span class="dot d"></span>このステージはドアを触らない。下の対策ボタンを、正しい順番で押す（キーボードなら1〜5）</div>
         </div>
         <p>赤い玉と緑の玉が同じドアに来ても大丈夫。現実でも、攻撃者とあなたの通信は同じドアに来て、見た目では区別できない。だから鍵で見分ける。</p>
-        <p>試行回数が60回になると、パスワードを当てられて乗っ取られる。45秒たったときに、パスワードでのログインを安全に禁止できていればクリア。</p>
-        <p>★は「クリア」「何度も失敗する相手の締め出しまでやる」「ミスなし・試行30回未満でパスワードを禁止」で1つずつ。</p>`
+        <p>試行回数が40回になると、パスワードを当てられて乗っ取られる。30秒以内に、パスワードでのログインを安全に禁止できたら、その場でクリア。</p>
+        <p>★は「クリア」「パスワードを禁止する前に、何度も失敗する相手の締め出し（fail2ban）も入れる」「ミスなし・試行20回未満」で1つずつ。</p>`
     }}
     ]},
   {id:3, name:'緊急パッチ',   sub:'脆弱性を確認して更新する'},
@@ -725,7 +725,7 @@ function end21(win,why){
 }
 
 /* ---------- stage 2: 鍵（SSH の守りを、正しい順番で固める） ---------- */
-const DUR2=45,LIMIT=60;
+const DUR2=30,LIMIT=40;
 const actsEl=document.getElementById('acts'),door22=document.getElementById('door22');
 const ACTS=[
   {k:'key',  label:'鍵を作って登録する',             dur:2.0,
@@ -748,7 +748,7 @@ function actBtn(k){return actsEl.querySelector(`[data-k="${k}"]`)}
 
 function newGame2(){
   S={stage:2,running:true,t:0,spawn:2.4,gspawn:5.5,guide:!rrec(2).played,cue:true,tries:0,balls:[],parts:[],texts:[],done:{},busy:null,busyT:0,
-     mistakes:0,nopwAt:null,closed:false,lock:null,lockedOut:false,endAt:0,logins:0,bounced:0,warned:false,last:performance.now()};
+     mistakes:0,nopwAt:null,winAt:0,f2bFirst:false,closed:false,lock:null,lockedOut:false,endAt:0,logins:0,bounced:0,warned:false,last:performance.now()};
   // ボタンの並びは毎回シャッフル（順番を考えて押すため）。「22番を閉める」はいつも一番下
   const order=[...ACTS];for(let i=order.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[order[i],order[j]]=[order[j],order[i]]}
   actsEl.innerHTML=order.map(a=>`<button class="act" data-k="${a.k}"><span class="al">${a.label}</span><span class="ab"><i></i></span></button>`).join('')
@@ -761,7 +761,7 @@ function newGame2(){
 function showCue(){const c=unit().cue;document.getElementById('cueB').innerHTML=c[0];document.getElementById('cueS').textContent=c[1];document.getElementById('cue').hidden=false}
 function hideCue(){document.getElementById('cue').hidden=true;actsEl.classList.remove('hint');if(S){S.cue=false;S.cueT=0}}
 // 初めて遊ぶときだけ、次に押すボタンを光らせて「▼ 次はこれ」を出す
-function nextStep(){for(const k of ['key','check','nopw'])if(!S.done[k])return k;return S.done.f2b?null:'f2b'}
+function nextStep(){for(const k of ['key','check','nopw'])if(!S.done[k])return k;return null}
 function door2(){
   const st=S.closed?'閉（ufw deny 22）':S.done.nopw?'鍵だけ':S.done.key?'鍵 ＋ パスワード':'パスワード';
   door22.classList.toggle('closed',!!S.closed);door22.classList.toggle('keyonly',!!S.done.nopw&&!S.closed);
@@ -776,10 +776,10 @@ function meters2(){
 function count2(){document.getElementById('count').textContent=`ログイン ${S.logins} ・ 弾いた ${S.bounced}`}
 function setBusy(){
   for(const b of actsEl.children){const k=b.dataset.k;
-    b.disabled=!!S.busy||!!S.lock||!!S.done[k]||!S.running;
+    b.disabled=!!S.busy||!!S.lock||!!S.winAt||!!S.done[k]||!S.running;
     b.classList.toggle('busy',S.busy===k);b.classList.toggle('done',!!S.done[k]&&!(k==='nopw'&&S.lock));
     if(S.busy!==k){const i=b.querySelector('.ab i');if(i)i.style.width=S.done[k]?'100%':'0'}}
-  const want=S.guide&&S.running&&!S.busy&&!S.lock?nextStep():null,pt=document.getElementById('pointer');
+  const want=S.guide&&S.running&&!S.busy&&!S.lock&&!S.winAt?nextStep():null,pt=document.getElementById('pointer');
   for(const b of actsEl.children)b.classList.toggle('guide',b.dataset.k===want);
   pt.hidden=!want;
   if(want){const b=actBtn(want);pt.style.left=(b.offsetLeft+b.offsetWidth/2)+'px';pt.style.top=b.offsetTop+'px'}
@@ -788,7 +788,7 @@ function actKey(i){const b=actsEl.children[i];if(!b||b.disabled)return;b.classLi
 actsEl.addEventListener('click',e=>{const b=e.target.closest('.act');if(b&&!b.disabled)act(b.dataset.k)});
 
 function act(k){
-  if(!S||!S.running||S.stage!==2||S.busy||S.lock||S.done[k])return;
+  if(!S||!S.running||S.stage!==2||S.busy||S.lock||S.winAt||S.done[k])return;
   if(S.cue)hideCue();
   buzz(12);
   if(k==='close'){
@@ -806,6 +806,7 @@ function complete(k){
     if(!S.done.key)return lockout('nokey');
     if(!S.done.check)return lockout('nocheck');
     term2({cmd:['$ sudo systemctl restart ssh'],note:'# これでパスワードの当てずっぽうは効かない。入れるのは鍵を持つ人だけ'});
+    S.f2bFirst=!!S.done.f2b;S.winAt=S.t+.6;   // 目的を達成したら、すぐクリア
   }
   if(k==='key')term2({cmd:['$ ssh-copy-id user@サーバー'],note:'# 鍵を登録した。次は、本当に鍵で入れるか確かめよう'});
   if(k==='f2b')term2({cmd:['$ sudo systemctl status fail2ban'],note:'# 動いてる。何度も間違える相手は自動でブロックされる'});
@@ -849,7 +850,7 @@ function resolve2(b){
   if(S.closed||S.done.nopw){S.bounced++;sfx.block();buzz(6);burst(x,H-6,'#ff6f6b',8,-1);float(S.closed?'閉':'鍵がない','#a3a8d2');count2();return}
   if(S.done.f2b&&Math.random()<.67){S.bounced++;sfx.block();buzz(6);burst(x,H-6,'#ff6f6b',8,-1);float('BAN','#7be0a4');count2();return}
   S.tries++;noise(.03,.1);tone(240,.06,'square',.04);burst(x,H-4,'#ff6f6b',5,-1);float('+1','#ff6f6b');meters2();
-  if(!S.warned&&S.tries>=LIMIT*.7&&!S.lock){S.warned=true;term(`! 試行 ${S.tries}回。そろそろ当てられる`,'# 急いで、でも順番は守って')}
+  if(!S.warned&&S.tries>=LIMIT*.7&&!S.lock&&!S.winAt){S.warned=true;term(`! 試行 ${S.tries}回。そろそろ当てられる`,'# 急いで、でも順番は守って')}
 }
 
 function loop2(now){
@@ -873,9 +874,10 @@ function loop2(now){
   S.texts=S.texts.filter(t=>t.life>0);
   draw2(now);
   if(!S.running)return;
+  if(S.winAt&&S.t>=S.winAt)return end2(true);
   if(S.lockedOut&&S.t>=S.endAt)return end2(false,S.lock);
-  if(S.tries>=LIMIT)return end2(false,'breach');
-  if(S.t>=DUR2&&!S.lock)return end2(!!S.done.nopw,S.done.nopw?null:'timeout');
+  if(S.tries>=LIMIT&&!S.winAt)return end2(false,'breach');
+  if(S.t>=DUR2&&!S.lock&&!S.winAt)return end2(false,'timeout');
   requestAnimationFrame(loop2);
 }
 
@@ -915,39 +917,36 @@ function end2(win,why){
   S.running=false;hideCue();setBusy();win?sfx.win():sfx.lose();buzz(win?[20,60,20,60,40]:[80]);
   if(why==='breach'){sfx.breach();shake();flashRoom('bad');pulseEl(door22,'sad')}
   const fast=S.mistakes===0&&S.nopwAt!==null&&S.nopwAt<LIMIT/2;
-  const st=win?1+(S.done.f2b?1:0)+(fast?1:0):0;
+  const st=win?1+(S.f2bFirst?1:0)+(fast?1:0):0;
   const badPw=S.lock==='nokey'||S.lock==='nocheck';
   const R=[
     ['①',S.done.key,'<b>鍵を作って登録する。</b>パスワードは当てずっぽうでいつか当たるけど、鍵ファイルは長すぎて当てられない'],
     ['②',S.done.check,'<b>別の窓で、鍵で入れるか確かめる。</b>今の接続を切らずに確かめれば、失敗してもまだ直せる'],
     ['③',S.done.nopw&&!badPw,'<b>パスワードでのログインを禁止する。</b>これで当てずっぽう攻撃は効かなくなる。必ず①②のあと'],
-    ['④',S.done.f2b?true:null,'<b>何度も失敗する相手を自動で締め出す（ボーナス）。</b>fail2ban が、ふるまいを見て自動でブロックする'],
+    ['④',S.f2bFirst?true:null,'<b>何度も失敗する相手を自動で締め出す（ボーナス）。</b>fail2ban が、ふるまいを見て自動でブロックする。③より前に入れておくと★'],
     ['✕',!S.closed,'<b>22番は閉めない。</b>攻撃者は止まるけど、あなたも入れなくなる。閉めるのではなく、鍵を強くするドア']
   ];
   const rows=R.map(([n,ok,t])=>`<div class="rv"><span class="pt">${n}</span><span class="why">${t}</span><span class="mk ${ok===null?'na':ok?'ok':'ng'}">${ok===null?'－':ok?'○':'×'}</span></div>`).join('');
   const titles={close:'締め出された！',nokey:'締め出された！',nocheck:'締め出された！',breach:'パスワードを当てられた',timeout:'時間切れ'};
   const whys={...LOCKWHY,
-    breach:'試行回数が60回に届いて、パスワードを当てられて乗っ取られた。パスワードのままだと、いつかは当たる。',
-    timeout:'まだパスワードでログインできるまま。今日は耐えても、当てずっぽうはこの先もずっと続く。'};
+    breach:`試行回数が${LIMIT}回に届いて、パスワードを当てられて乗っ取られた。パスワードのままだと、いつかは当たる。`,
+    timeout:'30秒たっても、まだパスワードでログインできるまま。当てずっぽうはこの先もずっと続く。'};
   finish(win,st,{
-    eyebrow:win?'STAGE 2 CLEAR':'STAGE 2',
+    eyebrow:win?'STAGE 2-2 CLEAR':'STAGE 2-2',
     title:win?'鍵で守りきった！':titles[why],
     summary:(win
-      ?`パスワード攻撃を ${S.bounced}回弾いて、あなたは ${S.logins}回ログインできました。`
+      ?`試行 ${S.nopwAt}回のうちに、パスワードでのログインを安全に禁止できました（${S.t.toFixed(1)}秒）。`
       :whys[why])+' 正しい順番と理由はこうです。',
     review:rows,
-    extra:`<div class="warn"><b>安全メモ（本物のサーバーで）</b><ul>
+    extra:`<div class="real">
+        <div><b>なぜ「今の接続を切らずに、別の窓で」確かめるのか</b></div>
+        <div class="m">今つないでいる窓は、設定をまちがえたときに直すための<b>命綱</b>。先にこれを閉じてから鍵がうまく動かないと気づくと、もう中に入って直す方法がない。命綱をつないだまま、別の窓で鍵ログインを試す。入れたら、そこで初めてパスワードを禁止する。</div>
+      </div>
+      <div class="warn"><b>安全メモ（本物のサーバーで）</b><ul>
         <li>設定を変えるときは、今つないでいるSSHを絶対に切らない。別の窓で入れることを確かめてから閉じる</li>
         <li>鍵で入れることを確かめる前に、パスワードを禁止しない</li>
-        <li>22番を ufw で閉めない（自分も入れなくなる）</li></ul></div>
-      <div class="real">
-        <div><b>本物で確かめよう（見るだけ）</b>。どちらも設定は何も変えません。結果をClaudeに貼ってみよう。</div>
-        <code>sudo sshd -T | grep passwordauthentication</code>
-        <div class="m">パスワードログインが許可されているか見る（yes なら許可、no なら禁止）。設定ファイルを直しても /etc/ssh/sshd_config.d/ の中の別ファイルで上書きされていることがあるので、最終的に効いている設定をこれで確かめる</div>
-        <code>sudo journalctl -u ssh | grep "Failed password" | wc -l</code>
-        <div class="m">今までに何回パスワード攻撃が来たか数える</div>
-      </div>`,
-    next:'次のステージ3は「緊急パッチ」。サーバーの部品に穴が見つかった。止めずに、確実に直せる？'
+        <li>22番を ufw で閉めない（自分も入れなくなる）</li></ul></div>`,
+    next:win?'次は2-3「ふるまい」。鍵で守れても、ドアの前の当てずっぽうは止まらない。ログを読んで、しつこい相手を見つけよう。':''
   });
 }
 
