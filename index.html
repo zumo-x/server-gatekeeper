@@ -65,7 +65,7 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
 .room.good{background:#244a52}.room.bad{background:#5a2b3e}
 .term{font-family:var(--f-term);font-size:13px;background:#0f1229;border-radius:8px;padding:8px 10px;min-height:44px;line-height:1.5;overflow:hidden}
 .term .c{color:var(--ok)}.term .m{color:var(--muted)}
-.overlay{position:fixed;inset:0;display:grid;place-items:center;background:rgba(14,17,38,.86);z-index:5;overflow-y:auto;
+.overlay{position:fixed;inset:0;display:flex;flex-direction:column;background:rgba(14,17,38,.86);z-index:5;overflow-y:auto;
   padding:calc(16px + env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) calc(16px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
 .card{background:var(--panel);border-radius:18px;padding:22px 20px;max-width:440px;width:100%;display:grid;gap:14px;box-shadow:0 12px 0 #14183a}
 .card h1{font-family:var(--f-display);font-weight:800;font-size:26px;margin:0;text-wrap:balance}
@@ -80,6 +80,28 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
 .big{all:unset;cursor:pointer;touch-action:manipulation;text-align:center;font-family:var(--f-display);font-weight:800;font-size:18px;padding:14px;border-radius:14px;background:var(--amber);color:#3a2300;box-shadow:0 6px 0 var(--amber-deep);transition:transform .06s,box-shadow .06s}
 .big:active{transform:translateY(5px);box-shadow:0 1px 0 var(--amber-deep)}
 .big:focus-visible{outline:3px solid var(--ink);outline-offset:3px}
+.big:disabled{cursor:default;background:var(--shut-deep);color:var(--muted);box-shadow:none;transform:none}
+.overlay>.card{margin:auto}
+/* stage select & navigation */
+.back{all:unset;box-sizing:border-box;cursor:pointer;touch-action:manipulation;flex:none;display:grid;place-items:center;width:34px;height:34px;border-radius:10px;background:var(--panel);color:var(--ink);font-size:20px;font-weight:800;box-shadow:0 3px 0 #14183a}
+.back:active{transform:translateY(2px);box-shadow:0 1px 0 #14183a}
+.sub{all:unset;box-sizing:border-box;cursor:pointer;touch-action:manipulation;text-align:center;font-weight:700;font-size:15px;padding:12px;border-radius:12px;background:var(--night);color:var(--ink);box-shadow:0 4px 0 #14183a;transition:transform .06s,box-shadow .06s}
+.sub:active{transform:translateY(3px);box-shadow:0 1px 0 #14183a}
+.back:focus-visible,.sub:focus-visible,.sl:focus-visible{outline:3px solid var(--ink);outline-offset:2px}
+.btns{display:grid;gap:10px}
+.lead{color:var(--muted)!important}
+.stagelist{display:grid;gap:8px}
+.sl{all:unset;box-sizing:border-box;cursor:pointer;touch-action:manipulation;display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:12px;padding:12px;border-radius:14px;background:var(--night);box-shadow:0 4px 0 #14183a;transition:transform .06s,box-shadow .06s}
+.sl:active{transform:translateY(3px);box-shadow:0 1px 0 #14183a}
+.sl .sn{width:38px;height:38px;border-radius:12px;display:grid;place-items:center;background:var(--amber);color:#3a2300;font-family:var(--f-term);font-size:18px}
+.sl .sm{display:grid;gap:2px;min-width:0}
+.sl .sm b{font-family:var(--f-display);font-weight:800;font-size:16px}
+.sl .sm small{font-size:12px;color:var(--muted)}
+.sl .go{font-size:22px;font-weight:800;color:var(--amber)}
+.sl.locked{cursor:default;opacity:.55;box-shadow:none}
+.sl.locked:active{transform:none}
+.sl.locked .sn{background:var(--shut-deep);color:var(--muted)}
+.lock{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:700;color:var(--muted);white-space:nowrap}
 .stars{font-size:30px;letter-spacing:6px;color:var(--amber);text-align:center}
 .stars .off{color:var(--shut)}
 .review{display:grid;gap:6px}
@@ -100,6 +122,7 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
 
 <div class="app" id="app">
   <div class="hud">
+    <button class="back" id="hudBack" aria-label="ステージ一覧に戻る">‹</button>
     <div class="stage">ステージ1 門番<small>入口を開け閉めしてサーバーを守る</small></div>
     <div class="meters">
       <div class="meter hp" id="hp" aria-label="サーバー耐久">耐久 <i class="pip on"></i><i class="pip on"></i><i class="pip on"></i></div>
@@ -116,7 +139,16 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
   <div class="term" id="term"><span class="m"># ドアをタップすると、本物のコマンドがここに出ます</span></div>
 </div>
 
-<div class="overlay" id="intro">
+<div class="overlay" id="select">
+  <div class="card">
+    <div class="eyebrow">SERVER GATEKEEPER</div>
+    <h1>サーバー門番</h1>
+    <p class="lead">サーバーを守る仕事を、1面ずつ体で覚えよう。</p>
+    <div class="stagelist" id="stageList"></div>
+  </div>
+</div>
+
+<div class="overlay" id="intro" hidden>
   <div class="card">
     <div class="eyebrow">STAGE 1</div>
     <h1>門番</h1>
@@ -127,7 +159,10 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
       <div><span class="dot d"></span>ドアはタップで開け閉め（キーボードなら1〜5）</div>
     </div>
     <p>玉に書いてある数字が、向かってるドアの番号です。40秒守りきったらクリア。</p>
-    <button class="big" id="start">はじめる</button>
+    <div class="btns">
+      <button class="big" id="start">はじめる</button>
+      <button class="sub" id="introBack">ステージ一覧に戻る</button>
+    </div>
   </div>
 </div>
 
@@ -143,7 +178,11 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
       <code>sudo ufw status</code>
     </div>
     <div class="next">次のステージ2は「22番 SSH」。あなた自身が入るためのドアです。閉めると攻撃者は止まるけど、あなたも締め出される。さて、どうする？</div>
-    <button class="big" id="again">もう一回</button>
+    <div class="btns">
+      <button class="big" id="nextStage"></button>
+      <button class="big" id="again">もう一回</button>
+      <button class="sub" id="resultBack">ステージ一覧に戻る</button>
+    </div>
   </div>
 </div>
 
@@ -156,6 +195,21 @@ const PORTS=[
   {p:8080,name:'テスト用',open:false,why:'<b>昔のテスト用。</b>使ってないドアは閉めるのが基本'}
 ];
 const DUR=40;
+/* ステージ一覧。ready:true のステージだけ遊べる（CLAUDE.md の「ステージ計画」と合わせる） */
+const STAGES=[
+  {id:1, name:'門番',         sub:'使ってないドア（ポート）を閉める', ready:true},
+  {id:2, name:'鍵',           sub:'SSHへのパスワード総当たり'},
+  {id:3, name:'緊急パッチ',   sub:'脆弱性を確認して更新する'},
+  {id:4, name:'古い料理人',   sub:'サポート終了版には修正が出ない'},
+  {id:5, name:'部品屋の罠',   sub:'npmの部品の乗っ取り'},
+  {id:6, name:'秘密の置き忘れ',sub:'APIキーをGitHubに公開してしまう'},
+  {id:7, name:'偽メール',     sub:'GitHubやサーバー会社を名乗るフィッシング'},
+  {id:8, name:'足あと探し',   sub:'ログから怪しいアクセスを見つける'},
+  {id:9, name:'入力の罠',     sub:'SQLインジェクション'},
+  {id:10,name:'溢れるロッカー',sub:'バッファオーバーフロー'}
+];
+const LOCK='<svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path fill="currentColor" d="M7 10V7a5 5 0 0 1 10 0v3h1a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1v-9a1 1 0 0 1 1-1zm2 0h6V7a3 3 0 0 0-6 0z"/></svg>';
+let cur=1;
 const doorsEl=document.getElementById('doors'),cv=document.getElementById('cv'),ctx=cv.getContext('2d');
 const sky=document.getElementById('sky'),app=document.getElementById('app'),room=document.getElementById('room');
 const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -291,14 +345,31 @@ function end(win){
     ?`来客 ${S.served}人を通して、攻撃を ${S.blocked}回止めました。最後のドアの状態はこうでした。`
     :'全部開けっぱなしだと攻撃者が入るし、全部閉めるとお客さんも入れない。正解はこうです。';
   document.getElementById('rReview').innerHTML=rows;
-  document.getElementById('result').hidden=false;
-  document.getElementById('again').focus();
+  const nx=STAGES.find(s=>s.id===cur+1),nb=document.getElementById('nextStage'),ag=document.getElementById('again');
+  nb.hidden=!win;
+  nb.disabled=!(nx&&nx.ready);
+  nb.innerHTML=!nx?'これで全ステージおしまい':nx.ready?`次のステージへ（${nx.id} ${nx.name}）`:`<span class="lock">${LOCK}</span> ステージ${nx.id}「${nx.name}」は準備中`;
+  ag.className=win?'sub':'big';
+  show('result');
+  (win&&!nb.disabled?nb:ag).focus();
 }
 
-function start(){audio();document.getElementById('intro').hidden=true;document.getElementById('result').hidden=true;resize();newGame();S.last=performance.now();requestAnimationFrame(loop)}
+/* ---------- screens ---------- */
+function show(id){['select','intro','result'].forEach(k=>document.getElementById(k).hidden=k!==id)}
+function renderList(){
+  document.getElementById('stageList').innerHTML=STAGES.map(s=>s.ready
+    ?`<button class="sl" data-id="${s.id}"><span class="sn">${s.id}</span><span class="sm"><b>${s.name}</b><small>${s.sub}</small></span><span class="go">›</span></button>`
+    :`<button class="sl locked" disabled><span class="sn">${s.id}</span><span class="sm"><b>${s.name}</b><small>${s.sub}</small></span><span class="lock">${LOCK}準備中</span></button>`).join('');
+}
+function openList(){if(S)S.running=false;renderList();show('select');const f=document.querySelector('.sl:not(.locked)');f&&f.focus()}
+function openStage(id){cur=id;show('intro');document.getElementById('start').focus()}
+function start(){audio();show(null);resize();newGame();S.last=performance.now();requestAnimationFrame(loop)}
+document.getElementById('stageList').addEventListener('click',e=>{const b=e.target.closest('.sl:not(.locked)');if(b)openStage(+b.dataset.id)});
 document.getElementById('start').addEventListener('click',start);
 document.getElementById('again').addEventListener('click',start);
-resize();draw(0);
+document.getElementById('nextStage').addEventListener('click',()=>{const nx=STAGES.find(s=>s.id===cur+1);if(nx&&nx.ready)openStage(nx.id)});
+['hudBack','introBack','resultBack'].forEach(id=>document.getElementById(id).addEventListener('click',openList));
+resize();draw(0);renderList();
 </script>
 </body>
 </html>
