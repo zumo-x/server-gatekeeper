@@ -44,6 +44,7 @@
 - GitHub Pages（https://zumo-x.github.io/server-gatekeeper/）でそのまま動くこと
 - スマホ縦画面が最優先。パソコンでも遊べるようにする
 - 外部の画像やライブラリにはなるべく頼らない
+- index.html の外枠（<!doctype html>〜</html>、charset、viewport、[hidden]{display:none!important}）は消さない。これが無いとGitHub Pagesで正しく動かない
 
 ## 安全のルール
 - このリポジトリは公開。パスワード・トークン・APIキー・IPアドレス・個人情報は絶対に入れない
@@ -55,4 +56,5 @@
 - 新しく決まったルールや方針も、このファイルに書き足す
 
 ## いまの課題
-- index.html に <!doctype html>、<html>、<head>、<body> の外枠と、charset・viewport の設定、[hidden]{display:none!important} が無いため、GitHub Pagesで動かない。次の作業で直す
+- 特になし
+- 解決済み（2026-10-27）：index.html に <!doctype html>・<html>・<head>・<body> の外枠、charset・viewport の設定、[hidden]{display:none!important} を追加し、GitHub Pagesで動くようにした。あわせて box-sizing:border-box と body の margin:0 も追加した
