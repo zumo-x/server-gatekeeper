@@ -129,9 +129,40 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
 .real{background:#0f1229;border-radius:12px;padding:12px;display:grid;gap:6px;font-size:13px;line-height:1.6}
 .real code{font-family:var(--f-term);font-size:15px;color:var(--ok)}
 .next{font-size:13px;color:var(--muted);line-height:1.6}
+/* stage 2: one SSH door + countermeasure buttons (same push-in feel as the stage 1 doors) */
+.gate{display:flex;justify-content:center;align-items:center;gap:10px;background:var(--wall);padding:8px 6px 10px;border-radius:4px;box-shadow:inset 0 -3px 0 var(--wall-edge)}
+.door22{pointer-events:none;min-width:150px;padding:7px 18px 6px}
+.door22.keyonly{background:var(--ok);color:#0f3a24;box-shadow:0 5px 0 #3f9e69,0 0 18px rgba(123,224,164,.4)}
+.badge{font-family:var(--f-term);font-size:11px;padding:3px 8px;border-radius:99px;background:var(--night);color:var(--ok)}
+.acts{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.act{all:unset;box-sizing:border-box;position:relative;overflow:hidden;cursor:pointer;touch-action:manipulation;display:grid;place-items:center;text-align:center;min-height:52px;padding:8px 10px 10px;border-radius:12px;
+  background:var(--amber);color:#3a2300;font-weight:700;font-size:12.5px;line-height:1.35;box-shadow:0 5px 0 var(--amber-deep);transform:translateY(0);transition:transform .06s,box-shadow .06s,background .15s,filter .15s}
+.act:active:not(:disabled),.act.press{transform:translateY(4px);box-shadow:0 1px 0 var(--amber-deep)}
+.act .ab{position:absolute;left:0;right:0;bottom:0;height:4px;background:rgba(58,35,0,.12)}
+.act .ab i{display:block;height:100%;width:0;background:#3a2300}
+.act:disabled{cursor:default;filter:saturate(.45) brightness(.7)}
+.act.busy{filter:none}
+.act.done{background:var(--ok);color:#0f3a24;box-shadow:0 5px 0 #3f9e69;filter:none}
+.act.done .al::before{content:'✓ '}
+.act.done .ab{display:none}
+.act.danger{grid-column:1/-1;min-height:40px;background:repeating-linear-gradient(180deg,var(--shut) 0 6px,var(--shut-deep) 6px 8px);color:var(--ink);box-shadow:0 5px 0 #262a4d}
+.act.danger:active:not(:disabled),.act.danger.press{box-shadow:0 1px 0 #262a4d}
+.act:focus-visible{outline:3px solid var(--ink);outline-offset:2px}
+.act.hit{animation:hit .3s}.act.sad,.door22.sad{animation:sad .4s}
+.app[data-stage="2"] .term{min-height:94px}
+.meter.tries .tv{font-family:var(--f-term);font-size:14px;color:var(--ink);min-width:44px;text-align:right}
+.meter.tries .tb{width:54px;height:8px;border-radius:4px;background:var(--shut-deep);overflow:hidden}
+.meter.tries .tb i{display:block;height:100%;width:0;background:var(--amber);transition:width .15s}
+.meter.tries.warn .tv{color:var(--attacker)}.meter.tries.warn .tb i{background:var(--attacker)}
+.dot.k{background:var(--ok)}
+.extra{display:grid;gap:10px}
+.warn{background:#3d2338;border-radius:12px;padding:12px;font-size:13px;line-height:1.6;display:grid;gap:4px}
+.warn ul{margin:0;padding-left:1.2em;display:grid;gap:4px}
+.real .m{color:var(--muted);font-size:12px}
+.rv .mk.na{color:var(--muted)}
 .shake{animation:shk .35s}
 @keyframes shk{20%{transform:translate(-6px,2px)}40%{transform:translate(5px,-3px)}60%{transform:translate(-4px,1px)}80%{transform:translate(3px,0)}}
-@media (prefers-reduced-motion:reduce){.shake,.door.hit,.door.sad{animation:none}.door,.big{transition:none}}
+@media (prefers-reduced-motion:reduce){.shake,.door.hit,.door.sad,.act.hit,.act.sad{animation:none}.door,.big,.act{transition:none}}
 </style>
 </head>
 <body>
@@ -139,17 +170,23 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
 <div class="app" id="app">
   <div class="hud">
     <button class="back" id="hudBack" aria-label="ステージ一覧に戻る">‹</button>
-    <div class="stage">ステージ1 門番<small>入口を開け閉めしてサーバーを守る</small></div>
+    <div class="stage" id="hudTitle">ステージ1 門番<small>入口を開け閉めしてサーバーを守る</small></div>
     <div class="meters">
-      <div class="meter hp" id="hp" aria-label="サーバー耐久">耐久 <i class="pip on"></i><i class="pip on"></i><i class="pip on"></i></div>
-      <div class="meter tr" id="tr" aria-label="お客さんの信用">信用 <i class="pip on"></i><i class="pip on"></i><i class="pip on"></i></div>
+      <div class="meter hp" id="hp" data-only="1" aria-label="サーバー耐久">耐久 <i class="pip on"></i><i class="pip on"></i><i class="pip on"></i></div>
+      <div class="meter tr" id="tr" data-only="1" aria-label="お客さんの信用">信用 <i class="pip on"></i><i class="pip on"></i><i class="pip on"></i></div>
+      <div class="meter tries" id="tries" data-only="2" hidden aria-label="パスワードの試行回数">試行 <span class="tv" id="triesV">0/60</span><span class="tb"><i id="triesB"></i></span></div>
     </div>
     <div class="timebar"><i id="time"></i></div>
   </div>
   <div class="skywrap" id="sky"><canvas id="cv"></canvas><div class="skylabel">インターネット</div></div>
-  <div class="doors" id="doors"></div>
+  <div class="doors" id="doors" data-only="1"></div>
+  <div class="gate" id="gate" data-only="2" hidden>
+    <div class="door door22" id="door22"><span class="num">22</span><span class="nm">SSH</span><span class="st" id="door22st">パスワード</span></div>
+    <span class="badge" id="f2bBadge" hidden>fail2ban</span>
+  </div>
+  <div class="acts" id="acts" data-only="2" hidden></div>
   <div class="room" id="room">
-    <div class="flow"><span class="chip">受付 nginx</span><span class="arrow">→</span><span class="chip">管理画面</span></div>
+    <div class="flow" id="roomFlow"><span class="chip">受付 nginx</span><span class="arrow">→</span><span class="chip">管理画面</span></div>
     <div class="count" id="count">来客 0 ・ 撃退 0</div>
   </div>
   <div class="term" id="term"><span class="m"># ドアをタップすると、本物のコマンドがここに出ます</span></div>
@@ -187,11 +224,8 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
     <div class="stars" id="rStars"></div>
     <p id="rSummary"></p>
     <div class="review" id="rReview"></div>
-    <div class="real">
-      <div>本物のサーバーにも、この門番（ufw）がいます。まずは<b>見るだけ</b>のこれを打って、結果をClaudeに貼ってみよう。</div>
-      <code>sudo ufw status</code>
-    </div>
-    <div class="next">次のステージ2は「22番 SSH」。あなた自身が入るためのドアです。閉めると攻撃者は止まるけど、あなたも締め出される。さて、どうする？</div>
+    <div class="extra" id="rExtra"></div>
+    <div class="next" id="rNext"></div>
     <div class="btns">
       <button class="big" id="nextStage"></button>
       <button class="big" id="again">もう一回</button>
@@ -213,6 +247,8 @@ const DUR=40;
 /* ステージ一覧。ready:true のステージだけ遊べる（CLAUDE.md の「ステージ計画」と合わせる） */
 const STAGES=[
   {id:1, name:'門番',         sub:'使ってないドア（ポート）を閉める', ready:true,
+    hud:['ステージ1 門番','入口を開け閉めしてサーバーを守る'],
+    room:'<span class="chip">受付 nginx</span><span class="arrow">→</span><span class="chip">管理画面</span>',
     brief:{
       situation:['あなたはWebアプリを動かすサーバーの管理人。サーバーには外とつながるドア（ポート）がたくさんあって、作ったばかりのときは使わないドアまで開いたままになっていることがよくある。世界中のボットは、サーバーを見つけると数分で全部のドアをノックしに来る。'],
       doors:[
@@ -233,7 +269,22 @@ const STAGES=[
         </div>
         <p>玉に書いてある数字が、向かってるドアの番号です。40秒守りきったらクリア。</p>`
     }},
-  {id:2, name:'鍵',           sub:'SSHへのパスワード総当たり'},
+  {id:2, name:'鍵',           sub:'SSHへのパスワード総当たり', ready:true,
+    hud:['ステージ2 鍵','22番の鍵を強くして守る'],
+    room:'<span class="chip">22番 SSH</span><span class="arrow">→</span><span class="chip">管理人の作業場</span>',
+    brief:{
+      situation:['あなたのサーバーの22番ドアに、今この瞬間も世界中からパスワード当てずっぽう攻撃が来ている。守りを固めたいけど、やり方を間違えると自分が入れなくなる。'],
+      doorsTitle:'22番の意味',
+      doors:[[22,'SSH','管理人専用の裏口。ここから入ってコマンドを打つ。']],
+      real:['ステージ1とちがって、このドアは閉められない。だから「誰が来たか」を<b>鍵で見分ける</b>。正しい鍵ファイルを持っている人だけ通す。さらに、何度も失敗する相手は自動でブロックする（<b>ふるまいで見分ける</b>）。'],
+      howto:`<div class="legend">
+          <div><span class="dot r"></span>トゲのある赤い玉 ＝ 攻撃者。ドアに当たるたびにパスワードを1回試す</div>
+          <div><span class="dot k"></span>緑の鍵の玉 ＝ あなた自身。いつでも入れるようにしておく</div>
+          <div><span class="dot d"></span>下の対策ボタンを、正しい順番で押す（キーボードなら1〜5）</div>
+        </div>
+        <p>試行回数が60回になると、パスワードを当てられて乗っ取られる。45秒たったときに、パスワードでのログインを安全に禁止できていればクリア。</p>
+        <p>★は「クリア」「何度も失敗する相手の締め出しまでやる」「ミスなし・試行30回未満でパスワードを禁止」で1つずつ。</p>`
+    }},
   {id:3, name:'緊急パッチ',   sub:'脆弱性を確認して更新する'},
   {id:4, name:'古い料理人',   sub:'サポート終了版には修正が出ない'},
   {id:5, name:'部品屋の罠',   sub:'npmの部品の乗っ取り'},
@@ -264,7 +315,7 @@ function starsHtml(n){return [0,1,2].map(k=>`<span class="${k<n?'':'off'}">★</
 const doorsEl=document.getElementById('doors'),cv=document.getElementById('cv'),ctx=cv.getContext('2d');
 const sky=document.getElementById('sky'),app=document.getElementById('app'),room=document.getElementById('room');
 const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
-let W=0,H=0,DPR=1,doorX=[],stars=[];
+let W=0,H=0,DPR=1,doorX=[],door2X=0,stars=[];
 let S=null;
 
 /* ---------- sound & touch ---------- */
@@ -284,6 +335,7 @@ const sfx={
   sad(){tone(400,.25,'triangle',.1,220)},
   breach(){tone(300,.35,'sawtooth',.09,70)},
   win(){[523,659,784,1047].forEach((f,i)=>tone(f,.18,'triangle',.11,null,i*.1))},
+  done(){tone(880,.08,'triangle',.09);tone(1320,.12,'triangle',.08,null,.07)},
   lose(){[392,330,262].forEach((f,i)=>tone(f,.25,'triangle',.1,null,i*.14))}
 };
 function buzz(ms){try{navigator.vibrate&&navigator.vibrate(ms)}catch(e){}}
@@ -296,10 +348,10 @@ PORTS.forEach((pt,i)=>{
   b.addEventListener('click',()=>toggle(i));
   doorsEl.appendChild(b);
 });
-document.addEventListener('keydown',e=>{const n=+e.key;if(n>=1&&n<=5&&S&&S.running)toggle(n-1)});
+document.addEventListener('keydown',e=>{const n=+e.key;if(!(n>=1&&n<=5&&S&&S.running))return;if(cur===1)toggle(n-1);else if(cur===2)actKey(n-1)});
 
 function toggle(i){
-  if(!S||!S.running)return;
+  if(!S||!S.running||cur!==1)return;
   S.open[i]=!S.open[i];
   const b=doorsEl.children[i],o=S.open[i];
   b.classList.toggle('closed',!o);b.querySelector('.st').textContent=o?'開':'閉';b.setAttribute('aria-pressed',String(!o));
@@ -315,6 +367,7 @@ function resize(){
   const r=sky.getBoundingClientRect();DPR=Math.min(devicePixelRatio||1,2);W=r.width;H=r.height;
   cv.width=W*DPR;cv.height=H*DPR;ctx.setTransform(DPR,0,0,DPR,0,0);
   doorX=[...doorsEl.children].map(b=>{const d=b.getBoundingClientRect();return d.left+d.width/2-r.left});
+  {const d=document.getElementById('door22').getBoundingClientRect();door2X=d.width?d.left+d.width/2-r.left:W/2}
   stars=Array.from({length:40},()=>({x:Math.random()*W,y:Math.random()*H*.8,s:Math.random()*1.4+.4,p:Math.random()*6}));
 }
 addEventListener('resize',resize);
@@ -348,7 +401,7 @@ function meters(){
 function count(){document.getElementById('count').textContent=`来客 ${S.served} ・ 撃退 ${S.blocked}`}
 
 function loop(now){
-  if(!S||!S.running)return;
+  if(!S||!S.running||S.stage)return;
   const dt=Math.min(.05,(now-S.last)/1000);S.last=now;S.t+=dt;
   document.getElementById('time').style.width=Math.min(100,S.t/DUR*100)+'%';
   S.spawn-=dt;
@@ -388,21 +441,251 @@ function end(win){
   const rows=PORTS.map((pt,i)=>{const ok=S.open[i]===pt.open;if(ok)correct++;
     return `<div class="rv"><span class="pt">${pt.p}</span><span class="why">${pt.open?'開ける':'閉める'}：${pt.why}</span><span class="mk ${ok?'ok':'ng'}">${ok?'○':'×'}</span></div>`}).join('');
   const st=win?1+(S.hp===3?1:0)+(correct===5?1:0):0;
+  finish(win,st,{
+    eyebrow:win?'STAGE 1 CLEAR':'STAGE 1',
+    title:win?'守りきった！':(S.hp<=0?'侵入されちゃった':'お客さんが帰っちゃった'),
+    summary:win
+      ?`来客 ${S.served}人を通して、攻撃を ${S.blocked}回止めました。最後のドアの状態はこうでした。`
+      :'全部開けっぱなしだと攻撃者が入るし、全部閉めるとお客さんも入れない。正解はこうです。',
+    review:rows,
+    extra:`<div class="real">
+      <div>本物のサーバーにも、この門番（ufw）がいます。まずは<b>見るだけ</b>のこれを打って、結果をClaudeに貼ってみよう。</div>
+      <code>sudo ufw status</code>
+    </div>`,
+    next:'次のステージ2は「22番 SSH」。あなた自身が入るためのドアです。閉めると攻撃者は止まるけど、あなたも締め出される。さて、どうする？'
+  });
+}
+
+/* 結果画面（全ステージ共通）：記録を保存して、★・振り返り・ボタンを出す */
+function finish(win,st,o){
   const r=rec(cur);r.best=Math.max(r.best,st);if(win)r.clears++;r.last=today();saveRec();
-  document.getElementById('rEyebrow').textContent=win?'STAGE 1 CLEAR':'STAGE 1';
-  document.getElementById('rTitle').textContent=win?'守りきった！':(S.hp<=0?'侵入されちゃった':'お客さんが帰っちゃった');
+  document.getElementById('rEyebrow').textContent=o.eyebrow;
+  document.getElementById('rTitle').textContent=o.title;
   document.getElementById('rStars').innerHTML=starsHtml(st);
-  document.getElementById('rSummary').textContent=win
-    ?`来客 ${S.served}人を通して、攻撃を ${S.blocked}回止めました。最後のドアの状態はこうでした。`
-    :'全部開けっぱなしだと攻撃者が入るし、全部閉めるとお客さんも入れない。正解はこうです。';
-  document.getElementById('rReview').innerHTML=rows;
+  document.getElementById('rSummary').textContent=o.summary;
+  document.getElementById('rReview').innerHTML=o.review;
+  document.getElementById('rExtra').innerHTML=o.extra||'';
+  const rn=document.getElementById('rNext');rn.textContent=o.next||'';rn.hidden=!o.next;
   const nx=STAGES.find(s=>s.id===cur+1),nb=document.getElementById('nextStage'),ag=document.getElementById('again');
   nb.hidden=!win;
   nb.disabled=!(nx&&nx.ready);
   nb.innerHTML=!nx?'これで全ステージおしまい':nx.ready?`次のステージへ（${nx.id} ${nx.name}）`:`<span class="lock">${LOCK}</span> ステージ${nx.id}「${nx.name}」は準備中`;
   ag.className=win?'sub':'big';
   show('result');
-  (win&&!nb.disabled?nb:ag).focus();
+  document.getElementById('result').scrollTop=0;
+  (win&&!nb.disabled?nb:ag).focus({preventScroll:true});
+}
+
+/* ---------- stage 2: 鍵（SSH の守りを、正しい順番で固める） ---------- */
+const DUR2=45,LIMIT=60;
+const actsEl=document.getElementById('acts'),door22=document.getElementById('door22');
+const ACTS=[
+  {k:'key',  label:'鍵を作って登録する',             dur:2.0,
+    cmd:['$ ssh-keygen -t ed25519','$ ssh-copy-id user@サーバー'],note:'# 自分のパソコンで実行。鍵を作って、サーバーに登録した'},
+  {k:'check',label:'別の窓で、鍵で入れるか確かめる', dur:0,
+    cmd:['$ ssh user@サーバー'],note:'# 今の接続は切らずに、別の窓で入ってみる…'},
+  {k:'nopw', label:'パスワードでのログインを禁止する', dur:1.6,
+    cmd:['$ sudo nano /etc/ssh/sshd_config','PasswordAuthentication no','$ sudo systemctl restart ssh'],note:'# パスワードでは入れないようにした'},
+  {k:'f2b',  label:'何度も失敗する相手を自動で締め出す', dur:2.0,
+    cmd:['$ sudo apt install fail2ban'],note:'# 何度もパスワードを間違える相手を、自動でしばらくブロック'}
+];
+const CLOSE22={cmd:['$ sudo ufw deny 22'],note:'# ⚠ 本物では真似しないで：自分も入れなくなる'};
+const LOCKWHY={
+  close:'22番を閉めると、攻撃者だけでなくあなたも入れなくなる。22番は「閉める」のではなく「鍵を強くする」ドア。',
+  nokey:'鍵を登録する前にパスワードを禁止したので、入る方法がひとつも無くなった。',
+  nocheck:'鍵を登録したつもりでも、確かめずにパスワードを禁止すると危ない。今回は鍵の登録がうまくいっていなくて（ファイルの置き場所や権限のまちがいなど）、誰も入れなくなった。'
+};
+function term2(a){document.getElementById('term').innerHTML=a.cmd.map(c=>`<span class="c">${c}</span>`).join('<br>')+`<br><span class="m">${a.note}</span>`}
+function actBtn(k){return actsEl.querySelector(`[data-k="${k}"]`)}
+
+function newGame2(){
+  S={stage:2,running:true,t:0,spawn:.8,gspawn:4,tries:0,balls:[],parts:[],texts:[],done:{},busy:null,busyT:0,
+     mistakes:0,nopwAt:null,closed:false,lock:null,lockedOut:false,endAt:0,logins:0,bounced:0,warned:false,last:performance.now()};
+  // ボタンの並びは毎回シャッフル（順番を考えて押すため）。「22番を閉める」はいつも一番下
+  const order=[...ACTS];for(let i=order.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[order[i],order[j]]=[order[j],order[i]]}
+  actsEl.innerHTML=order.map(a=>`<button class="act" data-k="${a.k}"><span class="al">${a.label}</span><span class="ab"><i></i></span></button>`).join('')
+    +'<button class="act danger" data-k="close"><span class="al">22番を閉める</span></button>';
+  term2({cmd:['$ sudo journalctl -u ssh -f'],note:'# 22番に、パスワードの当てずっぽうが次々に来てる…'});
+  door2();meters2();count2();setBusy();
+}
+function door2(){
+  const st=S.closed?'閉（ufw deny 22）':S.done.nopw?'鍵だけ':S.done.key?'鍵 ＋ パスワード':'パスワード';
+  door22.classList.toggle('closed',!!S.closed);door22.classList.toggle('keyonly',!!S.done.nopw&&!S.closed);
+  document.getElementById('door22st').textContent=st;
+  document.getElementById('f2bBadge').hidden=!S.done.f2b;
+}
+function meters2(){
+  document.getElementById('triesV').textContent=`${S.tries}/${LIMIT}`;
+  document.getElementById('triesB').style.width=Math.min(100,S.tries/LIMIT*100)+'%';
+  document.getElementById('tries').classList.toggle('warn',S.tries>=LIMIT*.7);
+}
+function count2(){document.getElementById('count').textContent=`ログイン ${S.logins} ・ 弾いた ${S.bounced}`}
+function setBusy(){
+  for(const b of actsEl.children){const k=b.dataset.k;
+    b.disabled=!!S.busy||!!S.lock||!!S.done[k]||!S.running;
+    b.classList.toggle('busy',S.busy===k);b.classList.toggle('done',!!S.done[k]&&!(k==='nopw'&&S.lock));
+    if(S.busy!==k){const i=b.querySelector('.ab i');if(i)i.style.width=S.done[k]?'100%':'0'}}
+}
+function actKey(i){const b=actsEl.children[i];if(!b||b.disabled)return;b.classList.add('press');setTimeout(()=>b.classList.remove('press'),90);act(b.dataset.k)}
+actsEl.addEventListener('click',e=>{const b=e.target.closest('.act');if(b&&!b.disabled)act(b.dataset.k)});
+
+function act(k){
+  if(!S||!S.running||cur!==2||S.busy||S.lock||S.done[k])return;
+  buzz(12);
+  if(k==='close'){
+    S.closed=true;sfx.close();term2(CLOSE22);door2();return lockout('close');
+  }
+  sfx.open();term2(ACTS.find(a=>a.k===k));
+  S.busy=k;S.busyT=0;
+  if(k==='check')spawnGreen({test:true});
+  setBusy();
+}
+function complete(k){
+  S.busy=null;
+  if(k==='nopw'){
+    S.done.nopw=true;S.nopwAt=S.tries;door2();
+    if(!S.done.key)return lockout('nokey');
+    if(!S.done.check)return lockout('nocheck');
+    term2({cmd:['$ sudo systemctl restart ssh'],note:'# これでパスワードの当てずっぽうは効かない。入れるのは鍵を持つ人だけ'});
+  }
+  if(k==='key')term2({cmd:['$ ssh-copy-id user@サーバー'],note:'# 鍵を登録した。次は、本当に鍵で入れるか確かめよう'});
+  if(k==='f2b')term2({cmd:['$ sudo systemctl status fail2ban'],note:'# 動いてる。何度も間違える相手は自動でブロックされる'});
+  S.done[k]=true;sfx.done();buzz([10,30,10]);
+  const b=actBtn(k);b&&pulseEl(b,'hit');
+  door2();setBusy();
+}
+function lockout(why){
+  // 設定を変えたあと、あなたが入り直そうとして…弾かれる
+  S.lock=why;setBusy();spawnGreen({you:true});
+}
+function spawnGreen(o={}){
+  const fast=o.test||o.you;
+  S.balls.push({green:true,test:!!o.test,you:!!o.you,x0:20+Math.random()*(W-40),age:0,dur:fast?1.5:2.4,r:15,wob:Math.random()*6,x:0,y:-20});
+}
+function spawnRed(){
+  const prog=S.t/DUR2;
+  S.balls.push({red:true,x0:20+Math.random()*(W-40),age:0,dur:2.3-.5*prog+Math.random()*.3,r:14,wob:Math.random()*6,x:0,y:-20});
+}
+function float(txt,c){S.texts.push({x:door2X+(Math.random()-.5)*70,y:H-30-Math.random()*24,txt,c,life:1})}
+function pulseEl(el,cls){el.classList.remove('hit','sad');void el.offsetWidth;el.classList.add(cls)}
+function resolve2(b){
+  const x=door2X;
+  if(b.green){
+    if(S.lock){
+      if(!S.lockedOut){S.lockedOut=true;S.endAt=S.t+1.1;sfx.close();sfx.breach();buzz([40,40,90]);shake();flashRoom('bad');pulseEl(door22,'sad');
+        float('締め出された！','#ff6f6b');term(`! 締め出された`,`# ${S.lock==='close'?'22番が閉まっていて入れない':'パスワードは禁止、鍵は使えない。もう入る方法がない'}`)}
+      burst(x,H-6,'#7be0a4',10,-1);return;
+    }
+    if(b.test){
+      S.busy=null;
+      if(S.done.key){S.done.check=true;sfx.welcome();sfx.done();buzz([10,30,10]);flashRoom('good');float('鍵で入れた！','#7be0a4');burst(x,H,'#7be0a4',10,1);
+        term('$ ssh user@サーバー','# 鍵で入れた！ これで安心してパスワードを禁止できる');const t=actBtn('check');t&&pulseEl(t,'hit')}
+      else{S.mistakes++;sfx.sad();buzz(20);float('パスワードで入った','#a3a8d2');burst(x,H,'#7be0a4',6,1);
+        term('! まだ鍵を登録していない','# 鍵が無いので、結局パスワードで入った。先に鍵を作って登録しよう');const t=actBtn('check');t&&pulseEl(t,'sad')}
+      setBusy();return;
+    }
+    S.logins++;sfx.welcome();flashRoom('good');burst(x,H,'#7be0a4',8,1);float(S.done.key?'鍵で入った':'パスワードで入った','#7be0a4');count2();return;
+  }
+  // 赤い玉（攻撃者）
+  if(S.closed||S.done.nopw){S.bounced++;sfx.block();buzz(6);burst(x,H-6,'#ff6f6b',8,-1);float(S.closed?'閉':'鍵がない','#a3a8d2');count2();return}
+  if(S.done.f2b&&Math.random()<.67){S.bounced++;sfx.block();buzz(6);burst(x,H-6,'#ff6f6b',8,-1);float('BAN','#7be0a4');count2();return}
+  S.tries++;noise(.03,.1);tone(240,.06,'square',.04);burst(x,H-4,'#ff6f6b',5,-1);float('+1','#ff6f6b');meters2();
+  if(!S.warned&&S.tries>=LIMIT*.7&&!S.lock){S.warned=true;term(`! 試行 ${S.tries}回。そろそろ当てられる`,'# 急いで、でも順番は守って')}
+}
+
+function loop2(now){
+  if(!S||!S.running||S.stage!==2)return;
+  const dt=Math.min(.05,(now-S.last)/1000);S.last=now;S.t+=dt;
+  document.getElementById('time').style.width=Math.min(100,S.t/DUR2*100)+'%';
+  if(S.t<DUR2-1.5&&!S.lock){
+    S.spawn-=dt;if(S.spawn<=0){spawnRed();S.spawn=.6-.25*(S.t/DUR2)+Math.random()*.15}
+    S.gspawn-=dt;if(S.gspawn<=0){spawnGreen();S.gspawn=5+Math.random()*3}
+  }
+  if(S.busy&&S.busy!=='check'){const a=ACTS.find(x=>x.k===S.busy);S.busyT+=dt;const i=actBtn(S.busy).querySelector('.ab i');
+    i.style.width=Math.min(100,S.busyT/a.dur*100)+'%';if(S.busyT>=a.dur)complete(S.busy)}
+  if(S.busy==='check'){const tb=S.balls.find(b=>b.test);if(tb)actBtn('check').querySelector('.ab i').style.width=Math.min(100,tb.age/tb.dur*100)+'%'}
+  for(const b of S.balls){b.age+=dt;const k=Math.min(1,b.age/b.dur),e=k<.5?2*k*k:1-Math.pow(-2*k+2,2)/2;
+    b.x=b.x0+(door2X-b.x0)*e+Math.sin(b.age*3+b.wob)*6*(1-k);b.y=-20+(H-b.r+20)*k;if(k>=1){b.done=true;resolve2(b)}}
+  S.balls=S.balls.filter(b=>!b.done);
+  for(const p of S.parts){p.x+=p.vx*dt;p.y+=p.vy*dt;p.vy+=240*dt;p.life-=dt}
+  S.parts=S.parts.filter(p=>p.life>0);
+  for(const t of S.texts){t.y-=28*dt;t.life-=dt*.9}
+  S.texts=S.texts.filter(t=>t.life>0);
+  draw2(now);
+  if(!S.running)return;
+  if(S.lockedOut&&S.t>=S.endAt)return end2(false,S.lock);
+  if(S.tries>=LIMIT)return end2(false,'breach');
+  if(S.t>=DUR2&&!S.lock)return end2(!!S.done.nopw,S.done.nopw?null:'timeout');
+  requestAnimationFrame(loop2);
+}
+
+function draw2(now){
+  ctx.clearRect(0,0,W,H);
+  for(const s of stars){ctx.globalAlpha=.35+.35*Math.sin(now/700+s.p);ctx.fillStyle='#c9ccff';ctx.fillRect(s.x,s.y,s.s,s.s)}
+  ctx.globalAlpha=1;
+  const g=ctx.createLinearGradient(0,H*.4,0,H);
+  g.addColorStop(0,'rgba(0,0,0,0)');g.addColorStop(1,S.closed?'rgba(92,97,149,.28)':S.done.nopw?'rgba(123,224,164,.26)':'rgba(255,181,71,.24)');
+  ctx.fillStyle=g;ctx.fillRect(door2X-46,H*.4,92,H*.6);
+  for(const b of S.balls){
+    ctx.save();ctx.translate(b.x,b.y);
+    if(b.red){
+      ctx.rotate(b.age*2.5);ctx.beginPath();for(let k=0;k<14;k++){const a=k/14*Math.PI*2,r=k%2?b.r*.78:b.r*1.12;ctx.lineTo(Math.cos(a)*r,Math.sin(a)*r)}
+      ctx.closePath();ctx.fillStyle='#ff6f6b';ctx.fill();ctx.rotate(-b.age*2.5);
+      ctx.fillStyle='#14183a';ctx.font='9px "DotGothic16", monospace';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('pw',0,1);
+    }else{
+      ctx.beginPath();ctx.arc(0,0,b.r,0,Math.PI*2);ctx.fillStyle='#7be0a4';ctx.fill();
+      ctx.beginPath();ctx.arc(-5,-6,3.5,0,Math.PI*2);ctx.fillStyle='rgba(255,255,255,.5)';ctx.fill();
+      // 鍵のマーク
+      ctx.strokeStyle='#14183a';ctx.lineWidth=2.4;ctx.lineCap='round';
+      ctx.beginPath();ctx.arc(-4,0,3.6,0,Math.PI*2);ctx.stroke();
+      ctx.beginPath();ctx.moveTo(-.4,0);ctx.lineTo(8,0);ctx.moveTo(5,0);ctx.lineTo(5,3.5);ctx.moveTo(7.6,0);ctx.lineTo(7.6,2.6);ctx.stroke();
+    }
+    ctx.restore();
+  }
+  for(const p of S.parts){ctx.globalAlpha=Math.max(0,p.life*1.6);ctx.fillStyle=p.c;ctx.fillRect(p.x-2,p.y-2,4,4)}
+  ctx.textAlign='center';ctx.textBaseline='middle';ctx.font='700 13px "Zen Kaku Gothic New", sans-serif';
+  for(const t of S.texts){ctx.globalAlpha=Math.max(0,Math.min(1,t.life*1.5));ctx.fillStyle=t.c;ctx.fillText(t.txt,t.x,t.y)}
+  ctx.globalAlpha=1;
+}
+
+function end2(win,why){
+  S.running=false;setBusy();win?sfx.win():sfx.lose();buzz(win?[20,60,20,60,40]:[80]);
+  if(why==='breach'){sfx.breach();shake();flashRoom('bad');pulseEl(door22,'sad')}
+  const fast=S.mistakes===0&&S.nopwAt!==null&&S.nopwAt<LIMIT/2;
+  const st=win?1+(S.done.f2b?1:0)+(fast?1:0):0;
+  const badPw=S.lock==='nokey'||S.lock==='nocheck';
+  const R=[
+    ['①',S.done.key,'<b>鍵を作って登録する。</b>パスワードは当てずっぽうでいつか当たるけど、鍵ファイルは長すぎて当てられない'],
+    ['②',S.done.check,'<b>別の窓で、鍵で入れるか確かめる。</b>今の接続を切らずに確かめれば、失敗してもまだ直せる'],
+    ['③',S.done.nopw&&!badPw,'<b>パスワードでのログインを禁止する。</b>これで当てずっぽう攻撃は効かなくなる。必ず①②のあと'],
+    ['④',S.done.f2b?true:null,'<b>何度も失敗する相手を自動で締め出す（ボーナス）。</b>fail2ban が、ふるまいを見て自動でブロックする'],
+    ['✕',!S.closed,'<b>22番は閉めない。</b>攻撃者は止まるけど、あなたも入れなくなる。閉めるのではなく、鍵を強くするドア']
+  ];
+  const rows=R.map(([n,ok,t])=>`<div class="rv"><span class="pt">${n}</span><span class="why">${t}</span><span class="mk ${ok===null?'na':ok?'ok':'ng'}">${ok===null?'－':ok?'○':'×'}</span></div>`).join('');
+  const titles={close:'締め出された！',nokey:'締め出された！',nocheck:'締め出された！',breach:'パスワードを当てられた',timeout:'時間切れ'};
+  const whys={...LOCKWHY,
+    breach:'試行回数が60回に届いて、パスワードを当てられて乗っ取られた。パスワードのままだと、いつかは当たる。',
+    timeout:'まだパスワードでログインできるまま。今日は耐えても、当てずっぽうはこの先もずっと続く。'};
+  finish(win,st,{
+    eyebrow:win?'STAGE 2 CLEAR':'STAGE 2',
+    title:win?'鍵で守りきった！':titles[why],
+    summary:(win
+      ?`パスワード攻撃を ${S.bounced}回弾いて、あなたは ${S.logins}回ログインできました。`
+      :whys[why])+' 正しい順番と理由はこうです。',
+    review:rows,
+    extra:`<div class="warn"><b>安全メモ（本物のサーバーで）</b><ul>
+        <li>設定を変えるときは、今つないでいるSSHを絶対に切らない。別の窓で入れることを確かめてから閉じる</li>
+        <li>鍵で入れることを確かめる前に、パスワードを禁止しない</li>
+        <li>22番を ufw で閉めない（自分も入れなくなる）</li></ul></div>
+      <div class="real">
+        <div><b>本物で確かめよう（見るだけ）</b>。どちらも設定は何も変えません。結果をClaudeに貼ってみよう。</div>
+        <code>sudo sshd -T | grep passwordauthentication</code>
+        <div class="m">パスワードログインが許可されているか見る（yes なら許可、no なら禁止）。設定ファイルを直しても /etc/ssh/sshd_config.d/ の中の別ファイルで上書きされていることがあるので、最終的に効いている設定をこれで確かめる</div>
+        <code>sudo journalctl -u ssh | grep "Failed password" | wc -l</code>
+        <div class="m">今までに何回パスワード攻撃が来たか数える</div>
+      </div>`,
+    next:'次のステージ3は「緊急パッチ」。サーバーの部品に穴が見つかった。止めずに、確実に直せる？'
+  });
 }
 
 /* ---------- screens ---------- */
@@ -427,22 +710,35 @@ function openBrief(id,mode){
   document.getElementById('bTitle').textContent=s.name;
   document.getElementById('bBody').innerHTML=
     `<section class="sec"><h2>状況</h2>${b.situation.map(t=>`<p>${t}</p>`).join('')}</section>`+
-    `<section class="sec"><h2>ドアの番号の意味</h2><div class="ports">${b.doors.map(([p,n,t])=>`<div class="pr"><span class="pt">${p}</span><span><b>${n}</b>${t}</span></div>`).join('')}</div></section>`+
+    `<section class="sec"><h2>${b.doorsTitle||'ドアの番号の意味'}</h2><div class="ports">${b.doors.map(([p,n,t])=>`<div class="pr"><span class="pt">${p}</span><span><b>${n}</b>${t}</span></div>`).join('')}</div></section>`+
     `<section class="sec"><h2>現実ではどう見分けるか</h2>${b.real.map(t=>`<p>${t}</p>`).join('')}</section>`+
     `<section class="sec"><h2>遊び方</h2>${b.howto}</section>`;
   const review=mode==='review';
   document.getElementById('briefBack').textContent=review?'‹ 結果にもどる':'‹ ステージ一覧';
   document.getElementById('briefSkip').hidden=review||!rec(id).seen;
   document.getElementById('start').textContent=review?'もう一回':'はじめる';
-  show('brief');
+  setLayout(id);show('brief');
   document.getElementById('brief').scrollTop=0;
   document.getElementById('briefBack').focus({preventScroll:true});
 }
 function openStage(id){openBrief(id,'play')}
+/* ゲーム画面の部品を、そのステージ用に入れ替える（data-only="ステージ番号" の部品だけ見せる） */
+function setLayout(id){
+  const s=STAGES.find(x=>x.id===id);
+  document.querySelectorAll('[data-only]').forEach(el=>el.hidden=el.dataset.only!==String(id));
+  document.getElementById('hudTitle').innerHTML=`${s.hud[0]}<small>${s.hud[1]}</small>`;
+  document.getElementById('roomFlow').innerHTML=s.room;
+  app.dataset.stage=id;
+}
+const GAMES={
+  1:()=>{newGame();requestAnimationFrame(loop)},
+  2:()=>{newGame2();requestAnimationFrame(loop2)}
+};
 function start(){
   audio();show(null);
   const r=rec(cur);if(!r.seen){r.seen=true;saveRec()}
-  resize();newGame();S.last=performance.now();requestAnimationFrame(loop);
+  if(S)S.running=false;
+  setLayout(cur);resize();GAMES[cur]();S.last=performance.now();
 }
 document.getElementById('stageList').addEventListener('click',e=>{const b=e.target.closest('.sl:not(.locked)');if(b)openStage(+b.dataset.id)});
 document.getElementById('start').addEventListener('click',start);
