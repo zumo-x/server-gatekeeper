@@ -212,6 +212,19 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
 .warn ul{margin:0;padding-left:1.2em;display:grid;gap:4px}
 .real .m{color:var(--muted);font-size:12px}
 .rv .mk.na{color:var(--muted)}
+/* glossary: dotted words you can tap, and the term card */
+.gw{all:unset;cursor:pointer;color:inherit;font:inherit;text-decoration:underline dotted;text-decoration-thickness:1.5px;text-underline-offset:3px;-webkit-tap-highlight-color:transparent}
+.gw:focus-visible{outline:2px solid var(--ink);outline-offset:2px;border-radius:3px}
+.gchips{display:flex;flex-wrap:wrap;gap:6px}
+.gw.gchip{text-decoration:none;font-size:13px;font-weight:700;padding:5px 11px;border-radius:99px;background:var(--night);color:var(--ink);box-shadow:0 3px 0 #14183a;transition:transform .06s,box-shadow .06s}
+.gw.gchip:active{transform:translateY(2px);box-shadow:0 1px 0 #14183a}
+.gsheet{position:fixed;inset:0;z-index:9;display:flex;align-items:flex-end;justify-content:center;background:rgba(10,12,28,.6);
+  padding:16px max(16px,env(safe-area-inset-right,0px)) calc(16px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));animation:cuein .18s ease-out}
+.gbox{background:var(--panel);border-radius:18px;padding:18px;max-width:440px;width:100%;display:grid;gap:10px;box-shadow:0 10px 0 #14183a;max-height:85vh;overflow-y:auto}
+.gbox h2{margin:0;font-family:var(--f-display);font-weight:800;font-size:24px}
+.gsec{display:grid;gap:2px}.gsec b{font-size:11px;letter-spacing:.1em;color:var(--amber)}.gsec p{margin:0;font-size:14px;line-height:1.7}
+.gat{font-size:12px;color:var(--muted)}
+.gmem:empty{display:none}
 .shake{animation:shk .35s}
 @keyframes shk{20%{transform:translate(-6px,2px)}40%{transform:translate(5px,-3px)}60%{transform:translate(-4px,1px)}80%{transform:translate(3px,0)}}
 @media (prefers-reduced-motion:reduce){.shake,.door.hit,.door.sad,.act.hit,.act.sad,.act.guide,.ip.guide,.ln,.bin.hit,.bin.sad,.bin.guide,.acts.hint .act,.pointer,.cue,.cue i{animation:none}.door,.big,.act,.bin{transition:none}}
@@ -297,6 +310,18 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
       <button class="sub" id="reread">ブリーフィングを読み返す</button>
       <button class="sub" id="resultBack">ステージ一覧に戻る</button>
     </div>
+  </div>
+</div>
+
+<div class="gsheet" id="gcard" hidden>
+  <div class="gbox" role="dialog" aria-modal="true" aria-labelledby="gW">
+    <div class="eyebrow">用語カード</div>
+    <h2 id="gW"></h2>
+    <div class="gsec"><b>ひとことで言うと</b><p id="gS"></p></div>
+    <div class="gsec"><b>たとえ</b><p id="gE"></p></div>
+    <div class="gat" id="gAt"></div>
+    <div class="gmem" id="gMem"></div>
+    <button class="big" id="gClose">とじる</button>
   </div>
 </div>
 
@@ -407,6 +432,131 @@ const STAGES=[
   {id:9, name:'入力の罠',     sub:'SQLインジェクション'},
   {id:10,name:'溢れるロッカー',sub:'バッファオーバーフロー'}
 ];
+
+/* ---------- 用語（GLOSSARY） ----------
+   w：見出し　s：ひとことで言うと　e：たとえ　at：出てくるステージ（ラウンド）
+   a：本文の中で見つける書き方（長いものから順に探す）　no：この書き方で始まるときは用語ではない */
+const GLOSSARY=[
+  {id:'server',  w:'サーバー',        at:['1','2-1','2-2','2-3'],a:['サーバー'],
+    s:'ネットにつながって、ずっと働き続けるコンピューター',e:'24時間開いているお店の建物。お客さん（通信）がやって来て、中で店員（プログラム）が働く'},
+  {id:'port',    w:'ポート',          at:['1','2-2'],a:['ポート'],
+    s:'通信が出入りする、番号つきのドア',e:'マンションの部屋番号。80号室はWeb、22号室はSSH、のように用事ごとに入口が決まっている'},
+  {id:'firewall',w:'ファイアウォール',at:['1'],a:['ファイアウォール'],
+    s:'どのドアを開けて、どれを閉めるか決める門番',e:'建物の入口の警備員。決められたドアからしか人を通さない'},
+  {id:'ufw',     w:'ufw',             at:['1','2-2'],a:['ufw'],
+    s:'Linux（Ubuntu）で使う、かんたんなファイアウォール',e:'門番に「このドアは開けて」「閉めて」と伝える指示書'},
+  {id:'http',    w:'HTTP',            at:['1'],a:['HTTP'],
+    s:'Webページを運ぶ決まりごと（暗号化なし）',e:'はがき。ちゃんと届くけど、途中で運ぶ人に中身が見える'},
+  {id:'https',   w:'HTTPS',           at:['1'],a:['HTTPS'],
+    s:'暗号化されたHTTP。今のWebの標準',e:'封筒に入れて鍵をかけた手紙。途中の人には読めない'},
+  {id:'crypt',   w:'暗号化',          at:['1'],a:['暗号化'],
+    s:'関係ない人に読めないよう、中身を変換すること',e:'自分たちだけが読み方を知っている暗号で、手紙を書くこと'},
+  {id:'nginx',   w:'nginx（エンジンエックス）',at:['1'],a:['nginx'],
+    s:'Webの受付係。来た通信を中のプログラムへ取り次ぐ',e:'ホテルのフロント。お客さんは直接部屋には行かず、フロントが案内する'},
+  {id:'node',    w:'Node.js',         at:['1'],a:['Node.js','Node'],
+    s:'JavaScriptでサーバーのプログラムを動かすしくみ',e:'お店の厨房の料理人。客席（外）から直接は入らせない'},
+  {id:'db',      w:'データベース（DB）',at:['1'],a:['データベース','DB'],
+    s:'データを整理して、しまっておく倉庫',e:'お店の金庫つき倉庫。外から直接入れたら、全部持っていかれる'},
+  {id:'bot',     w:'ボット',          at:['1','2-3'],a:['ボット'],
+    s:'人の代わりに、自動で動き続けるプログラム',e:'休まずに家々のドアノブを回して回る、ロボットの泥棒'},
+  {id:'ip',      w:'IPアドレス',      at:['1','2-3'],a:['IPアドレス','IP'],
+    s:'ネットの上での住所（番号）',e:'手紙の差出人の住所。どこから来た通信かが分かる'},
+  {id:'sudo',    w:'sudo（スードゥー）',at:['1','2-2','2-3'],a:['sudo'],
+    s:'管理人の権限でコマンドを実行する',e:'「店長の名前で」と言ってから頼むこと。大事な作業だけ許される'},
+  {id:'cmd',     w:'コマンド',        at:['1'],a:['コマンド'],
+    s:'コンピューターへの命令を、文字で打ったもの',e:'お店の人に渡す注文票'},
+  {id:'least',   w:'最小限の原則',    at:['1'],a:['「最小限だけ開ける」の原則','最小限だけ開ける'],
+    s:'必要なドアだけ開けて、ほかは全部閉める考え方',e:'寝るときは、使う窓だけ開けておく。開いている所が少ないほど入られにくい'},
+  {id:'ssh',     w:'SSH',             at:['2-1','2-2','2-3'],a:['SSH'],
+    s:'遠くのサーバーを、自分のパソコンから操作するしくみ',e:'遠くのサーバーを、自分のパソコンから操作するための秘密の電話回線。22番ドアはこの電話がかかってくる入口'},
+  {id:'pubkey',  w:'公開鍵',          at:['2-1','2-2'],a:['公開鍵'],
+    s:'配ってもいい、南京錠にあたるファイル（.pub）',e:'サーバーの扉につける南京錠。人に見られても、開け方は分からない'},
+  {id:'seckey',  w:'秘密鍵',          at:['2-1'],a:['秘密鍵'],
+    s:'自分だけが持つ、本物の鍵のファイル',e:'南京錠を開けられる、ただ1本の鍵。人に渡したら、その人があなたになれる'},
+  {id:'keygen',  w:'ssh-keygen',      at:['2-1','2-2'],a:['ssh-keygen'],
+    s:'公開鍵と秘密鍵のペアを作るコマンド',e:'南京錠と鍵を、セットで作ってくれる鍵屋さん'},
+  {id:'ed25519', w:'ed25519',         at:['2-1','2-2'],a:['ed25519'],
+    s:'今おすすめの、鍵の作り方（方式）の名前',e:'錠前の型番。新しくて、短くても破られにくい型'},
+  {id:'copyid',  w:'ssh-copy-id',     at:['2-1','2-2'],a:['ssh-copy-id'],
+    s:'公開鍵をサーバーに登録するコマンド',e:'自分の南京錠を、サーバーの扉に取り付けてくれる係'},
+  {id:'authkeys',w:'authorized_keys', at:['2-1'],a:['authorized_keys'],
+    s:'サーバー側にある、登録ずみ公開鍵の一覧',e:'扉に付けた南京錠のリスト。ここにある鍵の持ち主だけが入れる'},
+  {id:'dotssh',  w:'~/.ssh',          at:['2-1'],a:['~/.ssh'],
+    s:'鍵などSSHの道具を入れておくフォルダ',e:'自分の部屋の、鍵をしまっておく引き出し'},
+  {id:'github',  w:'GitHub',          at:['2-1'],a:['GitHub'],
+    s:'プログラムを保存・公開して共有するサービス',e:'作品を並べる公開の本棚。だれでも見に来られる'},
+  {id:'brute',   w:'総当たり攻撃',    at:['2-2'],a:['総当たり攻撃','当てずっぽう攻撃','総当たり'],
+    s:'パスワードを片っぱしから試して当てる攻撃',e:'ダイヤル錠の番号を、0000から順番に全部試すこと'},
+  {id:'lockout', w:'締め出し',        at:['2-2'],a:['締め出し事故','締め出され','締め出し'],
+    s:'設定のまちがいで、自分がサーバーに入れなくなる事故',e:'鍵を部屋の中に置いたまま、オートロックの扉を閉めてしまうこと'},
+  {id:'pwauth',  w:'PasswordAuthentication',at:['2-2','2-3'],a:['PasswordAuthentication','passwordauthentication'],
+    s:'パスワードでのログインを許すかどうかの設定',e:'「暗証番号でも開けていいか」を決める扉のスイッチ。no にすると鍵だけになる'},
+  {id:'sshdconf',w:'sshd_config',     at:['2-2'],a:['sshd_config'],
+    s:'SSHの受付の決まりを書いた設定ファイル',e:'受付係に渡すルールブック'},
+  {id:'sshd',    w:'sshd',            at:['2-2','2-3'],a:['sshd'],
+    s:'サーバーでSSHの電話を待ち受けるプログラム',e:'22番ドアの前に座っている受付係'},
+  {id:'systemctl',w:'systemctl',      at:['2-2'],a:['systemctl'],
+    s:'サーバーのプログラムを起動・停止・再起動するコマンド',e:'お店の機械のスイッチ盤'},
+  {id:'nano',    w:'nano（ナノ）',    at:['2-2'],a:['nano'],
+    s:'黒い画面で使う、かんたんな文字の編集ソフト',e:'メモ帳。設定ファイルを書き直すのに使う'},
+  {id:'apt',     w:'apt',             at:['2-2'],a:['apt'],
+    s:'Linux（Ubuntu）でソフトを入れる・更新するコマンド',e:'アプリストア。名前を言えば取り寄せて入れてくれる'},
+  {id:'f2b',     w:'fail2ban',        at:['2-2','2-3'],a:['fail2ban'],
+    s:'何度も失敗する相手を、自動でブロックするソフト',e:'同じ人が何度も暗証番号をまちがえたら、しばらく出入り禁止にする警備員'},
+  {id:'log',     w:'ログ',            at:['2-3'],a:['ログ'],no:['ログイン'],
+    s:'いつ・誰が・何をしたかの記録',e:'お店の防犯カメラの録画や、来客ノート'},
+  {id:'journalctl',w:'journalctl',    at:['2-2','2-3'],a:['journalctl'],
+    s:'サーバーのログを見るコマンド',e:'防犯カメラの録画を再生する機械'},
+  {id:'grep',    w:'grep（グレップ）',at:['2-3'],a:['grep'],
+    s:'たくさんの文字から、指定した言葉の行だけ取り出す',e:'分厚いノートから、探している言葉がある行だけ書き写すこと'},
+  {id:'ban',     w:'BAN（バン）',     at:['2-3'],a:['banip','BAN'],
+    s:'相手のIPを、しばらく出入り禁止にすること',e:'お店の入口の「出入り禁止」の張り紙'},
+  {id:'ignoreip',w:'ignoreip',        at:['2-3'],a:['ignoreip'],
+    s:'fail2banに「このIPはブロックしない」と伝える設定',e:'常連さんリスト。ここに書いた人は出入り禁止にしない'}
+];
+const GBYID=Object.fromEntries(GLOSSARY.map(g=>[g.id,g]));
+const GMATCH=GLOSSARY.flatMap(g=>g.a.map(a=>({a,g}))).sort((x,y)=>y.a.length-x.a.length);
+const isWordCh=c=>!!c&&/[A-Za-z0-9_]/.test(c);
+function unitLabel(k){const [id,r]=k.split('-'),s=stageOf(+id);return r?`${k} ${s.rounds[r-1].name}`:`ステージ${id} ${s.name}`}
+function unitTerms(k){return GLOSSARY.filter(g=>g.at.includes(k))}
+/* 文章の中の専門用語に点線を付ける（同じまとまりの中では、それぞれ最初の1回だけ） */
+function glossify(root,seen=new Set()){
+  if(!root)return seen;
+  const w=document.createTreeWalker(root,NodeFilter.SHOW_TEXT,{acceptNode:n=>n.parentElement.closest('button,.gw')?NodeFilter.FILTER_REJECT:NodeFilter.FILTER_ACCEPT});
+  const nodes=[];while(w.nextNode())nodes.push(w.currentNode);
+  for(const node of nodes){
+    const t=node.nodeValue,frag=document.createDocumentFragment();let i=0,last=0,hit=false;
+    while(i<t.length){
+      const m=GMATCH.find(m=>!seen.has(m.g.id)&&t.startsWith(m.a,i)
+        &&!(isWordCh(m.a[0])&&isWordCh(t[i-1]))&&!(isWordCh(m.a[m.a.length-1])&&isWordCh(t[i+m.a.length]))
+        &&!(m.g.no&&m.g.no.some(x=>t.startsWith(x,i))));
+      if(!m){i++;continue}
+      if(i>last)frag.append(t.slice(last,i));
+      const b=document.createElement('button');b.type='button';b.className='gw';b.dataset.g=m.g.id;b.textContent=m.a;frag.append(b);
+      seen.add(m.g.id);i+=m.a.length;last=i;hit=true;
+    }
+    if(hit){if(last<t.length)frag.append(t.slice(last));node.replaceWith(frag)}
+  }
+  return seen;
+}
+/* 用語カード。遊んでいる途中に開いたら、とじるまでゲームを止める */
+let PAUSE=false,gBack=null;
+function openCard(id,from){
+  const g=GBYID[id];if(!g)return;
+  gBack=from||document.activeElement;PAUSE=!!(S&&S.running);
+  document.getElementById('gW').textContent=g.w;
+  document.getElementById('gS').textContent=g.s;
+  document.getElementById('gE').textContent=g.e;
+  document.getElementById('gAt').textContent='出てくるところ：'+g.at.map(unitLabel).join('、');
+  cardExtra(g);
+  document.getElementById('gcard').hidden=false;document.getElementById('gClose').focus({preventScroll:true});
+}
+function cardExtra(g){document.getElementById('gMem').innerHTML=''}
+function closeCard(){document.getElementById('gcard').hidden=true;PAUSE=false;if(gBack&&gBack.isConnected)gBack.focus({preventScroll:true});gBack=null}
+document.addEventListener('click',e=>{const b=e.target.closest('.gw');if(b){e.preventDefault();e.stopPropagation();openCard(b.dataset.g,b)}},true);
+document.getElementById('gClose').addEventListener('click',closeCard);
+document.getElementById('gcard').addEventListener('click',e=>{if(e.target.id==='gcard')closeCard()});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!document.getElementById('gcard').hidden)closeCard()});
 const LOCK='<svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path fill="currentColor" d="M7 10V7a5 5 0 0 1 10 0v3h1a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1v-9a1 1 0 0 1 1-1zm2 0h6V7a3 3 0 0 0-6 0z"/></svg>';
 let cur=1,rnd=1;
 const stageOf=id=>STAGES.find(x=>x.id===id);
@@ -483,7 +633,7 @@ function toggle(i){
   o?sfx.open():sfx.close();buzz(12);
   term(`$ sudo ufw ${o?'allow':'deny'} ${PORTS[i].p}`,`# ${PORTS[i].p}番を${o?'開けた':'閉めた'}`);
 }
-function term(cmd,note){document.getElementById('term').innerHTML=`<span class="c">${cmd}</span><br><span class="m">${note}</span>`}
+function term(cmd,note){const el=document.getElementById('term');el.innerHTML=`<span class="c">${cmd}</span><br><span class="m">${note}</span>`;glossify(el)}
 function pulse(i,cls){const b=doorsEl.children[i];b.classList.remove('hit','sad');void b.offsetWidth;b.classList.add(cls)}
 function flashRoom(kind){room.classList.remove('good','bad');void room.offsetWidth;room.classList.add(kind);clearTimeout(flashRoom.t);flashRoom.t=setTimeout(()=>room.classList.remove(kind),350)}
 
@@ -528,6 +678,7 @@ function count(){document.getElementById('count').textContent=`来客 ${S.served
 
 function loop(now){
   if(!S||!S.running||S.stage)return;
+  if(PAUSE){S.last=now;return requestAnimationFrame(loop)}
   const dt=Math.min(.05,(now-S.last)/1000);S.last=now;S.t+=dt;
   document.getElementById('time').style.width=Math.min(100,S.t/DUR*100)+'%';
   S.spawn-=dt;
@@ -607,6 +758,7 @@ function finish(win,st,o){
   nextGo=nx.go||null;
   nb.hidden=!win;nb.disabled=!nextGo;nb.innerHTML=nx.label;
   ag.className=win?'sub':'big';
+  {const seen=new Set();['rSummary','rReview','rExtra','rNext'].forEach(id=>glossify(document.getElementById(id),seen))}
   show('result');
   document.getElementById('result').scrollTop=0;
   (win&&!nb.disabled?nb:ag).focus({preventScroll:true});
@@ -682,6 +834,7 @@ binsEl.addEventListener('click',e=>{const b=e.target.closest('.bin');if(b)sort21
 
 function loop21(now){
   if(!S||!S.running||S.stage!=='2-1')return;
+  if(PAUSE){S.last=now;return requestAnimationFrame(loop21)}
   const dt=Math.min(.05,(now-S.last)/1000);S.last=now;
   if(S.cueT>0){S.cueT-=dt;if(S.cueT<=0)hideCue();draw21(now);return requestAnimationFrame(loop21)}   // 案内の間は止めておく
   S.t+=dt;
@@ -784,7 +937,7 @@ const LOCKWHY={
   nokey:'鍵を登録する前にパスワードを禁止したので、入る方法がひとつも無くなった。',
   nocheck:'鍵を登録したつもりでも、確かめずにパスワードを禁止すると危ない。今回は鍵の登録がうまくいっていなくて（ファイルの置き場所や権限のまちがいなど）、誰も入れなくなった。'
 };
-function term2(a){document.getElementById('term').innerHTML=a.cmd.map(c=>`<span class="c">${c}</span>`).join('<br>')+`<br><span class="m">${a.note}</span>`}
+function term2(a){const el=document.getElementById('term');el.innerHTML=a.cmd.map(c=>`<span class="c">${c}</span>`).join('<br>')+`<br><span class="m">${a.note}</span>`;glossify(el)}
 function actBtn(k){return actsEl.querySelector(`[data-k="${k}"]`)}
 
 function newGame2(){
@@ -896,6 +1049,7 @@ function resolve2(b){
 
 function loop2(now){
   if(!S||!S.running||S.stage!==2)return;
+  if(PAUSE){S.last=now;return requestAnimationFrame(loop2)}
   const dt=Math.min(.05,(now-S.last)/1000);S.last=now;S.t+=dt;
   document.getElementById('time').style.width=Math.min(100,S.t/DUR2*100)+'%';
   if(S.cue&&S.t>=2.6)hideCue();
@@ -1080,6 +1234,7 @@ function placePointer23(){
 }
 function loop23(now){
   if(!S||!S.running||S.stage!=='2-3')return;
+  if(PAUSE){S.last=now;return requestAnimationFrame(loop23)}
   const dt=Math.min(.05,(now-S.last)/1000);S.last=now;
   drawSky(now);
   if(S.cueT>0){S.cueT-=dt;if(S.cueT<=0){hideCue();guide23()}return requestAnimationFrame(loop23)}   // 案内の間は止めておく
@@ -1172,11 +1327,14 @@ function openBrief(id,mode,r){
   const tabs=document.getElementById('bRounds');tabs.hidden=!s.rounds||mode==='review';
   if(s.rounds)tabs.innerHTML=s.rounds.map((x,i)=>{const n=i+1,q=rrec(n),open=n<=(rec(id).at||1);
     return `<button class="rtab${n===rnd?' on':''}" data-r="${n}" ${open?'':'disabled'}><b>${id}-${n}</b>${x.name}${open?`<span class="rs">${starsHtml(q.best)}</span>`:`<span class="lock">${LOCK}</span>`}</button>`}).join('');
+  const words=unitTerms(unitKey());
   document.getElementById('bBody').innerHTML=
+    (words.length?`<section class="sec"><h2>このステージで出てくる言葉</h2><div class="gchips">${words.map(g=>`<button type="button" class="gw gchip" data-g="${g.id}">${g.w}</button>`).join('')}</div></section>`:'')+
     `<section class="sec"><h2>状況</h2>${b.situation.map(t=>`<p>${t}</p>`).join('')}</section>`+
     `<section class="sec"><h2>${b.doorsTitle||'ドアの番号の意味'}</h2><div class="ports">${b.doors.map(([p,n,t])=>`<div class="pr"><span class="pt">${p}</span><span><b>${n}</b>${t}</span></div>`).join('')}</div></section>`+
     `<section class="sec"><h2>現実ではどう見分けるか</h2>${b.real.map(t=>`<p>${t}</p>`).join('')}</section>`+
     `<section class="sec"><h2>遊び方</h2>${b.howto}</section>`;
+  glossify(document.getElementById('bBody'));
   const review=mode==='review';
   document.getElementById('briefBack').textContent=review?'‹ 結果にもどる':'‹ ステージ一覧';
   document.getElementById('briefSkip').hidden=review||!unitRec().seen;
@@ -1192,7 +1350,7 @@ function setLayout(){
   document.querySelectorAll('[data-only]').forEach(el=>el.hidden=!el.dataset.only.split(' ').includes(key));
   ['cue','pointer','pointer21','pointer23'].forEach(id=>document.getElementById(id).hidden=true);
   document.getElementById('hudTitle').innerHTML=`${u.hud[0]}<small>${u.hud[1]}</small>`;
-  document.getElementById('roomFlow').innerHTML=u.room;
+  document.getElementById('roomFlow').innerHTML=u.room;glossify(document.getElementById('roomFlow'));
   app.dataset.stage=key;
 }
 const GAMES={
