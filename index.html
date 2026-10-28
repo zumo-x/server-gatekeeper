@@ -346,7 +346,7 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
   <div class="skywrap" id="sky" data-only="1 2-1 2-2 2-3"><canvas id="cv"></canvas><div class="skylabel">インターネット</div>
     <div class="logs" id="logs" data-only="2-3" hidden></div><div class="pointer" id="pointer23" hidden>▼ 次はこれ</div>
     <div class="cue" id="cue" hidden><b id="cueB"></b><span id="cueS"></span><i aria-hidden="true">▼</i></div></div>
-  <div class="panel" id="panel" data-only="3-1 3-2 4 5 6 7 8 9-1 9-2 10-1 10-2 11-1 11-2 11-3 11-4 11-5 11-6 12-1 12-2 12-3 13-1 13-2 13-3 14-1 14-2 14-3 15-1 15-2 15-3 16-1 16-2 16-3 17-1 17-2 17-3" hidden></div>
+  <div class="panel" id="panel" data-only="3-1 3-2 4 5 6 7 8 9-1 9-2 10-1 10-2 11-1 11-2 11-3 11-4 11-5 11-6 12-1 12-2 12-3 12-4 12-5 12-6 13-1 13-2 13-3 14-1 14-2 14-3 15-1 15-2 15-3 16-1 16-2 16-3 17-1 17-2 17-3" hidden></div>
   <div class="doors" id="doors" data-only="1"></div>
   <div class="gate" id="gate" data-only="2-2" hidden>
     <div class="door door22" id="door22"><span class="num">22</span><span class="nm">SSH</span><span class="st" id="door22st">パスワード</span></div>
@@ -928,7 +928,37 @@ const STAGES=[
           doors:[['strings・grep','読める行を拾い、フラグの行を探す','順番どおりに使う'],['マジックナンバー・unzip','型を見て、中身を開く','ZIPの中身が出てくる'],['JavaScript・Base64','PDFの命令と、デコード','文字コードを戻す・Base64を戻す']],
           real:['ボスの中には、手順が4つ必要なものもある。途中の結果（→）を見て、どこで読めなくなるかを確かめよう。'],
           howto:`<div class="legend"><div><span class="dot d"></span>部品を押すと、レシピに下から足される（最大4手）</div><div><span class="dot k"></span>実行で、フラグが出れば勝ち。まちがえると失敗が1つ増える</div></div>
-            <p>3体のボス。</p><p>★は「まちがいなし」「150秒以内」で1つずつ。</p>`}}
+            <p>3体のボス。</p><p>★は「まちがいなし」「150秒以内」で1つずつ。</p>`}},
+      {name:'パズル（上級）',hud:['12-4 パズル','通信やファイルの奥を、道具で読む'],
+        room:'<span class="chip">pcap/ファイル</span><span class="arrow">→</span><span class="chip">道具</span><span class="arrow">→</span><span class="chip">GK{…}</span>',
+        cue:['上級の調査に挑戦','Wireshark風の画面も使う'],
+        brief:{
+          situation:['20点の上級。<b>パケット記録（pcap）</b>から HTTP のやりとりを追う、画像に<b>埋め込まれたファイル</b>を切り出す、<b>パスワード付き zip</b> を小さな単語リストで開ける。Wireshark風の画面で、通信の中身を読む。'],
+          doorsTitle:'道具と手がかり',
+          doors:[['HTTPストリームを追う','pcap の中のやりとりの本文を読む','Wireshark / tshark'],['埋め込みを切り出す','ファイルの末尾の別ファイルを取り出す','binwalk'],['zip を単語リストで開ける','弱いパスワードを総当たり','fcrackzip'],['GK{…} だけ拾う','まわりのノイズを捨てる','最後に使う']],
+          real:['本物の調査でも、Wireshark・binwalk・fcrackzip は定番の道具。練習用のデータで、同じ手順を試せる。'],
+          howto:`<div class="legend"><div><span class="dot d"></span>道具を押すと、今の中身が変わる</div><div><span class="dot k"></span>GK{…} が出たら「答えを提出」</div></div>
+            <p>4問。全体で130秒。</p><p>★は「やり直しが3回以内」「85秒以内」で1つずつ。</p>`}},
+      {name:'ドリル（上級）',hud:['12-5 ドリル','ヒント語から、上級の道具を当てる'],
+        room:'<span class="chip">問題文</span><span class="arrow">→</span><span class="chip">ヒント語</span><span class="arrow">→</span><span class="chip">道具</span>',
+        cue:['ヒント語を読もう','pcap・埋め込み・zip を見分ける'],
+        brief:{
+          situation:['上級の調査も、ヒント語で道具が分かる。「pcap・ストリーム」は Wireshark、「埋め込み・末尾」は binwalk、「パスワード付きzip・単語リスト」は fcrackzip。'],
+          doorsTitle:'ヒント語の見分け方',
+          doors:[['pcap・HTTP・ストリーム','pcap から HTTP を読む','Wireshark で本文を追う'],['埋め込み・末尾・binwalk','埋め込みファイルを切り出す','別のファイルが隠れている'],['zip・単語リスト','zip を単語リストで開ける','弱いパスワードを総当たり']],
+          real:['まぎらわしい偽物（メモリダンプ・削除ファイル復元・スライドのメタデータ）も混ざる。決め手の言葉を選ぼう。'],
+          howto:`<div class="legend"><div><span class="dot k"></span>問題文を読んで、道具を3つから選ぶ</div><div><span class="dot r"></span>まちがいは3回まで</div></div>
+            <p>8問。問題は自動で作られる（毎回違う）。</p><p>★は「まちがいなし」「70秒以内」で1つずつ。</p>`}},
+      {name:'ボス戦（上級）',hud:['12-6 ボス戦','道具を並べて、フラグを出す'],
+        room:'<span class="chip">入力</span><span class="arrow">レシピ（3手まで）</span><span class="arrow">→</span><span class="chip">フラグ</span>',
+        cue:['上級ボスの調査','道具を並べて、フラグを取り出そう'],
+        brief:{
+          situation:['ボスは、通信やファイルの奥にフラグを隠す。道具を順番に並べて、最後に GK{…} を取り出す。'],
+          doorsTitle:'レシピの部品',
+          doors:[['HTTPストリームを追う / 切り出す / zipを開ける','手がかりに合う道具を選ぶ','1つで奥の中身が出る'],['GK{…} だけ拾う','まわりのノイズを捨てる','最後に置く']],
+          real:['Wireshark・binwalk・fcrackzip は、どれも実際の調査で使う。手順をあとから見直せる。'],
+          howto:`<div class="legend"><div><span class="dot d"></span>部品を押すと、レシピに下から足される（最大3手）</div><div><span class="dot k"></span>実行で、フラグが出れば勝ち</div></div>
+            <p>3体のボス。</p><p>★は「まちがいなし」「170秒以内」で1つずつ。</p>`}}
     ]},
   {id:13, name:'Web', sub:'../・SQL・robots.txt・ソースを、サイトに話しかけて調べる', ready:true,
     rounds:[
@@ -1302,6 +1332,14 @@ const GLOSSARY=[
     s:'ブラウザなどで動くプログラム。文書の中に入ると、読む人の知らないところで動くことがある',e:'勝手に開く、家の中の自動ドア'},
   {id:'forensic',  w:'Forensics（フォレンジック）',at:['12-1'],a:['Forensics','フォレンジック'],
     s:'デジタルの痕跡を、証拠として調べること',e:'探偵が現場の足跡や指紋を調べる仕事'},
+  {id:'pcap',      w:'pcap（パケットキャプチャ）',at:['12-4','12-5','12-6','17-4','17-5','17-6'],a:['pcap','パケット記録'],
+    s:'ネットワークの通信を、そのまま記録したファイル',e:'電話のやりとりを、まるごと録音したテープ'},
+  {id:'wireshark', w:'Wireshark（ワイヤーシャーク）',at:['12-4','17-4'],a:['Wireshark'],
+    s:'pcap を開いて、通信を1つずつ読むための道具',e:'録音テープを、話ごとに分けて聞ける再生機'},
+  {id:'binwalk',   w:'binwalk（ビンウォーク）',at:['12-4','12-5','12-6'],a:['binwalk'],
+    s:'ファイルの中に埋め込まれた別のファイルを、見つけて切り出す道具',e:'箱の中に二重底がないか調べて、隠し物を取り出す'},
+  {id:'zipcrack',  w:'パスワード付きzipの総当たり',at:['12-4','12-5','12-6'],a:['fcrackzip'],
+    s:'弱いパスワードの zip を、単語リストを使って順に試して開けること',e:'よくある暗証番号を、上から順に試していく'},
   {id:'traversal',w:'ディレクトリトラバーサル',at:['13-1','13-2'],a:['ディレクトリトラバーサル'],
     s:'ファイルの場所を ../ などでずらして、本来は見せないファイルへ抜けること',e:'部屋の番号を「ひとつ上の階」へずらして、他人の部屋に入る'},
   {id:'robots',  w:'robots.txt（ロボッツ・テキスト）',at:['13-1','13-2','13-3'],a:['robots.txt'],
@@ -3859,6 +3897,9 @@ const l2a=t=>/^\[[\d, ]+\]$/.test(t)?t.slice(1,-1).split(', ').map(Number):null;
 function vigShift(t,key,dec){let o='',ki=0;for(const ch of t){const c=ch.charCodeAt(0);let base=-1;if(c>=65&&c<=90)base=65;else if(c>=97&&c<=122)base=97;if(base<0){o+=ch;continue}const k=key.toLowerCase().charCodeAt(ki%key.length)-97;ki++;const x=dec?(c-base-k+26)%26:(c-base+k)%26;o+=String.fromCharCode(base+x)}return o}
 // CyberChef風のレシピ表示（上級の「本物の道具に近い画面」）
 const cyberView=pr=>`<div class="tool"><div class="tbar">CyberChef風</div><div class="trow">Recipe：${escH(pr.recipe||'')}</div></div>`;
+const wireView=pr=>`<div class="tool"><div class="tbar">Wireshark風 — パケット一覧</div><table><tr><th>No</th><th>送信元→宛先</th><th>種類</th><th>概要</th></tr>${(pr.packets||[]).map((x,i)=>`<tr><td>${i+1}</td><td>${escH(x.ft)}</td><td>${escH(x.ty)}</td><td>${escH(x.info)}</td></tr>`).join('')}</table></div>`;
+const pyView=pr=>`<div class="tool"><div class="tbar">Python風</div><div class="trow"><pre style="margin:0;white-space:pre-wrap">${escH(pr.code||'')}</pre></div></div>`;
+const termView=pr=>`<div class="tool"><div class="tbar">ターミナル風</div><div class="trow">${escH(pr.term||'')}</div></div>`;
 const NOISE20=['note','memo','draft','log','tmp','old','keep','ref'];
 const wrapNoise=ans=>`${gpickA(NOISE20)} ${ans} ${gpickA(NOISE20)}`;
 
@@ -3915,6 +3956,60 @@ const C2={key1:'11-4',key2:'11-5',key3:'11-6',
   dur1:130,par1:85,dur2:120,dur3:230,par3:170
 };
 const GAMES_C2={'11-4':()=>runStart(mkPuz(C2,4)),'11-5':()=>runStart(mkDri(C2,8)),'11-6':()=>runStart(mkBos(C2,3,3))};
+/* ---- Forensics 20点（ステージ12-4〜12-6）：pcap・埋め込みファイル・パスワード付きzip ---- */
+const F2PHRASE={
+  'f2-pcap':{jp:['パケット記録（pcap）の中に、HTTPのやりとりがある','通信を記録したファイルから、ストリームを追う','Wireshark で、HTTPの中身を読む'],en:['Follow the HTTP stream in the capture','A pcap file holds the conversation','Open it in Wireshark and read the body']},
+  'f2-embed':{jp:['画像ファイルの中に、別のファイルがくっついている','末尾に、別のデータが埋め込まれている','binwalk で、切り出せそう'],en:['A file is hidden inside the image','Extra data is appended after the image','binwalk would carve it out']},
+  'f2-zip':{jp:['パスワード付きの zip を、単語リストで開ける','小さな単語リストで、総当たりして開く','fcrackzip のように、候補を試す'],en:['Crack the zip with a small wordlist','Brute the password from a short list','fcrackzip would open it']}
+};
+const F2={key1:'12-4',key2:'12-5',key3:'12-6',
+  pats:['f2-pcap','f2-embed','f2-zip'],
+  pname:{'f2-pcap':'pcap から HTTP を読む(ストリームを追う)','f2-embed':'埋め込まれたファイルを切り出す(binwalk)','f2-zip':'パスワード付き zip を単語リストで開ける'},
+  why:{'f2-pcap':'パケット記録の中の HTTP のやりとり（ストリーム）を追うと、やり取りした中身が読める','f2-embed':'ファイルの末尾などに別のファイルが埋め込まれていることがある。切り出して読む','f2-zip':'弱いパスワードの zip は、小さな単語リストでも総当たりで開いてしまう'},
+  dstract:['メモリダンプから痕跡を探す(volatility)','ディスクの削除ファイルを復元する','スライドやPDFのメタデータを読む'],
+  palette:['follow','carve','crack','xtr'],
+  OP:{
+    follow:{label:'HTTPストリームを追う(本文を取り出す)',cmd:()=>"tshark -r cap.pcap -q -z follow,tcp,ascii,0",run:(t,p,pr)=>pr.body!==undefined?pr.body:null},
+    carve:{label:'埋め込みの目印から切り出す(binwalk)',cmd:()=>"binwalk -e image.png",run:t=>{const i=String(t).indexOf('----EMBED----');return i<0?null:t.slice(i+13)}},
+    crack:{label:'単語リストで zip を開ける',cmd:()=>"fcrackzip -u -D -p words.txt secret.zip",run:(t,p,pr)=>pr.inner!==undefined?pr.inner:null},
+    xtr:{label:'フラグの形(GK{…})だけ拾う',cmd:()=>"grep -o 'GK{[a-z0-9]*}'",run:t=>{const m=String(t).match(/GK\{[a-z0-9]+\}/);return m?m[0]:null}}
+  },
+  make(pat){
+    const ans=cflag();let pr={};
+    if(pat==='f2-pcap'){
+      const path=gpickA(['/notes','/api/user','/review','/dl']);
+      pr={start:'（pcap）',body:`HTTP/1.1 200 OK\nContent-Type: text/plain\n\n${gpickA(NOISE20)} secret=${ans} ${gpickA(NOISE20)}`,
+        packets:[{ft:'192.0.2.5→203.0.113.9',ty:'TCP',info:'SYN'},{ft:'203.0.113.9→192.0.2.5',ty:'TCP',info:'SYN, ACK'},{ft:'192.0.2.5→203.0.113.9',ty:'HTTP',info:'GET '+path},{ft:'203.0.113.9→192.0.2.5',ty:'HTTP',info:'200 OK (text/plain)'}],
+        view(){return wireView(pr)},ops:['follow','xtr'],file:'cap.pcap',solve:[{op:'follow'},{op:'xtr'}]};
+    }else if(pat==='f2-embed'){
+      const host=gpickA(['photo.png','logo.png','banner.jpg','icon.png']);
+      pr={start:`\x89PNG\r\n…(画像データ)…----EMBED----note: ${ans}`,term:`$ binwalk ${host}\nDECIMAL  HEX      DESCRIPTION\n0        0x0      PNG image\n4210     0x1072   Zip archive data`,
+        view(){return termView(pr)},ops:['carve','xtr'],file:host,solve:[{op:'carve'},{op:'xtr'}]};
+    }else{
+      const words=shuffle(['spring','ghost','tokyo','hunter','secret','dragon']);const pw=gpickA(words);
+      pr={start:`secret.zip（暗号化）\n単語リスト：${words.join(', ')}`,inner:`flag.txt: ${ans}`,term:`$ fcrackzip -u -D -p words.txt secret.zip\nPASSWORD FOUND!!!!: pw == ${pw}`,
+        view(){return termView(pr)},ops:['crack','xtr'],file:'secret.zip',solve:[{op:'crack'},{op:'xtr'}]};
+    }
+    pr.done=t=>isFlag(t)&&t===ans;
+    pr.text=`${gpickA(SET20)}：${gpickA(CG.rnd()<.5?F2PHRASE[pat].jp:F2PHRASE[pat].en)}`;
+    pr.phrase=pr.text.split('：')[1];pr.ans=ans;
+    return pr;
+  },
+  res:{win:'通信やファイルの奥から、フラグを取り出した！',lose:'フラグに届かなかった',sumWin:'pcap のストリーム・埋め込みファイル・弱いパスワード。道具を選べば、奥の情報が読める。',sumLose:'どの道具を使うか、もう一度えらぼう。'},
+  rev:[['pcap のストリーム','Wireshark で HTTP のやりとり（ストリーム）を追うと、本文が読める',true],['埋め込みファイル','ファイルの末尾などに別のファイルが隠れる。binwalk で切り出す',true],['パスワード付きzip','弱いパスワードは、小さな単語リストの総当たりで開く（fcrackzip）',true]],
+  extra:`<div class="real"><div>振り返り：<b>通信もファイルも、道具を使えば「見えていない部分」を読める</b>。</div>
+    <code>tshark -r cap.pcap -q -z follow,tcp,ascii,0</code><div class="m">Wireshark / tshark で、HTTPのやりとりを追う</div>
+    <code>binwalk -e image.png</code><div class="m">ファイルの中に埋め込まれた別のファイルを切り出す</div>
+    <code>fcrackzip -u -D -p words.txt secret.zip</code><div class="m">単語リストで zip のパスワードを試す（自分で作った練習用zipで）</div></div>
+    <div class="warn"><b>安全メモ</b><ul><li>他人の通信を勝手に記録・解析しない。練習用の架空のデータだけで行う</li><li>パスワードの総当たりは、自分のファイル・許可された演習だけで</li></ul></div>`,
+  next(key){
+    if(key==='12-4')return '次は12-5「ドリル(上級)」。問題文のヒント語から、どの道具かを当てよう。';
+    if(key==='12-5')return '次は12-6「ボス戦(上級)」。道具を並べて、フラグを取り出そう。';
+    return 'Forensics の20点は、これで一区切り。ほかのジャンルの20点にも挑戦しよう。';
+  },
+  dur1:130,par1:85,dur2:120,dur3:230,par3:170
+};
+const GAMES_F2={'12-4':()=>runStart(mkPuz(F2,4)),'12-5':()=>runStart(mkDri(F2,8)),'12-6':()=>runStart(mkBos(F2,3,3))};
 const GAMES={
   ...GAMES_FO,
   ...GAMES_WB,
@@ -3923,6 +4018,7 @@ const GAMES={
   ...GAMES_PG,
   ...GAMES_NW,
   ...GAMES_C2,
+  ...GAMES_F2,
   '1':()=>{newGame();requestAnimationFrame(loop)},
   '2-1':()=>{newGame21();requestAnimationFrame(loop21)},
   '2-2':()=>{newGame2();requestAnimationFrame(loop2)},
