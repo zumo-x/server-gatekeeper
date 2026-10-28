@@ -3321,7 +3321,7 @@ function mkDri(G,total){return {dur:G.dur2||120,
   },
   tap(act,el){
     if(!act.startsWith('o'))return;
-    const G=RUN.G,q=RUN.q,pick=q.opts[+act.slice(1)];
+    const G=RUN.G,q=RUN.q,pick=q.opts[+act.slice(1)].key;
     if(pick===q.pat){
       okFx(el);gbumpG('ok',q.pat);RUN.n++;
       document.getElementById('qN').textContent=`${RUN.n}/${RUN.total}`;
@@ -3339,10 +3339,13 @@ function mkDri(G,total){return {dur:G.dur2||120,
 function nextDri(){
   const G=RUN.G,pat=gpickPat(G,RUN.recent);RUN.recent.push(pat);
   const pr=gmake(G,pat);
-  const opts=shuffle([pat,...shuffle(G.pats.filter(p=>p!==pat)).slice(0,2)]);
+  // 選択肢は3つ。自分のジャンルの別の手法で足りないぶんは、他ジャンルの手法（dstract）をまぎらわしい偽物として混ぜる
+  const real=shuffle(G.pats.filter(p=>p!==pat)).map(p=>({key:p,label:G.pname[p]}));
+  const fake=shuffle([...(G.dstract||[])]).map((l,i)=>({key:'__d'+i,label:l}));
+  const opts=shuffle([{key:pat,label:G.pname[pat]},...[...real,...fake].slice(0,2)]);
   RUN.q={pat,opts};
   document.getElementById('qc').innerHTML=`<div class="sh">${escH(pr.text)}</div>`;
-  document.getElementById('opts').innerHTML=opts.map((p,k)=>`<button class="act" data-act="o${k}"><span class="al">${escH(G.pname[p])}</span></button>`).join('');
+  document.getElementById('opts').innerHTML=opts.map((o,k)=>`<button class="act" data-act="o${k}"><span class="al">${escH(o.label)}</span></button>`).join('');
   term('$ cat hint.txt',`# ${pr.phrase}`);
 }
 // 3段目：ボス戦。道具を並べて（最大 maxSteps 手）、答えを出す
@@ -3562,6 +3565,7 @@ const PW={key1:'14-1',key2:'14-2',key3:'14-3',
   pats:['pw-offset','pw-overwrite'],
   pname:{'pw-offset':'箱からはみ出させる（バッファオーバーフロー）','pw-overwrite':'数値を逆順に送る（リトルエンディアン）'},
   why:{'pw-offset':'箱より多く入れると、あふれた分が隣の変数を書き換える。届く長さを数えて、ちょうどを選ぶ','pw-overwrite':'メモリの数値は、下の桁のバイトから並ぶ（リトルエンディアン）。値を逆順にして送る'},
+  dstract:['書式文字列（%x）で、メモリの中身を漏らす','ヒープ（別の置き場）の使い回しを狙う','シェルコード（小さな命令）を送り込む'],
   palette:['fill','send','le','be'],
   OP:{
     fill:{label:'入力を N 文字にする',par:true,cmd:p=>`python3 -c "print('A' * ${p})" > input.txt`,run:(t,p)=>'A'.repeat(p)},
@@ -3625,6 +3629,7 @@ const MI={key1:'15-1',key2:'15-2',key3:'15-3',
   pats:['mi-layers','mi-spec'],
   pname:{'mi-layers':'何重もの符号化を、外側から戻す（Base64・16進数・2進数・Base32）','mi-spec':'仕様書の行から、値だけを取り出して戻す'},
   why:{'mi-layers':'同じ答えが、別の表し方で何重にも包まれていることがある。外側の包みから、一枚ずつ戻す','mi-spec':'仕様書は、ほかの行に古い版やジョークを混ぜることがある。確認コードの行だけを選ぶ'},
+  dstract:['QRコード・バーコードを読み取る','点字・モールス信号に置きかえる','ブレインファック（記号だけの言語）を動かす'],
   palette:['line','val','b64d','hexd','bind','b32d'],
   OP:{
     line:{label:'N行目を取り出す',par:true,cmd:p=>`sed -n '${p}p' spec.txt`,run:(t,p)=>{const l=t.split('\n')[p-1];return l===undefined?null:l}},
@@ -3681,6 +3686,7 @@ const PG={key1:'16-1',key2:'16-2',key3:'16-3',
   pats:['pg-predict','pg-brute'],
   pname:{'pg-predict':'プログラムを頭の中で動かし、出力を予想する（一行ずつ計算）','pg-brute':'鍵を変えて試す（総当たり・XOR）'},
   why:{'pg-predict':'プログラムは一行ずつ動く。数から N を引いて文字に戻すと、出力が決まる','pg-brute':'XOR の鍵は一つ。全部試して、フラグの形（GK{…}）が出るものを選ぶ'},
+  dstract:['再帰（自分を呼ぶ関数）の深さを数える','正規表現で、形の合う文字だけ拾う','計算量を減らして、速く解く'],
   palette:['minus','chr','xor','grep'],
   OP:{
     minus:{label:'すべての数から N を引く',par:true,cmd:p=>`python3 -c "print([c - ${p} for c in codes])"`,run:(t,p)=>{const a=gList(t);return a?`[${a.map(c=>c-p).join(', ')}]`:null}},
