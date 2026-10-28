@@ -338,7 +338,7 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
   <div class="skywrap" id="sky" data-only="1 2-1 2-2 2-3"><canvas id="cv"></canvas><div class="skylabel">インターネット</div>
     <div class="logs" id="logs" data-only="2-3" hidden></div><div class="pointer" id="pointer23" hidden>▼ 次はこれ</div>
     <div class="cue" id="cue" hidden><b id="cueB"></b><span id="cueS"></span><i aria-hidden="true">▼</i></div></div>
-  <div class="panel" id="panel" data-only="3-1 3-2 4 5 6 7 8 9-1 9-2 10-1 10-2 11-1 11-2 11-3 12-1 12-2 12-3 13-1 13-2 13-3 14-1 14-2 14-3 15-1 15-2 15-3 16-1 16-2 16-3" hidden></div>
+  <div class="panel" id="panel" data-only="3-1 3-2 4 5 6 7 8 9-1 9-2 10-1 10-2 11-1 11-2 11-3 12-1 12-2 12-3 13-1 13-2 13-3 14-1 14-2 14-3 15-1 15-2 15-3 16-1 16-2 16-3 17-1 17-2 17-3" hidden></div>
   <div class="doors" id="doors" data-only="1"></div>
   <div class="gate" id="gate" data-only="2-2" hidden>
     <div class="door door22" id="door22"><span class="num">22</span><span class="nm">SSH</span><span class="st" id="door22st">パスワード</span></div>
@@ -1017,6 +1017,39 @@ const STAGES=[
           real:['計算を一段ずつ進めて、途中の結果を見る。結果が読める形になったら、その段が正しいという目安になる。'],
           howto:`<div class="legend"><div><span class="dot d"></span>部品を押すと、レシピに下から足される（最大3手）</div><div><span class="dot k"></span>実行で、フラグが出れば勝ち</div></div>
             <p>3体のボス。</p><p>★は「まちがいなし」「150秒以内」で1つずつ。</p>`}}
+    ]},
+  {id:17, name:'Network', sub:'時刻の種・応答のヘッダ・スキャン結果の、読み方', ready:true,
+    rounds:[
+      {name:'パズル',hud:['17-1 パズル','時刻の種を取り出して、作り直す'],
+        room:'<span class="chip">時刻</span><span class="arrow">→</span><span class="chip">種（シード）</span><span class="arrow">→</span><span class="chip">トークン</span>',
+        cue:['サーバーの札を読もう','種を取り出して、作り直す'],
+        brief:{
+          situation:['練習用のサーバーは、トークン（合言葉）を、時刻を種（シード）にして作っている。種が分かれば、同じトークンを作り直せる。種は乱数の出発点で、同じ種からは同じ並びが出る。'],
+          doorsTitle:'道具と手がかり',
+          doors:[['「T=」の数を取り出す','設定の中の時刻を読む','種にする数'],['時刻を種にして、トークンを作る','同じ種なら、同じトークン','練習用のプログラムで行う']],
+          real:['時刻のような推測しやすい種を使うと、トークンも推測されやすくなる。乱数の種は、予測されにくいものを使うのが基本。'],
+          howto:`<div class="legend"><div><span class="dot d"></span>道具を押すと、今の値が変わる</div><div><span class="dot k"></span>GK{…} が出たら、「答えを提出」</div></div>
+            <p>4問。全体で110秒。時刻から、トークンを作り直そう。</p><p>★は「やり直しが3回以内」「70秒以内」で1つずつ。</p>`}},
+      {name:'ドリル',hud:['17-2 ドリル','ヒント語から、手口を当てる'],
+        room:'<span class="chip">問題文</span><span class="arrow">→</span><span class="chip">ヒント語</span><span class="arrow">→</span><span class="chip">手口</span>',
+        cue:['ヒント語を読もう','種か、ヘッダか、バナーか'],
+        brief:{
+          situation:['Networkの問題文には、手口を示すヒント語がある。「種」「時刻」「同じ種」は、時刻の種からトークンを作り直す手口。「応答」「ヘッダ」「X-」は、X- のヘッダを読む手口。「スキャン」「バナー」「ポート」は、開発用ポートのバナーを読む手口。'],
+          doorsTitle:'ヒント語の見分け方',
+          doors:[['種・時刻・同じ種','時刻を種にして、トークンを作り直す','推測しやすい種が原因'],['応答・ヘッダ・X-','X- で始まるヘッダを読む','開発の目印が残っている'],['スキャン・バナー・ポート','開発用ポートのバナーを読む','3000 などに注意']],
+          real:['似た言葉に注意。「応答」は、どの手口にもなりうる。何を探しているか（種・ヘッダ・バナー）で決めよう。'],
+          howto:`<div class="legend"><div><span class="dot k"></span>問題文を読んで、手口を3つから選ぶ</div><div><span class="dot r"></span>まちがいは3回まで</div></div>
+            <p>8問。問題は自動で作られる（毎回違う）。</p><p>★は「まちがいなし」「70秒以内」で1つずつ。</p>`}},
+      {name:'ボス戦',hud:['17-3 ボス戦','道具を並べて、フラグを出す'],
+        room:'<span class="chip">入力</span><span class="arrow">レシピ（3手まで）</span><span class="arrow">→</span><span class="chip">フラグ</span>',
+        cue:['ボスの通信','札か、種か、スキャンを読もう'],
+        brief:{
+          situation:['ボスは、時刻の種・X- のヘッダ・開発用ポートのバナーのどれかに、フラグを隠している。道具を順番に並べて、フラグを取り出す。'],
+          doorsTitle:'レシピの部品',
+          doors:[['「T=」の数を取り出す・時刻を種にする','種から、トークンを作る','2手で作れる'],['X- のヘッダだけ残す','応答の札を絞る','フラグは最後に拾う'],['N行目を取り出す・「: 」の後ろ','スキャン結果の行を選ぶ','バナーの値を取り出す']],
+          real:['通信の情報を読むときは、見せるべきかどうかを考える。ヘッダやバナーは、思わぬ秘密を運ぶ。'],
+          howto:`<div class="legend"><div><span class="dot d"></span>部品を押すと、レシピに下から足される（最大3手）</div><div><span class="dot k"></span>実行で、フラグが出れば勝ち</div></div>
+            <p>3体のボス。</p><p>★は「まちがいなし」「150秒以内」で1つずつ。</p>`}}
     ]}
 ];
 
@@ -1244,7 +1277,13 @@ const GLOSSARY=[
   {id:'python',  w:'Python（パイソン）',at:['16-1','16-3'],a:['Python'],
     s:'読みやすい文法で、スクリプトを書けるプログラム言語',e:'手順書を、日本語に近い言葉で書ける'},
   {id:'ascii',   w:'ASCII（アスキー）',at:['16-1','16-3'],a:['ASCII'],
-    s:'英数字と記号を、0〜127の数字で表す決まり',e:'文字に付けた番号札'}
+    s:'英数字と記号を、0〜127の数字で表す決まり',e:'文字に付けた番号札'},
+  {id:'header',  w:'ヘッダ（札）',at:['17-1','17-2','17-3'],a:['ヘッダ','X-'],
+    s:'通信の最初に付く、補足の情報の行。X- で始まるものは、作った人が自由に付けた札',e:'荷物に付いている、送り状の余白のメモ'},
+  {id:'seed',    w:'シード（種）',at:['17-1','17-3'],a:['シード','種（シード）'],
+    s:'乱数の出発点になる数。同じ種からは、同じ並びが出る',e:'同じ種をまいた畑からは、同じ作物が育つ'},
+  {id:'banner',  w:'バナー（名乗り）',at:['17-2','17-3'],a:['バナー'],
+    s:'サーバーが、接続してきた相手に名乗る、ソフトの名前や情報',e:'店の入口の看板。見えるところに、中の事情まで書いてあることがある'}
 ];
 const GBYID=Object.fromEntries(GLOSSARY.map(g=>[g.id,g]));
 const GMATCH=GLOSSARY.flatMap(g=>g.a.map(a=>({a,g}))).sort((x,y)=>y.a.length-x.a.length);
@@ -3673,12 +3712,78 @@ const PG={key1:'16-1',key2:'16-2',key3:'16-3',
   dur1:110,par1:70,dur2:120,dur3:200,par3:150
 };
 const GAMES_PG={'16-1':()=>runStart(mkPuz(PG,4)),'16-2':()=>runStart(mkDri(PG,8)),'16-3':()=>runStart(mkBos(PG,3,3))};
+/* ===== ステージ17「Network」：通信の中の札・スキャン結果・時刻の種から、フラグを取り出す ===== */
+const SETN=['練習用の架空サーバー（192.0.2.10）','練習用の架空の機械（198.51.100.20）','学校の練習ネットワーク（203.0.113.30）','架空のゲームサーバーの応答（練習用）'];
+const NPHRASE={
+  'nw-seed':{jp:['トークンは、時刻を種（シード）にして作られている','同じ時刻を種にすると、同じトークンになる','種の数字を取り出して、生成プログラムに渡そう'],en:['The token seed is the current time','Same seed, same token','Take the seed number and feed it to the generator']},
+  'nw-http':{jp:['返ってきた応答の、X- で始まる札の中に','応答のヘッダ（札）のうち、X- の行を見よう','開発中の目印が、ヘッダに残っていることがある'],en:['The response carries an X- debug header','Check the response headers that start with X-','A dev marker was left in the headers']},
+  'nw-port':{jp:['スキャン結果の中に、開発用に残されたポートがある','バナー（名乗り）の行を読んでみよう','3000 は、開発用のサーバーでよく使われる番号'],en:['The scan shows a dev port left open','Read the banner line of the scan','Port 3000 is often used by dev servers']}
+};
+// 種（シード）から、12文字のトークンを作る練習用の仕組み（同じ種なら、いつも同じ答え）
+const genTok=seed=>{let x=BigInt(seed);let o='';const al='abcdefghijklmnopqrstuvwxyz0123456789';
+  for(let i=0;i<12;i++){x=(x*1103515245n+12345n)%2147483648n;o+=al[Number((x>>16n)%36n)]}return `GK{${o}}`};
+const NW={key1:'17-1',key2:'17-2',key3:'17-3',
+  pats:['nw-seed','nw-http','nw-port'],
+  pname:{'nw-seed':'時刻を種（シード）にして、トークンを作り直す','nw-http':'応答のヘッダ（X- の行）を読む','nw-port':'スキャン結果の、開発用ポートのバナーを読む'},
+  why:{'nw-seed':'同じ種からは、同じトークンが出る。時刻を種にすると、推測されやすい','nw-http':'開発中の目印（X- のヘッダ）が、本番の応答に残っていることがある','nw-port':'開発用のポートが外に開いていると、バナーに秘密が出てしまうことがある（ステージ1の門番）'},
+  palette:['num','gen','xhdr','grep','line','val'],
+  OP:{
+    num:{label:'「T=」の後ろの数（時刻）を取り出す',cmd:()=>"grep -o 'T=[0-9]*' | cut -d= -f2",run:t=>{const m=t.match(/^T=(\d+)$/);return m?m[1]:null}},
+    gen:{label:'時刻を種にして、トークンを作る',cmd:()=>'./token_gen --seed "$T"（練習用）',run:(t,p,pr)=>/^\d+$/.test(t)?genTok(t):null},
+    xhdr:{label:'X- で始まるヘッダだけ残す',cmd:()=>"curl -sI https://practice.example.com/ | grep '^X-'",run:t=>{const l=t.split('\n').filter(x=>x.startsWith('X-'));return l.length?l.join('\n'):null}},
+    grep:{label:'フラグの形（GK{…}）だけを拾う',cmd:()=>"grep -o 'GK{[a-z0-9]*}'",run:t=>{const m=t.match(/GK\{[a-z0-9]+\}/);return m?m[0]:null}},
+    line:{label:'N行目を取り出す',par:true,cmd:p=>`sed -n '${p}p' scan.txt`,run:(t,p)=>{const l=t.split('\n')[p-1];return l===undefined?null:l}},
+    val:{label:'「: 」の後ろの値を取り出す',cmd:()=>`awk -F': ' '{print $2}'`,run:t=>{const i=t.indexOf(': ');return i<0?null:t.slice(i+2)}}
+  },
+  make(pat){
+    const ans=cflag();let pr={};
+    if(pat==='nw-seed'){
+      const seed=cint(1790000000,1800000000);
+      const tok=genTok(seed);
+      pr={start:`T=${seed}`,card:'練習用のトークン生成プログラム：\n種（シード）に時刻を使っている',ops:['num','gen'],file:'token.cfg',
+        solve:[{op:'num'},{op:'gen'}],bsolve:[{op:'num'},{op:'gen'}]};
+      pr.done=t=>t===tok;pr.ans=tok;
+    }else if(pat==='nw-http'){
+      const flagHdr=gpickA(['X-Debug-Token','X-Dev-Note','X-Trace-Check']);
+      const hex=()=>Array.from({length:8},()=>cint(0,15).toString(16)).join('');
+      const hdrs=shuffle([`X-Trace-Id: ${hex()}`,`${flagHdr}: ${ans}`,'X-Powered-By: practice']);
+      pr={start:['HTTP/1.1 200 OK','Server: practice','Content-Type: text/plain',...hdrs,'','hello'].join('\n'),ops:['xhdr','grep'],file:'response.txt',
+        solve:[{op:'xhdr'},{op:'grep'}],bsolve:[{op:'xhdr'},{op:'grep'}]};
+      pr.done=t=>isFlag(t)&&t===ans;
+    }else{
+      const ports=[[22,'ssh','OpenSSH-practice'],[80,'http','nginx-practice'],[5432,'db','postgres-practice']];
+      const dev=[3000,'dev',ans];
+      const rows=shuffle([...ports,dev]);
+      const lines=['Scan report（練習用）',...rows.map(([n,svc,b])=>`${n}/tcp open ${svc} banner: ${b}`)];
+      const n=lines.findIndex(x=>x.startsWith('3000/tcp '))+1;
+      pr={start:lines.join('\n'),ops:['line','val'],file:'scan.txt',solve:[{op:'line',p:n},{op:'val'}],bsolve:[{op:'line',p:n},{op:'val'}]};
+      pr.done=t=>isFlag(t)&&t===ans;
+    }
+    pr.text=`${gpickA(SETN)}：${gpickA(CG.rnd()<.5?NPHRASE[pat].jp:NPHRASE[pat].en)}`;
+    pr.phrase=pr.text.split('：')[1];pr.ans=pr.ans||ans;
+    return pr;
+  },
+  res:{win:'通信の中の札から、フラグを取り出した！',lose:'フラグに届かなかった',sumWin:'時刻の種・ヘッダ・バナー。どれも、サーバーが外へ見せてしまった情報だった。',sumLose:'サーバーが返したものを、ひとつずつ読み直そう。'},
+  rev:[['時刻を種にしたトークン','種が推測できると、トークンも推測できる。乱数の種には、予測されにくいものを使う',true],['ヘッダ（X-）と開発用ポート','開発の目印やポートを、本番に残さない。見せてよいものだけを返す',true]],
+  extra:`<div class="real"><div>振り返り：<b>サーバーは、見せたくないものを、ヘッダやバナーに残してしまうことがある</b>。</div>
+    <code>curl -sI https://practice.example.com/ | grep '^X-'</code><div class="m">応答のヘッダのうち、X- の行だけを見る（練習用のサイトで）</div>
+    <code>ss -tlnp</code><div class="m">自分の機械で、外に開いているポートを見る（開発用は閉じる）</div></div>
+    <div class="warn"><b>安全メモ</b><ul><li>実在のサーバーを、スキャンしたり、ヘッダを探したりしない。練習用の架空のデータだけで行う</li><li>自分のサーバーでも、開発用ポートは外に開けない（ステージ1の門番）</li></ul></div>`,
+  next(key){
+    if(key==='17-1')return '次は17-2「ドリル」。問題文のヒント語から、どの手口かを当てよう。';
+    if(key==='17-2')return '次は17-3「ボス戦」。道具を並べて、フラグを取り出そう。';
+    return '全ジャンルの10点パターンがそろいました。ステージ一覧から、もう一度ぜんぶ解いてみよう。';
+  },
+  dur1:110,par1:70,dur2:120,dur3:200,par3:150
+};
+const GAMES_NW={'17-1':()=>runStart(mkPuz(NW,4)),'17-2':()=>runStart(mkDri(NW,8)),'17-3':()=>runStart(mkBos(NW,3,3))};
 const GAMES={
   ...GAMES_FO,
   ...GAMES_WB,
   ...GAMES_PW,
   ...GAMES_MI,
   ...GAMES_PG,
+  ...GAMES_NW,
   '1':()=>{newGame();requestAnimationFrame(loop)},
   '2-1':()=>{newGame21();requestAnimationFrame(loop21)},
   '2-2':()=>{newGame2();requestAnimationFrame(loop2)},
