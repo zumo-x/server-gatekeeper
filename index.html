@@ -296,6 +296,7 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
 .ptag.bad{color:#ffb3b0}.ptag.ok{color:var(--ok)}
 .mlink{all:unset;box-sizing:border-box;cursor:pointer;touch-action:manipulation;display:block;padding:9px 10px;border-radius:10px;background:#0f1229;color:var(--ok);font-family:var(--f-term);font-size:13px;line-height:1.5;word-break:break-all;-webkit-user-select:none;user-select:none}
 .mlink:focus-visible{outline:3px solid var(--ink);outline-offset:2px}
+.prow.gone{opacity:.25;pointer-events:none}
 .shake{animation:shk .35s}
 @keyframes shk{20%{transform:translate(-6px,2px)}40%{transform:translate(5px,-3px)}60%{transform:translate(-4px,1px)}80%{transform:translate(3px,0)}}
 @media (prefers-reduced-motion:reduce){.shake,.door.hit,.door.sad,.act.hit,.act.sad,.act.guide,.ip.guide,.pt.sad,.pt.gone,.ln,.bin.hit,.bin.sad,.bin.guide,.acts.hint .act,.pointer,.cue,.cue i{animation:none}.door,.big,.act,.bin{transition:none}}
@@ -662,7 +663,26 @@ const STAGES=[
         <p>8通のメールを、本物か偽物かに分ける。リンクは長押しで本当の行き先が見える（0.6秒）。まちがいは3回まで。</p>
         <p>★は「まちがいなし」「長押しで3回以上確かめた」で1つずつ。</p>`
     }},
-  {id:8, name:'足あと探し',   sub:'ログから怪しいアクセスを見つける'},
+  {id:8, name:'足あと探し',   sub:'ログから怪しいアクセスを見つける', ready:true,
+    hud:['8 足あと探し','ログからあやしい行を見つける'],
+    room:'<span class="chip">nginx（受付）</span><span class="arrow">→</span><span class="chip">アクセスログ</span>',
+    cue:['ログは、毎日流れる','あやしい行を、タップで見つけよう'],
+    brief:{
+      situation:['サーバーには、毎日あやしいアクセスが来ている。でも、<b>アクセスログ</b>（来た人の記録）を読めないと、気づけない。ログは、<b>nginx</b>（受付係）が、ひとつずつ書き残している。'],
+      doorsTitle:'画面に出てくるもの',
+      doors:[
+        ['ログの1行','いつ・どのIP・何を・結果','10:02:03 203.0.113.5 GET /.env 404 のように、1行に記録が並ぶ'],
+        ['404','見つからない（ステータスコード）','200は成功、304は変わっていない、404はページがない、400・401は失敗'],
+        ['スキャン','いろいろな道を試し回ること','存在しないはずの /wp-admin や /.env を、次々に見に来る']
+      ],
+      real:['見分けるポイント：<b>同じIPが、404を何度も</b>返される／<b>../</b>のような、ふつうではない文字がある／<b>短時間に大量</b>。ふつうの人は、ページを順にたどる。'],
+      howto:`<div class="legend">
+          <div><span class="dot r"></span>あやしい行 ＝ 404の連発・../・短時間の大量。タップする</div>
+          <div><span class="dot k"></span>ふつうの行 ＝ 200や304で、ページを順にたどる。押さない</div>
+        </div>
+        <p>流れてくる行から、あやしいものを10件見つける。ふつうの行を3回押すと失敗。行は4秒たつと消える。</p>
+        <p>★は「まちがいなし」「40秒以内」で1つずつ。</p>`
+    }},
   {id:9, name:'入力の罠',     sub:'SQLインジェクション'},
   {id:10,name:'溢れるロッカー',sub:'バッファオーバーフロー'}
 ];
@@ -686,7 +706,7 @@ const GLOSSARY=[
     s:'暗号化されたHTTP。今のWebの標準',e:'封筒に入れて鍵をかけた手紙。途中の人には読めない'},
   {id:'crypt',   w:'暗号化',          at:['1'],a:['暗号化'],
     s:'関係ない人に読めないよう、中身を変換すること',e:'自分たちだけが読み方を知っている暗号で、手紙を書くこと'},
-  {id:'nginx',   w:'nginx（エンジンエックス）',at:['1'],a:['nginx'],
+  {id:'nginx',   w:'nginx（エンジンエックス）',at:['1','8'],a:['nginx'],
     s:'Webの受付係。来た通信を中のプログラムへ取り次ぐ',e:'ホテルのフロント。お客さんは直接部屋には行かず、フロントが案内する'},
   {id:'node',    w:'Node.js',         at:['1','3-1','3-2','4'],a:['Node.js','Node'],
     s:'JavaScriptでサーバーのプログラムを動かすしくみ',e:'お店の厨房の料理人。客席（外）から直接は入らせない'},
@@ -805,7 +825,17 @@ const GLOSSARY=[
   {id:'url',     w:'URL（ユーアールエル）',at:['7'],a:['URL'],
     s:'Webページの住所（全体）',e:'建物の住所。番地まで全部読む'},
   {id:'twofa',   w:'二段階認証',      at:['7'],a:['二段階認証'],
-    s:'パスワードに加えて、もう一つの確認を求める仕組み',e:'家の玄関で鍵と、顔の確認の両方を必要とすること'}
+    s:'パスワードに加えて、もう一つの確認を求める仕組み',e:'家の玄関で鍵と、顔の確認の両方を必要とすること'},
+  {id:'accesslog',w:'アクセスログ',at:['8'],a:['アクセスログ'],
+    s:'Webサーバーに来た人の記録（いつ・どこから・何を）',e:'お店の入口の来客ノート'},
+  {id:'statuscode',w:'ステータスコード',at:['8'],a:['ステータスコード'],
+    s:'Webサーバーが返す結果の番号（200は成功）',e:'宅配の「届いた」「不在」のような結果番号'},
+  {id:'e404',    w:'404（よんまるよん）',at:['8'],a:['404'],
+    s:'「そのページは見つからない」を表す番号',e:'「不在でした」の不在票'},
+  {id:'scan',    w:'スキャン',        at:['8'],a:['スキャン'],
+    s:'無差別に、いろいろな道を試し回ること',e:'泥棒が町中の家の玄関を、順番に一軒ずつ確かめて回る'},
+  {id:'tail',    w:'tail（テイル）',  at:['8'],a:['tail'],
+    s:'ファイルの最後の行を見るコマンド（-fで流し続ける）',e:'本の最後のページを開いて、新しく書き足されるのを見張る'}
 ];
 const GBYID=Object.fromEntries(GLOSSARY.map(g=>[g.id,g]));
 const GMATCH=GLOSSARY.flatMap(g=>g.a.map(a=>({a,g}))).sort((x,y)=>y.a.length-x.a.length);
@@ -2226,6 +2256,72 @@ function r7(win,st,why){return {eyebrow:win?'STAGE 7 CLEAR':'STAGE 7',title:win?
     <div class="warn"><b>安全メモ</b><ul><li>パスワードや確認コードを、メールのリンク先に入力しない</li><li>会社から来た「至急」の連絡は、いつものページで確かめる</li></ul></div>`,
   next:win?'次はステージ8「足あと探し」。ログを読むと、あやしいアクセスが見えてくる。':''};}
 
+/* ===== ステージ8「足あと探し」：流れてくるアクセスログから、あやしい行を見つける ===== */
+// IPは説明用の範囲だけ。パスは、よくあるスキャンの例（ログの中の文字だけで、実際には何も起きない）
+const LOG8={
+  normal:{ip:['192.0.2.10','192.0.2.21','198.51.100.4','198.51.100.9'],path:['/','/about','/static/app.css','/api/health','/login'],st:['200','304']},
+  scan:{ip:['203.0.113.5','203.0.113.77','203.0.113.140'],path:['/wp-admin/','/.env','/phpmyadmin/','/admin.php','/config.json'],st:['404']},
+  trav:{ip:['203.0.113.77'],path:['/../../etc/passwd'],st:['400']},
+  burst:{ip:['203.0.113.140'],path:['/login'],st:['401']}
+};
+const pick8=a=>a[Math.floor(Math.random()*a.length)];
+const clock8=()=>{const t=Math.floor(RUN.t)+120,z=n=>String(n).padStart(2,'0');return `10:${z(Math.floor(t/60))}:${z(t%60)}`};
+function addLine8(){
+  const r=Math.random();let type='normal';if(r<.25)type=['scan','trav','burst'][Math.floor(Math.random()*3)];
+  const L=LOG8[type],id=RUN.lines.length;
+  const e={id,s:type!=='normal',born:RUN.t,text:`${clock8()} ${pick8(L.ip)} GET ${pick8(L.path)} ${pick8(L.st)}`};
+  RUN.lines.push(e);
+  const box=document.getElementById('logs8');
+  const b=document.createElement('button');b.className='prow slide';b.dataset.act='ln'+id;
+  b.innerHTML=`<span style="font-family:var(--f-term);font-size:12px;word-break:break-all">${e.text}</span>`;
+  box.prepend(b);while(box.children.length>12)box.lastChild.remove();
+  if(e.s&&RUN.caught===0)guideOn(b);
+}
+const U8={dur:60,
+  init(){
+    RUN.n=0;RUN.mist=0;RUN.caught=0;RUN.nextT=.4;RUN.lines=[];
+    mount(`<div class="pbar"><span>見つけた <b id="qN">0/10</b></span><span class="sp"></span><span class="plives" id="pl">${lives(3,3)}</span></div>
+      <div class="plist" id="logs8"></div>
+      <p class="pnote" id="pnote">あやしい行（存在しないページを何度も・../・短時間に大量）をタップ。ふつうの行は押さない。</p>`);
+    term('$ sudo tail -f /var/log/nginx/access.log','# アクセスログが流れてくる。あやしい行をタップ');
+  },
+  update(dt){
+    RUN.nextT-=dt;
+    if(RUN.nextT<=0){RUN.nextT=.6+Math.random()*.4;addLine8()}
+    for(const e of RUN.lines){if(!e.done&&!e.gone&&RUN.t-e.born>4.5){e.gone=true;const b=document.querySelector(`[data-act="ln${e.id}"]`);if(b)b.classList.add('gone')}}
+  },
+  tap(act,el){
+    const e=RUN.lines[+act.slice(2)];if(!e||e.done||e.gone)return;
+    e.done=true;el.disabled=true;
+    if(e.s){
+      RUN.caught++;okFx(el);el.classList.add('hit');
+      document.getElementById('qN').textContent=`${RUN.caught}/10`;
+      term(`$ tail -f access.log  # あやしい`,`# ${e.text}`);
+      document.getElementById('pnote').textContent='見つけた！ 同じIPの足あとを、ほかにも探そう。';
+      if(RUN.caught>=10){const st=1+(RUN.mist===0?1:0)+(RUN.t<=40?1:0);return runEnd(true,st,r8(true,st))}
+    }else{
+      RUN.mist++;strike(el);setLives(3-RUN.mist,3);
+      document.getElementById('pnote').textContent='それは、ふつうのアクセスだった。';
+      term(`# ふつうの行：${e.text}`,'# 200 や 304 は、ページを普通に見に来ただけのことが多い');
+      if(RUN.mist>=3)runEnd(false,0,r8(false,0,'まちがえすぎた'));
+    }
+  },
+  onTime(){runEnd(false,0,r8(false,0,'時間切れ'))}
+};
+function r8(win,st,why){return {eyebrow:win?'STAGE 8 CLEAR':'STAGE 8',title:win?'足あとを見つけた！':(why||'見つけきれなかった'),
+  summary:win?`あやしいアクセスを10件見つけた（まちがい ${RUN.mist}回）。`:'あやしい足あとを、見分けきれなかった。ふつうの行との違いを、もう一度見よう。',
+  review:rvRows([
+    ['スキャン','存在しないはずのページ（/.env や /wp-admin/）を、次々に見に来る。結果は 404（見つからない）',true],
+    ['../','ディレクトリをさかのぼる文字。ふつうのページ名には出てこない。攻撃の典型',true],
+    ['大量','短い時間に、同じIPから何度も来る（ふつうの人はゆっくり）',true],
+    ['ふつう','ページを順にたどり、200（成功）や304（変わっていない）で返る',true]]),
+  extra:`<div class="real"><div>振り返り：<b>ログを読むと、攻撃は先に見える</b>。</div>
+    <code>sudo tail -f /var/log/nginx/access.log</code><div class="m">アクセスログを、流れる順に見る</div>
+    <code>grep " 404 " /var/log/nginx/access.log</code><div class="m">結果が404（見つからない）の行だけ取り出す</div>
+    <code>awk '{print $2}' /var/log/nginx/access.log | sort | uniq -c | sort -rn | head</code><div class="m">どのIPが多く来ているかを数える（見るだけ）</div></div>
+    <div class="warn"><b>安全メモ</b><ul><li>ログを見るだけなら安全。ただし、あやしいIPを見つけても、むやみに触らない。ブロックは fail2ban などに任せると、自動でやってくれる</li></ul></div>`,
+  next:win?'次はステージ9「入力の罠」。ログインの入力欄から、データベースを勝手に動かされる攻撃。':''};}
+
 const GAMES={
   '1':()=>{newGame();requestAnimationFrame(loop)},
   '2-1':()=>{newGame21();requestAnimationFrame(loop21)},
@@ -2236,7 +2332,8 @@ const GAMES={
   '4':()=>runStart(U4),
   '5':()=>runStart(U5),
   '6':()=>runStart(U6),
-  '7':()=>runStart(U7)
+  '7':()=>runStart(U7),
+  '8':()=>runStart(U8)
 };
 function start(){
   audio();show(null);
