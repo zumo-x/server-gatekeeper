@@ -2990,10 +2990,16 @@ const SETEN=['a leftover file from an old server','a note from a stranger','the 
 // 1問を作る。答えは、chain を逆にたどって確かめる（合わなければ作り直す）
 function genProblem(pat){
   for(;;){
-    const ans=cflag();let cipher,chain,fields=null;
+    const ans=cflag();let cipher,chain,fields=null,hintK=null;
     if(pat==='b64'){cipher=b64e(ans);chain=[{op:'b64'}]}
     else if(pat==='rot13'){cipher=rot(ans,13);chain=[{op:'rot13'}]}
-    else if(pat==='caesar'){const k=cint(1,25);cipher=rot(ans,k);chain=[{op:'back',n:k}]}
+    else if(pat==='caesar'){
+      // 半分の問題は、言い回しに「ずらす数」を書く。13はROT13と紛らわしいので使わない
+      const numHint=CG.rnd()<.5;
+      let k=cint(1,25);if(numHint)while(k===13)k=cint(1,25);
+      cipher=rot(ans,k);chain=[{op:'back',n:k}];
+      if(numHint)hintK=k;
+    }
     else if(pat==='stack'){
       if(CG.rnd()<.5){cipher=b64e(rot(ans,13));chain=[{op:'b64'},{op:'rot13'}]}
       else{cipher=rot(b64e(ans),13);chain=[{op:'rot13'},{op:'b64'}]}
@@ -3006,7 +3012,9 @@ function genProblem(pat){
     if(runChain(cipher,chain)!==ans)continue;
     const lang=CG.rnd()<.5?'jp':'en';
     const setting=lang==='jp'?cpick(SETJP):cpick(SETEN);
-    const phrase=cpick(PHRASE[pat][lang]);
+    const phrase=hintK!==null
+      ?cpick(lang==='jp'?[`${hintK}歩ずらした、ずらし暗号`,`ダイヤルを ${hintK} に合わせて戻そう`,`${hintK}文字ずらして書かれた手紙`]:[`Shifted by ${hintK}: decode it`,`Rotate the dial to ${hintK}`,`Every letter moved ${hintK} steps ahead`])
+      :cpick(PHRASE[pat][lang]);
     return {pat,ans,cipher,chain,fields,text:`${setting}：${phrase}`,phrase,lang};
   }
 }
