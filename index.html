@@ -346,7 +346,7 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
   <div class="skywrap" id="sky" data-only="1 2-1 2-2 2-3"><canvas id="cv"></canvas><div class="skylabel">インターネット</div>
     <div class="logs" id="logs" data-only="2-3" hidden></div><div class="pointer" id="pointer23" hidden>▼ 次はこれ</div>
     <div class="cue" id="cue" hidden><b id="cueB"></b><span id="cueS"></span><i aria-hidden="true">▼</i></div></div>
-  <div class="panel" id="panel" data-only="3-1 3-2 4 5 6 7 8 9-1 9-2 10-1 10-2 11-1 11-2 11-3 11-4 11-5 11-6 12-1 12-2 12-3 12-4 12-5 12-6 13-1 13-2 13-3 13-4 13-5 13-6 14-1 14-2 14-3 14-4 14-5 14-6 15-1 15-2 15-3 15-4 15-5 15-6 16-1 16-2 16-3 16-4 16-5 16-6 17-1 17-2 17-3" hidden></div>
+  <div class="panel" id="panel" data-only="3-1 3-2 4 5 6 7 8 9-1 9-2 10-1 10-2 11-1 11-2 11-3 11-4 11-5 11-6 12-1 12-2 12-3 12-4 12-5 12-6 13-1 13-2 13-3 13-4 13-5 13-6 14-1 14-2 14-3 14-4 14-5 14-6 15-1 15-2 15-3 15-4 15-5 15-6 16-1 16-2 16-3 16-4 16-5 16-6 17-1 17-2 17-3 17-4 17-5 17-6" hidden></div>
   <div class="doors" id="doors" data-only="1"></div>
   <div class="gate" id="gate" data-only="2-2" hidden>
     <div class="door door22" id="door22"><span class="num">22</span><span class="nm">SSH</span><span class="st" id="door22st">パスワード</span></div>
@@ -1243,7 +1243,37 @@ const STAGES=[
           doors:[['「T=」の数を取り出す・時刻を種にする','種から、トークンを作る','2手で作れる'],['X- のヘッダだけ残す','応答の札を絞る','フラグは最後に拾う'],['N行目を取り出す・「: 」の後ろ','スキャン結果の行を選ぶ','バナーの値を取り出す']],
           real:['通信の情報を読むときは、見せるべきかどうかを考える。ヘッダやバナーは、思わぬ秘密を運ぶ。'],
           howto:`<div class="legend"><div><span class="dot d"></span>部品を押すと、レシピに下から足される（最大3手）</div><div><span class="dot k"></span>実行で、フラグが出れば勝ち</div></div>
-            <p>3体のボス。</p><p>★は「まちがいなし」「150秒以内」で1つずつ。</p>`}}
+            <p>3体のボス。</p><p>★は「まちがいなし」「150秒以内」で1つずつ。</p>`}},
+      {name:'パズル（上級）',hud:['17-4 パズル','通信の記録から、手がかりを読む'],
+        room:'<span class="chip">pcap</span><span class="arrow">→</span><span class="chip">ストリーム/ヘッダ/DNS</span><span class="arrow">→</span><span class="chip">GK{…}</span>',
+        cue:['上級の Network に挑戦','Wireshark風の一覧で探す'],
+        brief:{
+          situation:['20点の上級。通信の記録（<b>pcap</b>）を読む。<b>HTTPのやりとり</b>（本文）を追う、<b>Basic認証</b>の Base64 を戻す、<b>DNS</b>の問い合わせ名に紛れた16進数をつなげて戻す。Wireshark風のパケット一覧を見ながら進める。'],
+          doorsTitle:'道具と手がかり',
+          doors:[['HTTPストリームを追う','やりとりの本文を読む','Wireshark / tshark'],['Basic認証の値を取り出す→Base64で戻す','user:パスワードが出る','Authorization: Basic'],['DNSの問い合わせ名(hex)をつなげる→戻す','16進数をつなげて文字に','DNS exfil'],['GK{…} だけ拾う','まわりを捨てる','最後に使う']],
+          real:['本物の調査でも、Wireshark/tshark で HTTP・DNS・認証ヘッダを読む。練習用の pcap で、同じ手順を試せる。'],
+          howto:`<div class="legend"><div><span class="dot d"></span>道具を押すと、通信の中身が読める</div><div><span class="dot k"></span>GK{…} が出たら「答えを提出」</div></div>
+            <p>4問。全体で130秒。</p><p>★は「やり直しが3回以内」「85秒以内」で1つずつ。</p>`}},
+      {name:'ドリル（上級）',hud:['17-5 ドリル','ヒント語から、上級の読み方を当てる'],
+        room:'<span class="chip">問題文</span><span class="arrow">→</span><span class="chip">ヒント語</span><span class="arrow">→</span><span class="chip">読み方</span>',
+        cue:['ヒント語を読もう','HTTP・Basic認証・DNS を見分ける'],
+        brief:{
+          situation:['上級の Network も、ヒント語で読み方が分かる。「HTTP・ストリーム・本文」は HTTP追い、「Authorization・Basic・Base64」は認証ヘッダ、「DNS・問い合わせ名・16進数」は DNS exfil。'],
+          doorsTitle:'ヒント語の見分け方',
+          doors:[['HTTP・ストリーム・本文','HTTPストリームを追う','Wireshark で本文'],['Basic・Authorization・Base64','Basic認証のBase64を戻す','user:パスワード'],['DNS・問い合わせ名・16進数','DNSの名前(hex)を戻す','つなげて戻す']],
+          real:['どれも pcap の読み方。問題文の決め手の言葉を選ぼう。'],
+          howto:`<div class="legend"><div><span class="dot k"></span>問題文を読んで、読み方を3つから選ぶ</div><div><span class="dot r"></span>まちがいは3回まで</div></div>
+            <p>8問。問題は自動で作られる（毎回違う）。</p><p>★は「まちがいなし」「70秒以内」で1つずつ。</p>`}},
+      {name:'ボス戦（上級）',hud:['17-6 ボス戦','道具を並べて、フラグを出す'],
+        room:'<span class="chip">入力</span><span class="arrow">レシピ（3手まで）</span><span class="arrow">→</span><span class="chip">フラグ</span>',
+        cue:['上級ボスの Network','通信の読み方を組み立てよう'],
+        brief:{
+          situation:['ボスは、通信の記録のどこかにフラグを隠す。道具を順番に並べて、本文・認証・DNS から、フラグを取り出す。'],
+          doorsTitle:'レシピの部品',
+          doors:[['HTTPストリームを追う','本文を取り出す','1〜2手'],['Basic認証→Base64 / DNS(hex)→戻す','手がかりに合う読み方','2〜3手'],['GK{…} だけ拾う','まわりを捨てる','最後に置く']],
+          real:['tshark で、HTTP・DNS・認証を読み分ける。手順をあとから見直せる。'],
+          howto:`<div class="legend"><div><span class="dot d"></span>部品を押すと、レシピに下から足される（最大3手）</div><div><span class="dot k"></span>実行で、フラグが出れば勝ち</div></div>
+            <p>3体のボス。</p><p>★は「まちがいなし」「170秒以内」で1つずつ。</p>`}}
     ]}
 ];
 
@@ -1513,7 +1543,11 @@ const GLOSSARY=[
   {id:'seed',    w:'シード（種）',at:['17-1','17-3'],a:['シード','種（シード）'],
     s:'乱数の出発点になる数。同じ種からは、同じ並びが出る',e:'同じ種をまいた畑からは、同じ作物が育つ'},
   {id:'banner',  w:'バナー（名乗り）',at:['17-2','17-3'],a:['バナー'],
-    s:'サーバーが、接続してきた相手に名乗る、ソフトの名前や情報',e:'店の入口の看板。見えるところに、中の事情まで書いてあることがある'}
+    s:'サーバーが、接続してきた相手に名乗る、ソフトの名前や情報',e:'店の入口の看板。見えるところに、中の事情まで書いてあることがある'},
+  {id:'basicauth',w:'Basic認証',       at:['17-4','17-5','17-6'],a:['Basic認証'],
+    s:'user:パスワードを Base64 にしてヘッダで送る、簡単な認証。中身は丸見え',e:'合い言葉を、薄い紙に書いて窓口に見せるだけのしくみ'},
+  {id:'dnsexfil', w:'DNS exfil（DNSでの持ち出し）',at:['17-4','17-5','17-6'],a:['DNS exfil','exfil'],
+    s:'DNS の問い合わせ名に、こっそりデータを紛れ込ませて外へ運ぶ手口',e:'宛名の書き方に暗号を混ぜて、手紙そのものではなく宛名で情報を送る'}
 ];
 const GBYID=Object.fromEntries(GLOSSARY.map(g=>[g.id,g]));
 const GMATCH=GLOSSARY.flatMap(g=>g.a.map(a=>({a,g}))).sort((x,y)=>y.a.length-x.a.length);
@@ -4368,6 +4402,63 @@ const G2={key1:'16-4',key2:'16-5',key3:'16-6',
   dur1:130,par1:85,dur2:120,dur3:230,par3:170
 };
 const GAMES_G2={'16-4':()=>runStart(mkPuz(G2,4)),'16-5':()=>runStart(mkDri(G2,8)),'16-6':()=>runStart(mkBos(G2,3,3))};
+/* ---- Network 20点（ステージ17-4〜17-6）：pcapのHTTP・DNS・Basic認証のBase64 ---- */
+const N2PHRASE={
+  'n2-follow':{jp:['pcap の HTTP のやりとり（本文）を読む','ストリームを追うと、本文にフラグがある','Wireshark で HTTP の中身を見る'],en:['Follow the HTTP stream in the capture','The flag is in the HTTP body','Read the HTTP conversation in Wireshark']},
+  'n2-basic':{jp:['Authorization: Basic の中に、Base64 のパスワード','Basic 認証のヘッダをデコードする','通信に、Base64 で包まれた資格情報がある'],en:['A Basic auth header carries a base64 password','Decode the Authorization: Basic value','Base64 credentials sit in the traffic']},
+  'n2-dns':{jp:['DNS の問い合わせ名に、16進数で持ち出されている','サブドメインの hex をつなげて戻す','DNS で少しずつ外へ運び出している（exfil）'],en:['Data is exfiltrated in DNS query names (hex)','Concatenate the hex subdomains and decode','DNS names leak the flag as hex']}
+};
+const N2={key1:'17-4',key2:'17-5',key3:'17-6',
+  pats:['n2-follow','n2-basic','n2-dns'],
+  pname:{'n2-follow':'HTTPストリームを追う(本文を読む)','n2-basic':'Basic認証のBase64を戻す','n2-dns':'DNSの問い合わせ名(hex)を戻す'},
+  why:{'n2-follow':'pcap の HTTP のやりとり（ストリーム）を追うと、本文のフラグが読める','n2-basic':'Authorization: Basic は Base64。デコードすると user:パスワードが出る','n2-dns':'DNS の問い合わせ名に 16進数でデータを紛れ込ませる手口（exfil）。つなげて戻す'},
+  palette:['follow','findauth','dnsq','b64d','unhex','xtr'],
+  OP:{
+    follow:{label:'HTTPストリームを追う(本文)',cmd:()=>"tshark -r cap.pcap -q -z follow,tcp,ascii,0",run:(t,p,pr)=>pr.body!==undefined?pr.body:null},
+    findauth:{label:'Authorization: Basic の値を取り出す',cmd:()=>"tshark -r cap.pcap -Y http.authorization -T fields -e http.authorization",run:(t,p,pr)=>pr.auth!==undefined?pr.auth:null},
+    dnsq:{label:'DNSの問い合わせ名(hex)をつなげる',cmd:()=>"tshark -r cap.pcap -Y dns.flags.response==0 -T fields -e dns.qry.name",run:(t,p,pr)=>pr.hex!==undefined?pr.hex:null},
+    b64d:{label:'Base64 を戻す',cmd:()=>'base64 -d',run:t=>b64d(String(t))},
+    unhex:{label:'16進数を文字に戻す',cmd:()=>`python3 -c "print(bytes.fromhex(input).decode())"`,run:t=>{const h=String(t).replace(/[^0-9a-f]/gi,'');if(h.length%2)return null;try{return String.fromCharCode(...h.match(/../g).map(x=>parseInt(x,16)))}catch(e){return null}}},
+    xtr:{label:'フラグの形(GK{…})だけ拾う',cmd:()=>"grep -o 'GK{[a-z0-9]*}'",run:t=>{const m=String(t).match(/GK\{[a-z0-9]+\}/);return m?m[0]:null}}
+  },
+  make(pat){
+    const ans=cflag();let pr={};const src='192.0.2.5',dst='203.0.113.9';
+    if(pat==='n2-follow'){
+      const path=gpickA(['/notes','/api/token','/dl','/review']);
+      pr={start:'（pcap）',body:`HTTP/1.1 200 OK\nContent-Type: text/plain\n\n${gpickA(NOISE20)} flag=${ans} ${gpickA(NOISE20)}`,
+        packets:[{ft:src+'→'+dst,ty:'TCP',info:'SYN'},{ft:src+'→'+dst,ty:'HTTP',info:'GET '+path},{ft:dst+'→'+src,ty:'HTTP',info:'200 OK (text/plain)'}],
+        ops:['follow','xtr'],file:'cap.pcap',solve:[{op:'follow'},{op:'xtr'}]};
+    }else if(pat==='n2-basic'){
+      const user=gpickA(['admin','user','staff','guest']);const auth=b64e(`${user}:${ans}`);
+      pr={start:'（pcap）',auth,
+        packets:[{ft:src+'→'+dst,ty:'HTTP',info:'GET /admin'},{ft:dst+'→'+src,ty:'HTTP',info:'401 Unauthorized'},{ft:src+'→'+dst,ty:'HTTP',info:'GET /admin (Authorization: Basic …)'}],
+        ops:['findauth','b64d','xtr'],file:'cap.pcap',solve:[{op:'findauth'},{op:'b64d'},{op:'xtr'}]};
+    }else{
+      const payload=`${gpickA(NOISE20)} ${ans}`;const hex=[...payload].map(c=>c.charCodeAt(0).toString(16).padStart(2,'0')).join('');
+      pr={start:'（pcap）',hex,
+        packets:[{ft:src+'→'+dst,ty:'DNS',info:'A '+hex.slice(0,12)+'.example.com'},{ft:src+'→'+dst,ty:'DNS',info:'A '+hex.slice(12,24)+'.example.com'},{ft:src+'→'+dst,ty:'DNS',info:'A '+hex.slice(24)+'.example.com'}],
+        ops:['dnsq','unhex','xtr'],file:'cap.pcap',solve:[{op:'dnsq'},{op:'unhex'},{op:'xtr'}]};
+    }
+    pr.view=()=>wireView(pr);
+    pr.done=t=>isFlag(t)&&t===ans;
+    pr.text=`${gpickA(SET20)}：${gpickA(CG.rnd()<.5?N2PHRASE[pat].jp:N2PHRASE[pat].en)}`;
+    pr.phrase=pr.text.split('：')[1];pr.ans=ans;
+    return pr;
+  },
+  res:{win:'通信の記録から、フラグを取り出した！',lose:'フラグに届かなかった',sumWin:'HTTPの本文・Basic認証のBase64・DNSに紛れた16進数。通信の記録は、読み方しだいで多くを語る。',sumLose:'どのやりとりに手がかりがあるか、Wireshark風の一覧で探そう。'},
+  rev:[['HTTPストリーム','pcap の HTTP のやりとりを追うと、本文が読める（Wireshark）',true],['Basic認証のBase64','Authorization: Basic は Base64。デコードで user:パスワードが出る',true],['DNS exfil（16進数）','DNS の問い合わせ名に 16進数でデータを紛れ込ませる手口。つなげて戻す',true]],
+  extra:`<div class="real"><div>振り返り：<b>通信の記録（pcap）は、本文・ヘッダ・DNS名まで、読み方しだいで多くを語る</b>。</div>
+    <code>tshark -r cap.pcap -Y http.authorization -T fields -e http.authorization</code><div class="m">Wireshark / tshark で Basic 認証の値を取り出し、Base64 で戻す</div>
+    <code>tshark -r cap.pcap -Y 'dns.flags.response==0' -T fields -e dns.qry.name</code><div class="m">DNS の問い合わせ名を集めて、16進数をつなげて戻す</div></div>
+    <div class="warn"><b>安全メモ</b><ul><li>他人の通信を勝手に記録・解析しない。練習用の架空のデータ（例の範囲のIP）だけで行う</li><li>Basic 認証は中身が Base64 で丸見え。本物では HTTPS と、より強い認証を使う</li></ul></div>`,
+  next(key){
+    if(key==='17-4')return '次は17-5「ドリル(上級)」。問題文のヒント語から、どの読み方かを当てよう。';
+    if(key==='17-5')return '次は17-6「ボス戦(上級)」。道具を並べて、フラグを取り出そう。';
+    return '全ジャンルの20点パターンがそろいました。ステージ一覧から、上級に挑戦しよう。';
+  },
+  dur1:130,par1:85,dur2:120,dur3:230,par3:170
+};
+const GAMES_N2={'17-4':()=>runStart(mkPuz(N2,4)),'17-5':()=>runStart(mkDri(N2,8)),'17-6':()=>runStart(mkBos(N2,3,3))};
 const GAMES={
   ...GAMES_FO,
   ...GAMES_WB,
@@ -4381,6 +4472,7 @@ const GAMES={
   ...GAMES_P2,
   ...GAMES_M2,
   ...GAMES_G2,
+  ...GAMES_N2,
   '1':()=>{newGame();requestAnimationFrame(loop)},
   '2-1':()=>{newGame21();requestAnimationFrame(loop21)},
   '2-2':()=>{newGame2();requestAnimationFrame(loop2)},
