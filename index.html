@@ -1913,6 +1913,9 @@ const CODEX={
   'wc':{t:'cmd',s:'行数や単語数を数える'},
   'wc -l':{t:'opt',s:'行数を数える'},
   'cat':{t:'cmd',s:'ファイルの中身を全部表示する'},
+  '.gitignore':{t:'path',s:'Git に入れない(公開しない)ファイルを書く設定ファイル'},
+  '.env':{t:'path',s:'APIキーなどの秘密を書くファイル。公開してはいけない'},
+  '.ssh':{t:'path',s:'SSH の鍵を置くフォルダ'},
   'strings':{t:'cmd',s:'ファイルの中の、読める文字だけを取り出す'},
   'xxd':{t:'cmd',s:'ファイルを16進数で表示する'},
   'xxd -l':{t:'opt',s:'先頭から何バイトぶん見るか'},
@@ -1934,6 +1937,8 @@ const CODEX={
   'tshark -T':{t:'opt',s:'出力の形式を指定'},
   'tshark -e':{t:'opt',s:'出したい項目(フィールド)を指定'},
   'fields':{t:'arg',s:'指定した項目だけを出す形式'},
+  'http.authorization':{t:'arg',s:'HTTPの認証ヘッダ(という項目名)'},
+  'dns.qry.name':{t:'arg',s:'DNSの問い合わせ名(という項目名)'},
   'cyclic':{t:'cmd',s:'pwntools の道具。オフセットを調べる並びを作る/探す'},
   'cyclic -l':{t:'opt',s:'この値が、並びの何バイト目かを探す'},
   'curl':{t:'cmd',s:'URL に通信を送って、結果(レスポンス)を受け取る'},
@@ -2012,11 +2017,12 @@ function codeLookup(tok,lang,cmd,isCmd){
   if(/^https?:/.test(tok))return {t:'path',s:'通信の宛先(URL)',k:'url'};
   if(tok.indexOf('/')>=0||tok[0]==='~')return {t:'path',s:'ファイルやフォルダの場所',k:'path'};
   if(/^0x[0-9a-f]+$/i.test(tok))return {t:'arg',s:'16進数の値',k:'hex'};
+  if(/\.(bin|txt|zip|jpe?g|png|pcap|log|kwf|hex|py|cfg|conf|html|php|js|sh|pub|env)$/i.test(tok))return {t:'path',s:'ファイルの名前(引数)',k:'file'};
   const sy=CODEX[lang+' '+tok]||SYM[tok];if(sy)return {t:sy.t,s:sy.s,k:tok};
   if(isCmd)return {t:'cmd',s:'コマンド(道具)',k:tok};
   return null;
 }
-const CODE_RE=/(\s+)|(#.*)|('[^']*'|"[^"]*")|(https?:\/\/[^\s'"]+)|(~?[\w.$-]*\/[\w./*@=-]*)|(--[\w-]+)|(-[A-Za-z]+)|(0x[0-9A-Fa-f]+)|([A-Za-z0-9_][\w.$@-]*)|([|><;&*=?()\[\]{}:+,%^!])|([\s\S])/g;
+const CODE_RE=/(\s+)|(#.*)|('[^']*'|"[^"]*")|(https?:\/\/[^\s'"]+)|(~?[\w.$-]*\/[\w./*@=-]*)|(--[\w-]+)|(-[A-Za-z]+)|(0x[0-9A-Fa-f]+)|(\.?[A-Za-z0-9_][\w.$@-]*)|([|><;&*=?()\[\]{}:+,%^!])|([\s\S])/g;
 function codeInner(raw,lang){
   CODE_RE.lastIndex=0;let out='',m,cmd='',expectCmd=true;
   while((m=CODE_RE.exec(raw))){

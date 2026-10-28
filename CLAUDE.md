@@ -74,6 +74,7 @@
 - 本物の道具に近い画面は、問題 pr の view で描く：cyberView（CyberChef風）・wireView（Wireshark風のパケット一覧。pr.packets）・pyView（Python風。pr.code）・termView（ターミナル風。pr.term）。Pwn はメモリ配置を view で描く。CSS は .tool 系。振り返り（extra）では、本物の道具（CyberChef・Wireshark・Python・pwntools・Kali のコマンド）での同じやり方を見せる
 - 用語のしくみ：GLOSSARY の各用語は w（見出し）・s（ひとことで言うと）・e（たとえ）・at（出てくるステージ）・a（本文の中で見つける書き方）を持つ。ブリーフィング・ゲーム画面（下の黒い帯・サーバー室）・振り返りの文章には glossify() が自動で点線を付ける（同じまとまりの中では最初の1回だけ）。別の言葉の一部になってしまうときは no（あとに続く文字）や nb（すぐ前の文字）で除く。用語カードを開いている間はゲームを止める
 - 用語図鑑と用語ドリルの記録は localStorage の gk-words-v1 に、got（図鑑に入った用語）と mem（用語ごとの覚えた度 lv 0〜5・まちがい回数 miss・出た回数 n）を保存する。ステージ（ラウンド）をクリアすると、at にそれを含む用語が図鑑に入る。ドリルは図鑑に入った用語だけを使い、覚えた度が低い・よくまちがえる用語ほど多く出す（覚えた度4以上はたまにだけ）
+- コードの解説のしくみ：ゲームに出すコマンドやコードは、部品ごとにタップして意味が出る。解説は CODEX（部品→{t:種類, s:ひとこと}）・LANGS（言語ラベルと説明）・SYM（記号）で一覧管理する。CODEX のキーに空白を入れると「コマンド＋部品」の文脈別（例 'curl -i'）、先頭に言語名を付けると言語別（例 'sql SELECT'）。種類 t は cmd/sub/opt/path/arg/sym/kw で、色分けと凡例に対応する。annotateAll() が振り返りなどの `<code>` を、term() がプレイ中の端末表示を、画面タイトル（barTitle）が本物の画面の見出しを、タップできるコード（codeInner でトークンに分ける）に変える。言語は detectLang で見分け、明示するなら `<code data-lang="...">`。**新しいステージでコマンドやコードを出すときは、出てくる部品（コマンド名・サブ命令・オプション・記号など）を必ず CODEX に足す（なければ下線も意味も出ない）。** タップした部品は gk-codes-v1 の「コード図鑑」に入り、用語ドリルの「コードのドリル（部品と意味のペアそろえ）」で出る（ファイル名・引数・URL など CODE_SKIP のものは図鑑に入れない）
 - index.html の外枠（<!doctype html>〜</html>、charset、viewport、[hidden]{display:none!important}）は消さない。これが無いとGitHub Pagesで正しく動かない
 
 ## 安全のルール
