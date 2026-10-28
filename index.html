@@ -346,7 +346,7 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
   <div class="skywrap" id="sky" data-only="1 2-1 2-2 2-3"><canvas id="cv"></canvas><div class="skylabel">インターネット</div>
     <div class="logs" id="logs" data-only="2-3" hidden></div><div class="pointer" id="pointer23" hidden>▼ 次はこれ</div>
     <div class="cue" id="cue" hidden><b id="cueB"></b><span id="cueS"></span><i aria-hidden="true">▼</i></div></div>
-  <div class="panel" id="panel" data-only="3-1 3-2 4 5 6 7 8 9-1 9-2 10-1 10-2 11-1 11-2 11-3 11-4 11-5 11-6 12-1 12-2 12-3 12-4 12-5 12-6 13-1 13-2 13-3 13-4 13-5 13-6 14-1 14-2 14-3 14-4 14-5 14-6 15-1 15-2 15-3 15-4 15-5 15-6 16-1 16-2 16-3 17-1 17-2 17-3" hidden></div>
+  <div class="panel" id="panel" data-only="3-1 3-2 4 5 6 7 8 9-1 9-2 10-1 10-2 11-1 11-2 11-3 11-4 11-5 11-6 12-1 12-2 12-3 12-4 12-5 12-6 13-1 13-2 13-3 13-4 13-5 13-6 14-1 14-2 14-3 14-4 14-5 14-6 15-1 15-2 15-3 15-4 15-5 15-6 16-1 16-2 16-3 16-4 16-5 16-6 17-1 17-2 17-3" hidden></div>
   <div class="doors" id="doors" data-only="1"></div>
   <div class="gate" id="gate" data-only="2-2" hidden>
     <div class="door door22" id="door22"><span class="num">22</span><span class="nm">SSH</span><span class="st" id="door22st">パスワード</span></div>
@@ -1180,7 +1180,37 @@ const STAGES=[
           doors:[['すべての数から N を引く','N を変えて、計算する','正しい N を選ぶ'],['数を文字に変える（chr）','数の並びを文字にする','範囲外は戻らない'],['XOR（N）','データと鍵を XOR する','鍵は N'],['フラグの形だけを拾う','GK{…} の形を探す','最後に置く']],
           real:['計算を一段ずつ進めて、途中の結果を見る。結果が読める形になったら、その段が正しいという目安になる。'],
           howto:`<div class="legend"><div><span class="dot d"></span>部品を押すと、レシピに下から足される（最大3手）</div><div><span class="dot k"></span>実行で、フラグが出れば勝ち</div></div>
-            <p>3体のボス。</p><p>★は「まちがいなし」「150秒以内」で1つずつ。</p>`}}
+            <p>3体のボス。</p><p>★は「まちがいなし」「150秒以内」で1つずつ。</p>`}},
+      {name:'パズル（上級）',hud:['16-4 パズル','手では無理な量を、プログラムに任せる'],
+        room:'<span class="chip">大量の問題/データ</span><span class="arrow">→</span><span class="chip">ループ/grep</span><span class="arrow">→</span><span class="chip">GK{…}</span>',
+        cue:['上級の Programming に挑戦','Python風の画面で、まとめて処理'],
+        brief:{
+          situation:['20点の上級。手ではこなせない量を、プログラムに任せる。<b>サーバーが次々に出す計算</b>にループで自動で答える、<b>大量のデータ</b>から grep で探す、<b>たくさんの行</b>を全部デコードして当たりを探す。Python風の画面でコードを見る。'],
+          doorsTitle:'道具と手がかり',
+          doors:[['ループで全部に答える','次々の問題を自動で解く','pwntools の remote'],['GK{…} を一気に探す','大量データを grep で絞る','目で探さない'],['全行を Base64 で戻す','各行をデコードして当たりを探す','GK{ で始まる行'],['GK{…} だけ拾う','まわりを捨てる','最後に使う']],
+          real:['本物の CTF でも、pwntools で自動化したり、grep や Python で大量データを処理したりする。手作業では間に合わない。'],
+          howto:`<div class="legend"><div><span class="dot d"></span>道具を押すと、まとめて処理される</div><div><span class="dot k"></span>GK{…} が出たら「答えを提出」</div></div>
+            <p>4問。全体で130秒。</p><p>★は「やり直しが3回以内」「85秒以内」で1つずつ。</p>`}},
+      {name:'ドリル（上級）',hud:['16-5 ドリル','ヒント語から、上級の手口を当てる'],
+        room:'<span class="chip">問題文</span><span class="arrow">→</span><span class="chip">ヒント語</span><span class="arrow">→</span><span class="chip">手口</span>',
+        cue:['ヒント語を読もう','ループ・grep・全行デコードを見分ける'],
+        brief:{
+          situation:['上級の Programming も、ヒント語で手口が分かる。「次々・ループ・自動で答える」は自動回答、「大量・何万行・grep」は大量データ、「たくさんの行・全部デコード」は全行デコード。'],
+          doorsTitle:'ヒント語の見分け方',
+          doors:[['次々・ループ・自動','ループで自動回答','pwntools の remote'],['大量・何万行・grep','大量データから grep','目で探さない'],['たくさんの行・全部デコード','全行を Base64 で戻す','当たりを探す']],
+          real:['どれも「手ではやらない」ための手口。問題文の決め手の言葉を選ぼう。'],
+          howto:`<div class="legend"><div><span class="dot k"></span>問題文を読んで、手口を3つから選ぶ</div><div><span class="dot r"></span>まちがいは3回まで</div></div>
+            <p>8問。問題は自動で作られる（毎回違う）。</p><p>★は「まちがいなし」「70秒以内」で1つずつ。</p>`}},
+      {name:'ボス戦（上級）',hud:['16-6 ボス戦','道具を並べて、フラグを出す'],
+        room:'<span class="chip">入力</span><span class="arrow">レシピ（3手まで）</span><span class="arrow">→</span><span class="chip">フラグ</span>',
+        cue:['上級ボスの Programming','まとめて処理する道具を並べよう'],
+        brief:{
+          situation:['ボスは、手ではこなせない量でお宝を守る。道具を順番に並べて、まとめて処理し、フラグを取り出す。'],
+          doorsTitle:'レシピの部品',
+          doors:[['ループで全部に答える','次々の問題を自動で解く','最後にフラグが返る'],['全行を Base64 で戻す','各行をデコード','当たりを残す'],['GK{…} だけ拾う','まわりを捨てる','最後に置く']],
+          real:['pwntools・grep・Python。どれも大量処理の定番。手順をあとから見直せる。'],
+          howto:`<div class="legend"><div><span class="dot d"></span>部品を押すと、レシピに下から足される（最大3手）</div><div><span class="dot k"></span>実行で、フラグが出れば勝ち</div></div>
+            <p>3体のボス。</p><p>★は「まちがいなし」「170秒以内」で1つずつ。</p>`}}
     ]},
   {id:17, name:'Network', sub:'時刻の種・応答のヘッダ・スキャン結果の、読み方', ready:true,
     rounds:[
@@ -1474,6 +1504,10 @@ const GLOSSARY=[
     s:'読みやすい文法で、スクリプトを書けるプログラム言語',e:'手順書を、日本語に近い言葉で書ける'},
   {id:'ascii',   w:'ASCII（アスキー）',at:['16-1','16-3'],a:['ASCII'],
     s:'英数字と記号を、0〜127の数字で表す決まり',e:'文字に付けた番号札'},
+  {id:'loop20',  w:'自動化（ループで繰り返す）',at:['16-4','16-5','16-6'],a:['自動化'],
+    s:'同じ処理を、プログラムに何度も繰り返させること。手作業の代わり',e:'同じ作業を、機械に任せて一気に片づける'},
+  {id:'grep20',  w:'grep（グレップ）',at:['16-4','16-5','16-6'],a:['grep'],
+    s:'大量の文字の中から、形の合う行だけを取り出す道具',e:'本の山から、目印のページだけを一気に抜き出す'},
   {id:'header',  w:'ヘッダ（札）',at:['17-1','17-2','17-3'],a:['ヘッダ','X-'],
     s:'通信の最初に付く、補足の情報の行。X- で始まるものは、作った人が自由に付けた札',e:'荷物に付いている、送り状の余白のメモ'},
   {id:'seed',    w:'シード（種）',at:['17-1','17-3'],a:['シード','種（シード）'],
@@ -4281,6 +4315,59 @@ const M2={key1:'15-4',key2:'15-5',key3:'15-6',
   dur1:130,par1:85,dur2:120,dur3:230,par3:170
 };
 const GAMES_M2={'15-4':()=>runStart(mkPuz(M2,4)),'15-5':()=>runStart(mkDri(M2,8)),'15-6':()=>runStart(mkBos(M2,3,3))};
+/* ---- Programming 20点（ステージ16-4〜16-6）：ループで自動回答・大量データ・全行デコード ---- */
+const G2PHRASE={
+  'g2-auto':{jp:['サーバーが次々に計算問題を出す。手では無理','ループを書いて、全部に自動で答える','1000問を、プログラムに解かせる'],en:['The server fires math problems nonstop','Write a loop to answer them all','Let the program solve a thousand of them']},
+  'g2-bulk':{jp:['大量のデータの中から、1つだけ探す','何万行から、フラグの形を grep で絞る','膨大なログから、GK{…} を見つける'],en:['Find one line among thousands','grep the flag out of a huge file','A needle in a massive haystack']},
+  'g2-decode':{jp:['たくさんの行、どれか1つが Base64 で GK{','全部の行をデコードして、当たりを探す','各行を戻して、フラグの形を探す'],en:['Many lines; one base64-decodes to GK{','Decode every line and find the hit','Base64-decode all lines, keep the flag']}
+};
+const G2={key1:'16-4',key2:'16-5',key3:'16-6',
+  pats:['g2-auto','g2-bulk','g2-decode'],
+  pname:{'g2-auto':'ループで、次々の計算に自動で答える','g2-bulk':'大量データから、grep で探す','g2-decode':'全行を Base64 で戻して GK{…} を探す'},
+  why:{'g2-auto':'手では無理な数の問題は、ループを書いて自動で答える。最後にサーバーがフラグを返す','g2-bulk':'大量のデータは、grep などで一気に絞る。目で探さない','g2-decode':'たくさんの行を全部デコードして、フラグの形になるものを探す'},
+  palette:['run','b64each','xtr'],
+  OP:{
+    run:{label:'ループで全部に答える',cmd:()=>`python3 solve.py  # while True: recv(); send(ans)`,run:(t,p,pr)=>pr.solved!==undefined?pr.solved:null},
+    b64each:{label:'全行を Base64 で戻す',cmd:()=>`python3 -c "import base64,sys;[print(base64.b64decode(l).decode('latin1')) for l in sys.stdin]"`,run:t=>{const out=String(t).split('\n').map(l=>b64d(l.trim())).filter(x=>x!==null);return out.length?out.join('\n'):null}},
+    xtr:{label:'フラグの形(GK{…})だけ拾う',cmd:()=>"grep -o 'GK{[a-z0-9]*}'",run:t=>{const m=String(t).match(/GK\{[a-z0-9]+\}/);return m?m[0]:null}}
+  },
+  make(pat){
+    const ans=cflag();let pr={};
+    if(pat==='g2-auto'){
+      const nq=gpickA([200,500,1000]);const a=cint(100,999),b=cint(100,999);
+      pr={start:`問1: ${a} + ${b} = ?\n問2: …\n…（全 ${nq} 問。手では無理）`,solved:`${nq} 問すべて正解。secret: ${ans}`,
+        code:`from pwn import *\nio = remote("203.0.113.9", 7000)  # 練習用\nfor _ in range(${nq}):\n    q = io.recvline().decode()\n    a, b = map(int, re.findall(r"\\d+", q))\n    io.sendline(str(a + b).encode())\nprint(io.recvall())`,
+        view(){return pyView(pr)},ops:['run','xtr'],file:'challenge',solve:[{op:'run'},{op:'xtr'}]};
+    }else if(pat==='g2-bulk'){
+      const total=gpickA([20000,50000,100000]);
+      pr={start:`（${total} 行のログ。例）\nuser login ok\nitem sold 12\n… secret: ${ans} …\nitem sold 7\n…`,
+        code:`grep -o 'GK{[a-z0-9]*}' huge.log\n# ${total} 行を、目で探さず一気に絞る`,
+        view(){return pyView(pr)},ops:['xtr'],file:'huge.log',solve:[{op:'xtr'}]};
+    }else{
+      const n=gpickA([50,100,200]);const lines=[];for(let i=0;i<4;i++)lines.push(b64e(gpickA(['login ok','item sold','retry later','cache miss'])));
+      lines.splice(cint(0,lines.length),0,b64e(ans));
+      pr={start:lines.join('\n')+`\n…（全 ${n} 行）`,code:`import base64\nfor line in open("lines.txt"):\n    try:\n        s = base64.b64decode(line).decode()\n        if s.startswith("GK{"): print(s)\n    except: pass`,
+        view(){return pyView(pr)},ops:['b64each','xtr'],file:'lines.txt',solve:[{op:'b64each'},{op:'xtr'}]};
+    }
+    pr.done=t=>isFlag(t)&&t===ans;
+    pr.text=`${gpickA(SET20)}：${gpickA(CG.rnd()<.5?G2PHRASE[pat].jp:G2PHRASE[pat].en)}`;
+    pr.phrase=pr.text.split('：')[1];pr.ans=ans;
+    return pr;
+  },
+  res:{win:'プログラムで、大量の処理を一気に片づけた！',lose:'フラグに届かなかった',sumWin:'手では無理な量も、ループや grep に任せれば一瞬。これがプログラミングの力。',sumLose:'手でやらず、ループや grep に任せよう。'},
+  rev:[['ループで自動回答','次々の問題は、ループを書いて自動で答える（pwntools の remote）',true],['大量データの処理','何万行も、grep などで一気に絞る。目で探さない',true],['全行デコード','たくさんの行を全部デコードして、当たりを探す',true]],
+  extra:`<div class="real"><div>振り返り：<b>手では無理な量こそ、プログラムの出番。ループと grep で一気に片づける</b>。</div>
+    <code>for _ in range(1000): io.sendline(str(a+b).encode())</code><div class="m">pwntools の remote で、次々の問題にループで答える（練習用サーバーに）</div>
+    <code>grep -o 'GK{[a-z0-9]*}' huge.log</code><div class="m">大量のログから、フラグの形だけを一気に取り出す</div></div>
+    <div class="warn"><b>安全メモ</b><ul><li>自動で大量のリクエストを送るのは、練習用・許可されたサーバーだけに。他人のサーバーに連打しない</li><li>拾ったスクリプトは、中身を読んでから動かす</li></ul></div>`,
+  next(key){
+    if(key==='16-4')return '次は16-5「ドリル(上級)」。問題文のヒント語から、どの手口かを当てよう。';
+    if(key==='16-5')return '次は16-6「ボス戦(上級)」。道具を並べて、フラグを取り出そう。';
+    return 'Programming の20点は、これで一区切り。ほかのジャンルの20点にも挑戦しよう。';
+  },
+  dur1:130,par1:85,dur2:120,dur3:230,par3:170
+};
+const GAMES_G2={'16-4':()=>runStart(mkPuz(G2,4)),'16-5':()=>runStart(mkDri(G2,8)),'16-6':()=>runStart(mkBos(G2,3,3))};
 const GAMES={
   ...GAMES_FO,
   ...GAMES_WB,
@@ -4293,6 +4380,7 @@ const GAMES={
   ...GAMES_W2,
   ...GAMES_P2,
   ...GAMES_M2,
+  ...GAMES_G2,
   '1':()=>{newGame();requestAnimationFrame(loop)},
   '2-1':()=>{newGame21();requestAnimationFrame(loop21)},
   '2-2':()=>{newGame2();requestAnimationFrame(loop2)},
