@@ -338,7 +338,7 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
   <div class="skywrap" id="sky" data-only="1 2-1 2-2 2-3"><canvas id="cv"></canvas><div class="skylabel">インターネット</div>
     <div class="logs" id="logs" data-only="2-3" hidden></div><div class="pointer" id="pointer23" hidden>▼ 次はこれ</div>
     <div class="cue" id="cue" hidden><b id="cueB"></b><span id="cueS"></span><i aria-hidden="true">▼</i></div></div>
-  <div class="panel" id="panel" data-only="3-1 3-2 4 5 6 7 8 9-1 9-2 10-1 10-2 11-1 11-2 11-3" hidden></div>
+  <div class="panel" id="panel" data-only="3-1 3-2 4 5 6 7 8 9-1 9-2 10-1 10-2 11-1 11-2 11-3 12-1 12-2 12-3" hidden></div>
   <div class="doors" id="doors" data-only="1"></div>
   <div class="gate" id="gate" data-only="2-2" hidden>
     <div class="door door22" id="door22"><span class="num">22</span><span class="nm">SSH</span><span class="st" id="door22st">パスワード</span></div>
@@ -852,6 +852,39 @@ const STAGES=[
             <p>3体のボス。部品の順番と、戻す数を見つけよう。</p>
             <p>★は「まちがいなし」「150秒以内」で1つずつ。</p>`
         }}
+    ]},
+  {id:12, name:'調査（Forensics）', sub:'strings・マジックナンバー・PDF・メタデータ', ready:true,
+    rounds:[
+      {name:'パズル',hud:['12-1 パズル','痕跡を一段ずつ探す'],
+        room:'<span class="chip">ファイル</span><span class="arrow">→</span><span class="chip">調べる道具</span><span class="arrow">→</span><span class="chip">フラグ</span>',
+        cue:['痕跡を探そう','道具で、フラグの形（GK{…}）を出す'],
+        brief:{
+          situation:['事件のあとに、<b>痕跡</b>（ファイルの中に残った跡）が見つかった。Forensics（フォレンジック）は、その痕跡を調べて、答え（フラグ）を取り出す仕事。'],
+          doorsTitle:'調べる道具',
+          doors:[['strings','読める行だけを拾う','ノイズの中の、文字の行を見つける'],['grep','フラグの形の行を探す','GK{ を含む行だけ残す'],['マジックナンバー','先頭の数バイトで型を見る','拡張子が違っても、中身の型が分かる'],['メタデータ','写真や文書の作成情報','作成者や撮影日時の中に、ヒントが隠れる']],
+          real:['本物の現場でも、まず「読める部分」と「先頭の数バイト」を見る。拡張子は、誰でも書き換えられるので、当てにしない。'],
+          howto:`<div class="legend"><div><span class="dot d"></span>道具を押すと、今のファイルの中身が変わる（一つ戻すで元に戻せる）</div><div><span class="dot k"></span>GK{…} の形が出たら、「答えを提出」</div></div>
+            <p>4問。全体で110秒。道具の組み合わせを探そう。</p><p>★は「やり直しが3回以内」「70秒以内」で1つずつ。</p>`}},
+      {name:'ドリル',hud:['12-2 ドリル','ヒント語から、調べ方を当てる'],
+        room:'<span class="chip">問題文</span><span class="arrow">→</span><span class="chip">ヒント語</span><span class="arrow">→</span><span class="chip">調べ方</span>',
+        cue:['ヒント語を読もう','問題文の言葉から、調べ方を当てる'],
+        brief:{
+          situation:['調査の問題文には、ヒント語が入っている。「拡張子」「先頭」は、マジックナンバー。「/JS」は、PDFの中のスクリプト。「作成者」「撮影日時」は、メタデータ。言葉から調べ方を連想する練習。'],
+          doorsTitle:'ヒント語の見分け方',
+          doors:[['読める行・ノイズ','strings と grep','ふつうに開くと読めない塊の中から拾う'],['拡張子と中身が違う','マジックナンバー','先頭の数バイトで型を決める'],['スクリプト・/JS','PDFのJavaScript','文書の中に埋め込まれた命令'],['作成者・撮影日時','メタデータ','写真や文書の作成情報']],
+          real:['似ている言葉に注意。「写真」は、メタデータとマジックナンバーの両方が関係することがある。決め手になる言葉を選ぼう。'],
+          howto:`<div class="legend"><div><span class="dot k"></span>問題文を読んで、調べ方を3つから選ぶ</div><div><span class="dot r"></span>まちがいは3回まで</div></div>
+            <p>8問。問題ごとに、ファイルは自動で作られる（毎回違う）。</p><p>★は「まちがいなし」「70秒以内」で1つずつ。</p>`}},
+      {name:'ボス戦',hud:['12-3 ボス戦','調べ方を並べて、フラグを出す'],
+        room:'<span class="chip">入力</span><span class="arrow">レシピ（4手まで）</span><span class="arrow">→</span><span class="chip">フラグ</span>',
+        cue:['ボスが隠した痕跡','レシピを並べて、フラグを取り出そう'],
+        brief:{
+          situation:['ボスは、ファイルの奥に痕跡を隠している。調べ方を上から順番に並べて実行する。順番が違うと、答えは出ない。'],
+          doorsTitle:'レシピの部品',
+          doors:[['strings・grep','読める行を拾い、フラグの行を探す','順番どおりに使う'],['マジックナンバー・unzip','型を見て、中身を開く','ZIPの中身が出てくる'],['JavaScript・Base64','PDFの命令と、デコード','文字コードを戻す・Base64を戻す']],
+          real:['ボスの中には、手順が4つ必要なものもある。途中の結果（→）を見て、どこで読めなくなるかを確かめよう。'],
+          howto:`<div class="legend"><div><span class="dot d"></span>部品を押すと、レシピに下から足される（最大4手）</div><div><span class="dot k"></span>実行で、フラグが出れば勝ち。まちがえると失敗が1つ増える</div></div>
+            <p>3体のボス。</p><p>★は「まちがいなし」「150秒以内」で1つずつ。</p>`}}
     ]}
 ];
 
@@ -1041,7 +1074,17 @@ const GLOSSARY=[
   {id:'flag',    w:'フラグ',          at:['11-1','11-3'],a:['フラグ'],
     s:'CTFで答えとして提出する、決まった形の文字列（ここでは GK{…}）',e:'宝探しの「お宝」。見つけたら、それを提出する'},
   {id:'cyberchef',w:'CyberChef（サイバーシェフ）',at:['11-3'],a:['CyberChef'],
-    s:'変換を、手順として並べて実行できるWebの道具',e:'料理のレシピのように、手順を上から順に並べてから作る'}
+    s:'変換を、手順として並べて実行できるWebの道具',e:'料理のレシピのように、手順を上から順に並べてから作る'},
+  {id:'strings',   w:'strings（ストリングス）',at:['12-1','12-3'],a:['strings'],
+    s:'ファイルの中から、人が読める文字の並びだけを拾うコマンド',e:'砂浜の貝殻から、文字の模様がある貝だけを拾う'},
+  {id:'magic',     w:'マジックナンバー',at:['12-1','12-2','12-3'],a:['マジックナンバー'],
+    s:'ファイルの先頭に決まって書かれている数バイト。ファイルの型の印',e:'封筒の切手の種類で、中身の種類が分かる'},
+  {id:'pdf',       w:'PDF（ピーディーエフ）',at:['12-1','12-2','12-3'],a:['PDF'],
+    s:'文書の形式。中にスクリプトを入れられる',e:'閉じた冊子。ページの裏にメモが挟まっていることがある'},
+  {id:'jsscript',  w:'JavaScript（ジャバスクリプト）',at:['12-1','12-2'],a:['JavaScript'],
+    s:'ブラウザなどで動くプログラム。文書の中に入ると、読む人の知らないところで動くことがある',e:'勝手に開く、家の中の自動ドア'},
+  {id:'forensic',  w:'Forensics（フォレンジック）',at:['12-1'],a:['Forensics','フォレンジック'],
+    s:'デジタルの痕跡を、証拠として調べること',e:'探偵が現場の足跡や指紋を調べる仕事'}
 ];
 const GBYID=Object.fromEntries(GLOSSARY.map(g=>[g.id,g]));
 const GMATCH=GLOSSARY.flatMap(g=>g.a.map(a=>({a,g}))).sort((x,y)=>y.a.length-x.a.length);
@@ -2959,7 +3002,272 @@ function r113(win,st,why){return {eyebrow:win?'STAGE 11-3 CLEAR':'STAGE 11-3',ti
     <div class="warn"><b>安全メモ</b><ul><li>暗号を解くのは、自分で作った問題か、許可された練習問題だけにする</li></ul></div>`,
   next:win?'暗号の章クリア！ 次は、ほかのジャンルへ（ROADMAPの計画どおり）。':''};}
 
+/* ===== ジャンル共通の型（Crypto と同じ3段）：型紙 → 問題（答えは手順どおりに確かめる）→ パズル・ドリル・ボス戦 ===== */
+// G：ジャンルの型紙。OP（道具）・pats（パターン）・pname（手法名）・why（解説）・make(pat)（問題を作る）
+// 問題 pr：text（問題文）・phrase（ヒント語）・start（最初の文字）・rows（選ぶ行）・ops（使える道具）
+//          solve（答えの手順）・done(t)（答えかどうか）・view(t)（見せ方）・bstart/bsolve（ボス戦の入口と手順）
+const gpickA=a=>a[Math.floor(CG.rnd()*a.length)];
+function gchain(pr,start,chain){
+  let t=start;
+  for(const st of chain){
+    if(st.row!==undefined){const r=pr.rows&&pr.rows[st.row];if(!r)return null;t=r.value;continue}
+    const op=pr.G.OP[st.op];if(!op)return null;
+    t=op.run(t,st.p,pr);if(t===null||t===undefined)return null;
+  }
+  return t;
+}
+// 答えの手順をやり直して、本当に答えになるかを確かめる（合わない問題は作り直す）
+function gverify(pr){
+  if(!pr.done(gchain(pr,pr.rows?null:pr.start,pr.solve)))return false;
+  const b=pr.bsolve||pr.solve;
+  return !!pr.done(gchain(pr,pr.bstart!==undefined?pr.bstart:pr.start,b));
+}
+function gmake(G,pat){
+  for(let n=0;n<300;n++){const pr=G.make(pat);pr.G=G;pr.pat=pat;if(pr.bstart===undefined)pr.bstart=pr.start;if(gverify(pr))return pr}
+  throw new Error('問題を作れなかった：'+pat);
+}
+// 苦手な型ほど多く出す（GSTAT を共有）。直近2問と同じ型は避ける
+function gpickPat(G,recent){
+  const cand=G.pats.filter(p=>!recent.slice(-2).includes(p));
+  const pool=cand.length?cand:G.pats;
+  const w=pool.map(p=>1+2*(GSTAT.miss[p]||0)/(1+(GSTAT.ok[p]||0)*.5));
+  let r=Math.random()*w.reduce((a,b)=>a+b,0);
+  for(let i=0;i<pool.length;i++){r-=w[i];if(r<=0)return pool[i]}
+  return pool[pool.length-1];
+}
+const gbumpG=(k,pat)=>gbump(k,pat);
+function gres(G,key,win,st,why){
+  const K=G.res;
+  return {eyebrow:win?`STAGE ${key} CLEAR`:`STAGE ${key}`,title:win?K.win:(why||K.lose),
+    summary:win?K.sumWin:K.sumLose,review:rvRows(G.rev),extra:G.extra,next:win?G.next(key):''};
+}
+// 1段目：パズル。道具を一段ずつ当てて、答え（フラグ）を出す
+function mkPuz(G,count){return {dur:G.dur1||110,
+  init(){
+    RUN.G=G;RUN.pz=shuffle([...G.pats]).slice(0,count).map(p=>gmake(G,p));
+    RUN.i=0;RUN.undo=0;RUN.p=1;RUN.solved=0;RUN.mist=0;RUN.hist=[];
+    mount(`<div class="pbar"><span>問題 <b id="qN"></b></span><span class="sp"></span><span class="plives" id="pl">${lives(3,3)}</span></div>
+      <div class="scard" id="gcard"></div>
+      <div class="ppre" id="gcur"></div>
+      <div class="view" id="gview"></div>
+      <div class="acts3" id="gtools"></div>
+      <div class="acts"><button class="act" data-act="pm-"><span class="al">N −</span></button><button class="act" data-act="pm+"><span class="al" id="gpl">N=1</span></button></div>
+      <div class="acts"><button class="act" data-act="undo"><span class="al">一つ戻す</span></button><button class="act" data-act="sub" id="gsub" disabled><span class="al">答えを提出</span></button></div>
+      <p class="pnote" id="pnote"></p>`);
+    showPz();
+  },
+  tap(act,el){
+    const pr=RUN.pz[RUN.i],G=RUN.G;
+    if(act==='pm-'||act==='pm+'){RUN.p=Math.max(0,Math.min(25,RUN.p+(act==='pm+'?1:-1)));document.getElementById('gpl').textContent=`N=${RUN.p}`;return}
+    if(act==='undo'){if(RUN.hist.length){RUN.cur=RUN.hist.pop();RUN.undo++;showCurPz()}return}
+    if(act==='sub'){
+      if(pr.done(RUN.cur)){okFx(el);RUN.solved++;gbumpG('ok',pr.pat);term(`# 答え ${RUN.cur}`,'# 正しい！ 次の問題へ');
+        if(RUN.solved>=RUN.pz.length){const st=1+(RUN.undo<=3?1:0)+(RUN.t<=G.par1||70?1:0);return runEnd(true,st,gres(G,G.key1,true,st))}
+        RUN.i++;showPz();return}
+      RUN.mist++;strike(el);setLives(3-RUN.mist,3);gbumpG('miss',pr.pat);
+      if(RUN.mist>=3)runEnd(false,0,gres(G,G.key1,false,0,'まちがえすぎた'));return;
+    }
+    if(act.startsWith('r')&&pr.rows){
+      const r=pr.rows[+act.slice(1)];
+      if(r.good===false){RUN.mist++;strike(el);setLives(3-RUN.mist,3);gbumpG('miss',pr.pat);
+        document.getElementById('pnote').textContent=r.why||'ちがう。別の行を試そう。';
+        if(RUN.mist>=3)runEnd(false,0,gres(G,G.key1,false,0,'まちがえすぎた'));return}
+      okFx(el);RUN.hist=[];RUN.cur=r.value;term(`$ ${r.label}`,'# 選んだ行を開いた');showCurPz();return;
+    }
+    if(act.startsWith('op-')){
+      const k=act.slice(3),op=G.OP[k];if(!op||RUN.cur===null)return;
+      const res=op.run(RUN.cur,RUN.p,pr);
+      RUN.hist.push(RUN.cur);
+      term(`$ ${op.cmd(RUN.p)}`,`# ${op.label}`);
+      RUN.cur=res===null||res===undefined?'（この道具では読めない形）':res;
+      showCurPz();
+    }
+  },
+  onTime(){runEnd(false,0,gres(RUN.G,RUN.G.key1,false,0,'時間切れ'))}
+};}
+function showPz(){
+  const G=RUN.G,pr=RUN.pz[RUN.i];
+  document.getElementById('qN').textContent=`${RUN.i+1}/${RUN.pz.length}`;
+  document.getElementById('gcard').innerHTML=`<div class="sh">${escH(pr.text)}</div>`+(pr.rows?`<div class="plist">${pr.rows.map((r,k)=>`<button class="prow" data-act="r${k}"><span style="font-family:var(--f-term);font-size:12px;word-break:break-all">${escH(r.label)}</span></button>`).join('')}</div>`:'');
+  RUN.cur=pr.rows?null:pr.start;RUN.hist=[];
+  term(`$ cat ${pr.file||'input.txt'}`,`# ${pr.phrase}`);
+  showCurPz();
+  guideOn(RUN.i<1?document.querySelector(pr.rows?'[data-act="r0"]':`[data-act="op-${pr.ops[0]}"]`):null);
+}
+function showCurPz(){
+  const G=RUN.G,pr=RUN.pz[RUN.i];
+  document.getElementById('gcur').textContent=RUN.cur===null?'（下の行を1つ選ぶ）':RUN.cur;
+  document.getElementById('gview').innerHTML=pr.view?pr.view(RUN.cur):'';
+  document.getElementById('gtools').innerHTML=pr.ops.map(k=>`<button class="act" data-act="op-${k}"><span class="al">${escH(G.OP[k].label)}</span></button>`).join('');
+  document.getElementById('gsub').disabled=!pr.done(RUN.cur);
+}
+// 2段目：ドリル。問題文のヒント語から手法を当てる
+function mkDri(G,total){return {dur:G.dur2||120,
+  init(){
+    RUN.G=G;RUN.n=0;RUN.mist=0;RUN.total=total;RUN.recent=[];
+    mount(`<div class="pbar"><span>問題 <b id="qN">0/${total}</b></span><span class="sp"></span><span class="plives" id="pl">${lives(3,3)}</span></div>
+      <div class="scard" id="qc"></div><div class="acts3" id="opts"></div>
+      <p class="pnote" id="pnote">問題文のヒント語から、使う手法を当てよう。</p>`);
+    nextDri();
+  },
+  tap(act,el){
+    if(!act.startsWith('o'))return;
+    const G=RUN.G,q=RUN.q,pick=q.opts[+act.slice(1)];
+    if(pick===q.pat){
+      okFx(el);gbumpG('ok',q.pat);RUN.n++;
+      document.getElementById('qN').textContent=`${RUN.n}/${RUN.total}`;
+      document.getElementById('pnote').textContent=`正解。${G.why[q.pat]}`;
+      if(RUN.n>=RUN.total){const st=1+(RUN.mist===0?1:0)+(RUN.t<=70?1:0);return runEnd(true,st,gres(G,G.key2,true,st))}
+      nextDri();
+    }else{
+      RUN.mist++;strike(el);setLives(3-RUN.mist,3);gbumpG('miss',q.pat);
+      document.getElementById('pnote').textContent=`ちがう。このヒントは「${G.pname[q.pat]}」。${G.why[q.pat]}`;
+      if(RUN.mist>=3)runEnd(false,0,gres(G,G.key2,false,0,'まちがえすぎた'));
+    }
+  },
+  onTime(){runEnd(false,0,gres(RUN.G,RUN.G.key2,false,0,'時間切れ'))}
+};}
+function nextDri(){
+  const G=RUN.G,pat=gpickPat(G,RUN.recent);RUN.recent.push(pat);
+  const pr=gmake(G,pat);
+  const opts=shuffle([pat,...shuffle(G.pats.filter(p=>p!==pat)).slice(0,2)]);
+  RUN.q={pat,opts};
+  document.getElementById('qc').innerHTML=`<div class="sh">${escH(pr.text)}</div>`;
+  document.getElementById('opts').innerHTML=opts.map((p,k)=>`<button class="act" data-act="o${k}"><span class="al">${escH(G.pname[p])}</span></button>`).join('');
+  term('$ cat hint.txt',`# ${pr.phrase}`);
+}
+// 3段目：ボス戦。道具を並べて（最大 maxSteps 手）、答えを出す
+function mkBos(G,count,maxSteps){return {dur:G.dur3||200,
+  init(){
+    RUN.G=G;RUN.bi=0;RUN.mist=0;RUN.p=1;RUN.rec=[];RUN.max=maxSteps;
+    RUN.boss=shuffle([...G.pats]).slice(0,count).map(p=>gmake(G,p));
+    mount(`<div class="pbar"><span>ボス <b id="qN"></b></span><span class="sp"></span><span class="plives" id="pl">${lives(3,3)}</span></div>
+      <div class="scard" id="bossC"></div>
+      <div class="acts3">${G.palette.map(k=>`<button class="act" data-act="add-${k}"><span class="al">${escH(G.OP[k].label)}</span></button>`).join('')}</div>
+      <div class="acts"><button class="act" data-act="pm-"><span class="al">N −</span></button><button class="act" data-act="pm+"><span class="al" id="gpl">N=1</span></button></div>
+      <div class="acts"><button class="act" data-act="run"><span class="al">実行</span><small>答えが出るか</small></button><button class="act" data-act="clr"><span class="al">全部消す</span></button></div>
+      <p class="pnote" id="pnote">レシピを作って、実行しよう。最大${maxSteps}手。</p>`);
+    showBos();
+  },
+  tap(act,el){
+    const G=RUN.G,pr=RUN.boss[RUN.bi];
+    if(act==='pm-'||act==='pm+'){RUN.p=Math.max(0,Math.min(25,RUN.p+(act==='pm+'?1:-1)));document.getElementById('gpl').textContent=`N=${RUN.p}`;return}
+    if(act==='clr'){RUN.rec=[];showBos();return}
+    if(act==='run'){
+      const outs=bossOuts(pr);const fin=outs[outs.length-1];
+      if(pr.done(fin)){okFx(el);term(`# 答え ${fin}`,'# 取り出せた！ 次のボスへ');RUN.bi++;RUN.rec=[];
+        if(RUN.bi>=RUN.boss.length){const st=1+(RUN.mist===0?1:0)+(RUN.t<=G.par3||150?1:0);return runEnd(true,st,gres(G,G.key3,true,st))}
+        showBos();return}
+      RUN.mist++;strike(el);setLives(3-RUN.mist,3);
+      document.getElementById('pnote').textContent='まだ答えが出ない。道具の順番か、N を変えよう。';
+      if(RUN.mist>=3)runEnd(false,0,gres(G,G.key3,false,0,'まちがえすぎた'));return;
+    }
+    if(act.startsWith('add-')){
+      if(RUN.rec.length>=RUN.max){document.getElementById('pnote').textContent=`レシピは${RUN.max}手まで。`;return}
+      const k=act.slice(4);RUN.rec.push({op:k,p:RUN.p});
+      term(`$ ${G.OP[k].cmd(RUN.p)}`,`# ${G.OP[k].label}を、レシピの ${RUN.rec.length} 手目に入れた`);
+      showBos();return;
+    }
+    const m=act.match(/^(rm|n)(\d+)([+-]?)$/);
+    if(m){
+      const i=+m[2];
+      if(m[1]==='rm'){RUN.rec.splice(i,1);showBos()}
+      else{RUN.rec[i].p=Math.max(0,Math.min(25,RUN.rec[i].p+(m[3]==='+'?1:-1)));showBos()}
+    }
+  },
+  onTime(){runEnd(false,0,gres(RUN.G,RUN.G.key3,false,0,'時間切れ'))}
+};}
+function bossOuts(pr){
+  const G=pr.G,o=[pr.bstart];let t=pr.bstart;
+  for(const st of RUN.rec){const op=G.OP[st.op];t=op.run(t,st.p,pr);o.push(t===null||t===undefined?'（ここでは読めない）':t);if(t===null||t===undefined)break}
+  return o;
+}
+function showBos(){
+  const G=RUN.G,pr=RUN.boss[RUN.bi];
+  document.getElementById('qN').textContent=`${RUN.bi+1}/${RUN.boss.length}`;
+  const o=bossOuts(pr);
+  const steps=RUN.rec.map((st,i)=>{const op=G.OP[st.op];return `<div class="rstep"><b>${i+1}</b><span>${escH(op.label)}${op.par?'（N='+st.p+'）':''}</span><span class="rbtns">${op.par?`<button class="mini" data-act="n${i}-">−</button><button class="mini" data-act="n${i}+">+</button>`:''}<button class="mini" data-act="rm${i}">外す</button></span></div><div class="rout">→ ${escH(o[i+1]===undefined?'':o[i+1])}</div>`}).join('');
+  document.getElementById('bossC').innerHTML=`<div class="sh">ボス：${escH(pr.text)}</div><div class="ppre">入力：${escH(pr.bstart===''?'（空）':pr.bstart)}</div><div class="recipe">${steps||'<p class="pnote">まだ手がない。下の道具を入れよう</p>'}</div>`;
+  term('$ cat input.txt',`# ${pr.phrase}`);
+}
+/* ===== ステージ12「調査（Forensics）」：ファイルの中から、痕跡を探してフラグを取り出す ===== */
+const SETF=['ある会社のサーバーから回収した dump.bin','見知らぬ人から届いた写真ファイル','古いノートPCから取り出したディスクの一部','事件の日に使われた報告書（PDF）','削除されたはずのファイル'];
+const FPHRASE={
+  'fo-dump':{jp:['大きなファイルに、文字がまぎれている','読める行だけ拾うと、見つかるかもしれない','ふつうに開くと、読めない塊になっている'],en:['Readable text is hidden in the noise','Only a few lines here are actually text','Open it raw and nothing makes sense']},
+  'fo-magic':{jp:['拡張子は写真。でも中身は別物かもしれない','先頭の数バイトで、本当の型が分かる','ファイル名を信じすぎると、間違える'],en:['The extension says photo, the bytes disagree','The first bytes tell the real type','Never trust the file name alone']},
+  'fo-pdf':{jp:['文書の中に、こっそり動くスクリプトがある','PDFの中の /JS を読んでみよう','頼んでいない命令が、文書に入っている'],en:['The document carries a script nobody asked for','Look for /JS in the PDF objects','A hidden program inside a report']},
+  'fo-meta':{jp:['写真の作成者や撮影日時に、ヒントが残る','メタデータ（作成情報）の行を見てみよう','カメラは、誰がいつ撮ったかを覚えている'],en:['The camera remembers who took it','Check the metadata fields of the picture','Author and comment fields can hide a secret']}
+};
+const FOJUNK=['Microsoft Visual runtime build','Copyright notice for the scanner','filler text, nothing to see here','report draft, do not share','session log started normally'];
+const FO={key1:'12-1',key2:'12-2',key3:'12-3',
+  pats:['fo-dump','fo-magic','fo-pdf','fo-meta'],
+  pname:{'fo-dump':'strings と grep（読める行を拾う）','fo-magic':'マジックナンバー（先頭のバイト）','fo-pdf':'PDFの中のJavaScript（/JS）','fo-meta':'メタデータ（作成情報）'},
+  why:{'fo-dump':'大きなファイルは、読める行だけ拾うと見つかる（strings と grep）','fo-magic':'拡張子は当てにならない。先頭のバイトで、本当の型が分かる','fo-pdf':'PDFには、スクリプトが埋め込まれることがある。/JS の行を読む','fo-meta':'写真などの作成情報（メタデータ）に、ヒントや答えが残っていることがある'},
+  palette:['strings','grep','extract','hexhead','magicid','unzip','jsext','charcode','b64','field'],
+  OP:{
+    strings:{label:'strings（読める行だけ）',cmd:()=>'strings dump.bin',run:t=>t.split('\n').filter(l=>/^[\x20-\x7e]{4,}$/.test(l)).join('\n')},
+    grep:{label:'grep "GK{"（フラグの形の行）',cmd:()=>'grep "GK{" dump.txt',run:t=>t.split('\n').filter(l=>l.includes('GK{')).join('\n')},
+    extract:{label:'フラグだけ抜き出す',cmd:()=>"grep -o 'GK{[a-z0-9]*}'",run:t=>{const m=t.match(/GK\{[a-z0-9]+\}/);return m?m[0]:null}},
+    hexhead:{label:'先頭の8バイトを見る',cmd:()=>'xxd -l 8 photo.jpg',run:(t,p,pr)=>t===pr.file?pr.hex:null},
+    magicid:{label:'マジックナンバーで型を照合',cmd:()=>'file photo.jpg',run:(t,p,pr)=>t===pr.hex?pr.realType:null},
+    unzip:{label:'中身を開く（unzip）',cmd:()=>'unzip -p photo.jpg',run:(t,p,pr)=>t==='ZIP'?pr.inner:null},
+    jsext:{label:'/JS の行を探す',cmd:()=>'grep "/JS" report.pdf',run:t=>{const l=t.split('\n').find(x=>x.includes('/JS'));return l===undefined?null:l}},
+    charcode:{label:'文字コードの数字を文字にする',cmd:()=>'node -p "String.fromCharCode(…)"',run:t=>{const m=t.match(/\(([\d, ]+)\)/);return m?m[1].split(',').map(x=>String.fromCharCode(+x.trim())).join(''):null}},
+    b64:{label:'Base64をデコード',cmd:()=>'base64 -d',run:t=>b64d(t)},
+    field:{label:'メタデータの行を開く（番号）',cmd:p=>`exiftool -s photo.jpg | sed -n '${p+1}p'`,run:(t,p,pr)=>t==='metadata'&&pr.fields&&pr.fields[p]?pr.fields[p].v:null,par:true}
+  },
+  make(pat){
+    const ans=cflag();let pr={};
+    if(pat==='fo-dump'){
+      const lines=[];for(let i=0;i<12;i++){let l='';const n=cint(6,18);for(let j=0;j<n;j++)l+=CG.rnd()<.6?String.fromCharCode(cint(1,31)):String.fromCharCode(cint(33,126));lines.push(l)}
+      lines.push(gpickA(FOJUNK),gpickA(FOJUNK));
+      lines.push(`${gpickA(FOJUNK)} ${ans} tail`);
+      lines.push('note: GK{expired-token}','old: GK{EXAMPLE}');
+      pr={file:'dump.bin',start:shuffle(lines).join('\n'),ops:['strings','grep','extract'],solve:[{op:'strings'},{op:'grep'},{op:'extract'}],done:t=>isFlag(t)&&t===ans};
+    }else if(pat==='fo-magic'){
+      const file=gpickA(['photo.jpg','report.png','holiday.jpeg','scan.jpg']);
+      const inner=`readme.txt\n${gpickA(FOJUNK)}\nflag: ${ans}`;
+      pr={file,start:file,hex:'50 4B 03 04 14 00 00 00',realType:'ZIP',inner,ops:['hexhead','magicid','unzip','extract'],solve:[{op:'hexhead'},{op:'magicid'},{op:'unzip'},{op:'extract'}],done:t=>isFlag(t)&&t===ans};
+    }else if(pat==='fo-pdf'){
+      const codes=[...ans].map(c=>c.charCodeAt(0)).join(',');
+      const text=`%PDF-1.4\n1 0 obj << /Type /Catalog >> endobj\n2 0 obj << /S /JavaScript /JS (String.fromCharCode(${codes})) >> endobj\n3 0 obj << /Title (quarterly report) /Author (GK{expired-token}) >> endobj\n%%EOF`;
+      pr={file:'report.pdf',start:text,ops:['jsext','charcode'],solve:[{op:'jsext'},{op:'charcode'}],done:t=>isFlag(t)&&t===ans};
+    }else{
+      const enc=b64e(ans);
+      const items=shuffle([
+        {label:'Author: Kumo Lab',value:'Kumo Lab',good:false,why:'作者の名前。手がかりではない'},
+        {label:'Comment: 〔Base64〕',value:b64e('GK{expired-token}'),good:false,why:'これはもう使えない古いトークン。デコードしても答えではない'},
+        {label:'Software: GK-Editor 2.1',value:'GK-Editor 2.1',good:false,why:'編集ソフトの名前。関係ない'},
+        {label:'Comment: 〔Base64〕',value:enc,good:true},
+        {label:`CreateDate: 2026:10:0${cint(1,9)} 09:12:00`,value:'2026:10:05 09:12:00',good:false,why:'撮影日時。関係ない'}
+      ]);
+      const gi=items.findIndex(x=>x.good);
+      pr={file:'photo.jpg',start:null,rows:items.map(x=>({label:x.label,value:x.value,good:x.good,why:x.why})),
+        fields:items.map(x=>({v:x.value})),bstart:'metadata',ops:['b64','extract'],
+        solve:[{row:gi},{op:'b64'}],bsolve:[{op:'field',p:gi},{op:'b64'}],done:t=>isFlag(t)&&t===ans};
+    }
+    pr.text=`${gpickA(SETF)}：${(CG.rnd()<.5?gpickA(FPHRASE[pat].jp):gpickA(FPHRASE[pat].en))}`;
+    pr.phrase=pr.text.split('：')[1];
+    pr.ans=ans;
+    return pr;
+  },
+  res:{win:'ファイルの中から、フラグを見つけた！',lose:'フラグが見つからなかった',sumWin:'strings・マジックナンバー・PDF・メタデータ、それぞれの探し方で、フラグを取り出した。',sumLose:'痕跡は、ファイルの中にある。ひとつずつ確かめよう。'},
+  rev:[['strings / grep','読める行だけを拾う。ノイズの中から、フラグの形（GK{…}）の行を探す',true],['マジックナンバー','ファイルの先頭の数バイトで、本当の型を見分ける。拡張子は当てにならない',true],['/JS（PDF）','PDFの中のスクリプトを読む。文字コードの数字は、文字に戻せる',true],['メタデータ','写真の作成情報に、ヒントや暗号が残っていることがある。Base64 なら戻せる',true]],
+  extra:`<div class="real"><div>振り返り：<b>痕跡は、ファイルの中の「読める部分」に残る</b>。</div>
+    <code>strings dump.bin | grep "GK{"</code><div class="m">読める行だけ取り出して、フラグの形を探す</div>
+    <code>xxd -l 8 photo.jpg</code><div class="m">先頭の8バイトを見る（拡張子は当てにしない）</div>
+    <code>exiftool photo.jpg</code><div class="m">写真の撮影情報（メタデータ）を見る（自分の写真で）</div></div>
+    <div class="warn"><b>安全メモ</b><ul><li>他人のファイルや端末を、許可なく調べない。練習用に用意されたファイルで行う</li></ul></div>`,
+  next(key){
+    if(key==='12-1')return '次は12-2「ドリル」。ヒント語から、どの調べ方を使うかを当てよう。';
+    if(key==='12-2')return '次は12-3「ボス戦」。調べ方を並べて、フラグを取り出そう。';
+    return '次はステージ13「Web」。Webの画面と、裏のやりとりを見てみよう。';
+  },
+  dur1:110,par1:70,dur2:120,dur3:200,par3:150
+};
+const GAMES_FO={'12-1':()=>runStart(mkPuz(FO,4)),'12-2':()=>runStart(mkDri(FO,8)),'12-3':()=>runStart(mkBos(FO,3,4))};
 const GAMES={
+  ...GAMES_FO,
   '1':()=>{newGame();requestAnimationFrame(loop)},
   '2-1':()=>{newGame21();requestAnimationFrame(loop21)},
   '2-2':()=>{newGame2();requestAnimationFrame(loop2)},
