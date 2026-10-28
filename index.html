@@ -279,6 +279,14 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
 .scard .sh{font-family:var(--f-display);font-weight:800;font-size:15px}
 .ppre{font-family:var(--f-term);font-size:14px;line-height:1.6;color:var(--ink);background:#0f1229;border-radius:10px;padding:8px 10px;word-break:break-all}
 .ppre .c{color:var(--ok)}
+.tool{border:1px solid #2a2f5a;border-radius:10px;overflow:hidden;font-family:var(--f-term);font-size:12px}
+.tool .tbar{background:#20244a;color:var(--muted);padding:3px 8px;font-size:11px;letter-spacing:.08em}
+.tool .trow{padding:6px 8px;color:var(--ink);word-break:break-all}
+.tool .twire{display:flex;gap:6px;flex-wrap:wrap;padding:6px 8px}
+.tool .pkt{padding:4px 6px;border-radius:6px;background:#0f1229;cursor:default}
+.tool .pkt.on{outline:2px solid var(--accent)}
+.tool table{width:100%;border-collapse:collapse}
+.tool td,.tool th{border-bottom:1px solid #20244a;padding:3px 6px;text-align:left;color:var(--ink)}
 .slide{animation:slidein .35s ease-out}
 @keyframes slidein{from{transform:translateX(36px);opacity:0}}
 .pm{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;font-size:13px;background:#0f1229;border-radius:10px;padding:10px;font-family:var(--f-term)}
@@ -338,7 +346,7 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
   <div class="skywrap" id="sky" data-only="1 2-1 2-2 2-3"><canvas id="cv"></canvas><div class="skylabel">インターネット</div>
     <div class="logs" id="logs" data-only="2-3" hidden></div><div class="pointer" id="pointer23" hidden>▼ 次はこれ</div>
     <div class="cue" id="cue" hidden><b id="cueB"></b><span id="cueS"></span><i aria-hidden="true">▼</i></div></div>
-  <div class="panel" id="panel" data-only="3-1 3-2 4 5 6 7 8 9-1 9-2 10-1 10-2 11-1 11-2 11-3 12-1 12-2 12-3 13-1 13-2 13-3 14-1 14-2 14-3 15-1 15-2 15-3 16-1 16-2 16-3 17-1 17-2 17-3" hidden></div>
+  <div class="panel" id="panel" data-only="3-1 3-2 4 5 6 7 8 9-1 9-2 10-1 10-2 11-1 11-2 11-3 11-4 11-5 11-6 12-1 12-2 12-3 13-1 13-2 13-3 14-1 14-2 14-3 15-1 15-2 15-3 16-1 16-2 16-3 17-1 17-2 17-3" hidden></div>
   <div class="doors" id="doors" data-only="1"></div>
   <div class="gate" id="gate" data-only="2-2" hidden>
     <div class="door door22" id="door22"><span class="num">22</span><span class="nm">SSH</span><span class="st" id="door22st">パスワード</span></div>
@@ -851,6 +859,42 @@ const STAGES=[
             </div>
             <p>3体のボス。部品の順番と、戻す数を見つけよう。</p>
             <p>★は「まちがいなし」「150秒以内」で1つずつ。</p>`
+        }},
+      {name:'パズル（上級）',
+        hud:['11-4 パズル','鍵のある暗号を、道具で戻す'],
+        room:'<span class="chip">暗号文</span><span class="arrow">→</span><span class="chip">鍵つきの道具</span><span class="arrow">→</span><span class="chip">GK{…}</span>',
+        cue:['上級の暗号に挑戦','鍵を使う道具で、フラグを出す'],
+        brief:{
+          situation:['ここからは20点の上級。鍵のある暗号を解く。<b>くり返し鍵のXOR</b>（鍵の言葉をくり返してXOR）、<b>ヴィジュネル暗号</b>（文字ごとに違うずらし）、<b>小さいRSA</b>（n が小さく素因数分解できる）。CyberChef風の画面で、レシピを確かめながら解く。'],
+          doorsTitle:'道具と手がかり',
+          doors:[['くり返し鍵で XOR','鍵の言葉をくり返してXORを戻す','鍵はカードに書いてある'],['ヴィジュネルを戻す','鍵の文字ぶんだけ、逆にずらす','鍵はカードに書いてある'],['RSA を d で戻す','n を素因数分解して、秘密鍵 d で戻す','n と e はカードに書いてある'],['GK{…} だけ拾う','まわりのノイズを捨てる','最後に使う']],
+          real:['本物のCTFでも、鍵のある暗号は「鍵やしくみを見つける」ことが仕事。CyberChef や Python で、同じ手順を試せる。'],
+          howto:`<div class="legend"><div><span class="dot d"></span>道具を押すと、今の文字が変わる（一つ戻すで元に戻せる）</div><div><span class="dot k"></span>GK{…} が出たら「フラグを提出」</div></div>
+            <p>4問。全体で130秒。鍵を使う道具を選んで、フラグを出そう。</p><p>★は「やり直しが3回以内」「85秒以内」で1つずつ。</p>`
+        }},
+      {name:'ドリル（上級）',
+        hud:['11-5 ドリル','ヒント語から、上級の暗号を当てる'],
+        room:'<span class="chip">問題文</span><span class="arrow">→</span><span class="chip">ヒント語</span><span class="arrow">→</span><span class="chip">手法</span>',
+        cue:['ヒント語を読もう','くり返し鍵・ヴィジュネル・RSA を見分ける'],
+        brief:{
+          situation:['上級の暗号も、問題文にヒント語がある。「くり返す鍵」はくり返し鍵XOR、「表・文字ごとのずらし」はヴィジュネル、「n を素因数分解」は小さいRSA。'],
+          doorsTitle:'ヒント語の見分け方',
+          doors:[['くり返す鍵・鍵の言葉','くり返し鍵の XOR','1文字ではなく言葉'],['表・文字ごとのずらし','ヴィジュネル暗号','位置ごとに違うずらし'],['n・素因数分解・公開鍵','小さい RSA','n を p×q に分ける']],
+          real:['まぎらわしい偽物（頻度分析・ワンタイムパッド・ハッシュ）も混ざる。決め手になる言葉を選ぼう。'],
+          howto:`<div class="legend"><div><span class="dot k"></span>問題文を読んで、手法を3つから選ぶ</div><div><span class="dot r"></span>まちがいは3回まで</div></div>
+            <p>8問。問題は自動で作られる（毎回違う）。</p><p>★は「まちがいなし」「70秒以内」で1つずつ。</p>`
+        }},
+      {name:'ボス戦（上級）',
+        hud:['11-6 ボス戦','鍵つきの変換を並べて、フラグを出す'],
+        room:'<span class="chip">入力</span><span class="arrow">レシピ（3手まで）</span><span class="arrow">→</span><span class="chip">フラグ</span>',
+        cue:['上級ボスの暗号','鍵を使う道具を並べて、フラグを取り出そう'],
+        brief:{
+          situation:['ボスは、鍵のある暗号でお宝を守る。CyberChef のように、鍵つきの変換を並べて実行し、最後に GK{…} を取り出す。'],
+          doorsTitle:'レシピの部品',
+          doors:[['くり返し鍵の XOR','鍵の言葉でXORを戻す','鍵はカードに'],['ヴィジュネルを戻す / RSA を d で戻す','暗号に合う道具を選ぶ','n,e や鍵はカードに'],['GK{…} だけ拾う','まわりのノイズを捨てる','最後に置く']],
+          real:['CyberChef でも、鍵を入れた変換を並べて確かめる。どの手が効いたか、あとから見直せる。'],
+          howto:`<div class="legend"><div><span class="dot d"></span>部品を押すと、レシピに下から足される（最大3手）</div><div><span class="dot k"></span>実行で、フラグが出れば勝ち</div></div>
+            <p>3体のボス。</p><p>★は「まちがいなし」「170秒以内」で1つずつ。</p>`
         }}
     ]},
   {id:12, name:'調査（Forensics）', sub:'strings・マジックナンバー・PDF・メタデータ', ready:true,
@@ -1226,6 +1270,14 @@ const GLOSSARY=[
     s:'データを英数字と記号だけで書き直す決まり（末尾に = が付くことがある）',e:'荷物を、郵便で送れる文字だけの箱に詰め替えること。中身は隠れていない'},
   {id:'rot13',   w:'ROT13（ロットサーティーン）',at:['11-1','11-2','11-3'],a:['ROT13'],
     s:'アルファベットを13文字ずらす暗号。もう一度やると元に戻る',e:'鏡に映した文字。2回映すと元に戻る'},
+  {id:'xorrep',  w:'くり返し鍵のXOR',at:['11-4','11-5','11-6'],a:['くり返し鍵'],
+    s:'鍵の言葉をくり返しながらXORする暗号。同じ鍵でもう一度かけると戻る',e:'合い言葉を何度もくり返して、重ねていくようなもの'},
+  {id:'vigenere',w:'ヴィジュネル暗号',at:['11-4','11-5','11-6'],a:['ヴィジュネル'],
+    s:'鍵の言葉を使って、文字ごとに違う数だけずらす暗号',e:'場所ごとにダイヤルの合わせ数が変わる、シーザー暗号の進化版'},
+  {id:'rsa',     w:'RSA（アールエスエー）',at:['11-4','11-5','11-6'],a:['RSA'],
+    s:'公開鍵で暗号化し、秘密鍵で戻す方式。n を素因数分解できると破れる',e:'かけ算は簡単でも、逆の素因数分解は難しい、という差を利用した鍵'},
+  {id:'factor',  w:'素因数分解',      at:['11-4','11-5','11-6'],a:['素因数分解'],
+    s:'数を、素数のかけ算に分けること。大きい数ほど難しい',e:'できあがった積から、もとの2つの数を当てる逆算'},
   {id:'caesar',  w:'シーザー暗号',    at:['11-1','11-2','11-3'],a:['シーザー暗号','シーザー'],
     s:'アルファベットを、決めた数だけずらす暗号',e:'古代ローマの将軍が、文字をずらして手紙を書いたと伝えられる。ずらす数を知れば、戻せる'},
   {id:'encode',  w:'エンコード／デコード',at:['11-1','11-2','11-3'],a:['エンコード','デコード'],
@@ -3791,6 +3843,78 @@ const NW={key1:'17-1',key2:'17-2',key3:'17-3',
   dur1:110,par1:70,dur2:120,dur3:200,par3:150
 };
 const GAMES_NW={'17-1':()=>runStart(mkPuz(NW,4)),'17-2':()=>runStart(mkDri(NW,8)),'17-3':()=>runStart(mkBos(NW,3,3))};
+/* ===== 20点パターン：共通のヘルパーと、各ジャンルの上級ステージ（ラウンド4〜6） ===== */
+// 20点で使う「情報源」の言い回し（すべて架空・練習用）
+const SET20=['架空の会社「ナギ・ラボ」が残した練習用データ','CTFの練習サーバー（203.0.113.9、架空）','古い演習用のUSBメモリ（架空データ）','研修で配られた練習問題（KW-2026）'];
+// 数学のヘルパー（RSAなど）
+function modpow(b,e,m){b=BigInt(b)%BigInt(m);e=BigInt(e);m=BigInt(m);let r=1n;while(e>0n){if(e&1n)r=r*b%m;b=b*b%m;e>>=1n}return Number(r)}
+function modinv(a,m){let[r0,r1]=[a,m],[s0,s1]=[1,0];while(r1){const q=Math.floor(r0/r1);[r0,r1]=[r1,r0-q*r1];[s0,s1]=[s1,s0-q*s1]}return((s0%m)+m)%m}
+const gcd=(a,b)=>b?gcd(b,a%b):a;
+// くり返し鍵のXOR（バイト列と、鍵の文字をくり返してXOR）
+const xorRep=(bytes,key)=>bytes.map((b,i)=>b^key.charCodeAt(i%key.length));
+const h2b=t=>t.trim().split(/\s+/).map(x=>parseInt(x,16));
+const b2h=a=>a.map(b=>(b&255).toString(16).padStart(2,'0')).join(' ');
+const l2a=t=>/^\[[\d, ]+\]$/.test(t)?t.slice(1,-1).split(', ').map(Number):null;
+// ヴィジュネル暗号（文字だけずらす。digits や { } はそのまま。dec=true で戻す）
+function vigShift(t,key,dec){let o='',ki=0;for(const ch of t){const c=ch.charCodeAt(0);let base=-1;if(c>=65&&c<=90)base=65;else if(c>=97&&c<=122)base=97;if(base<0){o+=ch;continue}const k=key.toLowerCase().charCodeAt(ki%key.length)-97;ki++;const x=dec?(c-base-k+26)%26:(c-base+k)%26;o+=String.fromCharCode(base+x)}return o}
+// CyberChef風のレシピ表示（上級の「本物の道具に近い画面」）
+const cyberView=pr=>`<div class="tool"><div class="tbar">CyberChef風</div><div class="trow">Recipe：${escH(pr.recipe||'')}</div></div>`;
+const NOISE20=['note','memo','draft','log','tmp','old','keep','ref'];
+const wrapNoise=ans=>`${gpickA(NOISE20)} ${ans} ${gpickA(NOISE20)}`;
+
+/* ---- Crypto 20点（ステージ11-4〜11-6）：くり返し鍵XOR・ヴィジュネル・小さいRSA ---- */
+const C2PHRASE={
+  'c2-xorrep':{jp:['鍵を何度もくり返して XOR している','1文字ではなく、鍵の言葉ぶんをくり返す','同じ鍵でもう一度 XOR すれば戻る'],en:['A repeating-key XOR, the key is a word','XOR cycles the key over the bytes','XOR it again with the same key to undo']},
+  'c2-vig':{jp:['文字ごとに、鍵の文字ぶんだけずらす暗号','ヴィジュネル。表を使う、ずらしの暗号','鍵の言葉で、位置ごとに違うずらし'],en:['Vigenere: shift each letter by the key letter','A table cipher with a keyword','Each position shifts by a different amount']},
+  'c2-rsa':{jp:['公開鍵 (n, e) の n が小さい。素因数分解できる','n を素因数分解すれば、秘密の鍵 d が出る','小さい RSA。p と q に分ければ解ける'],en:['Small RSA: n factors into p and q','Factor n to recover the private key d','The modulus is tiny enough to factor']}
+};
+const C2={key1:'11-4',key2:'11-5',key3:'11-6',
+  pats:['c2-xorrep','c2-vig','c2-rsa'],
+  pname:{'c2-xorrep':'くり返し鍵の XOR','c2-vig':'ヴィジュネル暗号','c2-rsa':'小さい RSA（素因数分解）'},
+  why:{'c2-xorrep':'鍵の言葉をくり返して XOR する。同じ鍵でもう一度 XOR すると戻る','c2-vig':'文字ごとに、鍵の文字ぶんだけずらす。鍵を知っていれば戻せる','c2-rsa':'公開鍵の n が小さいと素因数分解でき、秘密の鍵 d が分かって戻せる'},
+  dstract:['頻度分析（よく出る文字から当てる）','ワンタイムパッド（使い捨ての鍵）','ハッシュ（戻せない一方向の変換）'],
+  palette:['xork','vigd','rsad','xtr'],
+  OP:{
+    xork:{label:'くり返し鍵で XOR を戻す',cmd:(p,t)=>`echo '…' | python3 -c "import sys;d=bytes.fromhex(sys.stdin.read());k=b'KEY';print(bytes(b^k[i%len(k)] for i,b in enumerate(d)).decode())"`,run:(t,p,pr)=>{const b=h2b(t);if(b.some(Number.isNaN))return null;try{return String.fromCharCode(...xorRep(b,pr.xkey).map(x=>x&255))}catch(e){return null}}},
+    vigd:{label:'ヴィジュネルを鍵で戻す',cmd:()=>'（CyberChef: Vigenere Decode, key=…）',run:(t,p,pr)=>/[A-Za-z]/.test(t)?vigShift(t,pr.vkey,true):null},
+    rsad:{label:'RSA を秘密鍵 d で戻す',cmd:()=>'python3 -c "print(bytes(pow(c,d,n) for c in C).decode())"',run:(t,p,pr)=>{const a=l2a(t);if(!a)return null;try{return String.fromCharCode(...a.map(c=>modpow(c,pr.d,pr.n)))}catch(e){return null}}},
+    xtr:{label:'フラグの形（GK{…}）だけ拾う',cmd:()=>"grep -o 'GK{[a-z0-9]*}'",run:t=>{const m=String(t).match(/GK\{[a-z0-9]+\}/);return m?m[0]:null}}
+  },
+  make(pat){
+    const ans=cflag();let pr={};const plain=wrapNoise(ans);
+    if(pat==='c2-xorrep'){
+      const xkey=gpickA(['cat','key','moon','sky','ghost','code']);
+      const hex=b2h(xorRep([...plain].map(c=>c.charCodeAt(0)),xkey));
+      pr={start:hex,xkey,recipe:`From Hex → XOR(鍵:${xkey}) → Extract`,card:`鍵（くり返す言葉）：${xkey}`,ops:['xork','xtr'],file:'cipher.hex',solve:[{op:'xork'},{op:'xtr'}]};
+    }else if(pat==='c2-vig'){
+      const vkey=gpickA(['lemon','ghost','tokyo','cipher','nagi','cloud']);
+      pr={start:vigShift(plain,vkey,false),vkey,recipe:`Vigenere Decode(鍵:${vkey}) → Extract`,card:`鍵（言葉）：${vkey}`,ops:['vigd','xtr'],file:'cipher.txt',solve:[{op:'vigd'},{op:'xtr'}]};
+    }else{
+      const primes=[13,17,19,23,29,31];let P=gpickA(primes),Q=gpickA(primes.filter(x=>x!==P));
+      const n=P*Q,phi=(P-1)*(Q-1);let e=gpickA([3,5,7,11].filter(x=>gcd(x,phi)===1));const d=modinv(e,phi);
+      const C=[...plain].map(c=>modpow(c.charCodeAt(0),e,n));
+      pr={start:`[${C.join(', ')}]`,n,e,d,recipe:`RSA Decrypt(d) → Extract（n=${n}, e=${e}）`,card:`公開鍵：n=${n}, e=${e}\nn は素因数分解できる大きさ（p×q）`,ops:['rsad','xtr'],file:'cipher.txt',solve:[{op:'rsad'},{op:'xtr'}]};
+    }
+    pr.view=()=>cyberView(pr);
+    pr.done=t=>isFlag(t)&&t===ans;
+    pr.text=`${gpickA(SET20)}：${gpickA(CG.rnd()<.5?C2PHRASE[pat].jp:C2PHRASE[pat].en)}`;
+    pr.phrase=pr.text.split('：')[1];pr.ans=ans;
+    return pr;
+  },
+  res:{win:'上級の暗号を解いて、フラグを取り出した！',lose:'フラグに届かなかった',sumWin:'くり返し鍵・ヴィジュネル・小さいRSA。鍵のしくみが分かれば、どれも戻せる。',sumLose:'鍵のしくみを思い出そう。XORは同じ鍵で戻り、RSAは n を素因数分解する。'},
+  rev:[['くり返し鍵のXOR','鍵の言葉をくり返してXOR。同じ鍵でもう一度かけると戻る（CyberChefのXOR）',true],['ヴィジュネル暗号','文字ごとに鍵の文字ぶんだけずらす。鍵が分かれば戻せる',true],['小さいRSA','n が小さいと素因数分解でき、秘密鍵 d が求まる',true]],
+  extra:`<div class="real"><div>振り返り：<b>鍵のある暗号も、鍵やしくみが分かれば戻せる。小さいRSAは n を素因数分解できてしまう</b>。</div>
+    <code>from Crypto.Util.number import long_to_bytes  # 本物のRSA演習</code><div class="m">CyberChef の「XOR」「Vigenère Decode」や、Python で練習できる</div>
+    <code>python3 -c "p,q=17,19;phi=(p-1)*(q-1);d=pow(e,-1,phi)"</code><div class="m">n=p×q を素因数分解して、秘密鍵 d を求める（練習用の小さな数）</div></div>
+    <div class="warn"><b>安全メモ</b><ul><li>本物のRSAは、n がとても大きく、素因数分解できない。小さい n は練習用だけ</li><li>自分で作った鍵や練習用データだけで試す。他人の暗号文を勝手に解かない</li></ul></div>`,
+  next(key){
+    if(key==='11-4')return '次は11-5「ドリル（上級）」。問題文のヒント語から、どの暗号かを当てよう。';
+    if(key==='11-5')return '次は11-6「ボス戦（上級）」。道具を並べて、フラグを取り出そう。';
+    return 'Crypto の20点パターンは、これで一区切り。ほかのジャンルの20点にも挑戦しよう。';
+  },
+  dur1:130,par1:85,dur2:120,dur3:230,par3:170
+};
+const GAMES_C2={'11-4':()=>runStart(mkPuz(C2,4)),'11-5':()=>runStart(mkDri(C2,8)),'11-6':()=>runStart(mkBos(C2,3,3))};
 const GAMES={
   ...GAMES_FO,
   ...GAMES_WB,
@@ -3798,6 +3922,7 @@ const GAMES={
   ...GAMES_MI,
   ...GAMES_PG,
   ...GAMES_NW,
+  ...GAMES_C2,
   '1':()=>{newGame();requestAnimationFrame(loop)},
   '2-1':()=>{newGame21();requestAnimationFrame(loop21)},
   '2-2':()=>{newGame2();requestAnimationFrame(loop2)},
