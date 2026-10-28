@@ -441,6 +441,7 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
     <div class="dres" id="dRes" hidden></div>
     <div class="btns" id="dBtns">
       <button class="big" id="dStart">はじめる</button>
+      <button class="sub" id="dStartCode" hidden>コードのドリル（部品と意味）</button>
       <button class="sub" id="dZukan">用語図鑑を見る</button>
     </div>
   </div>
@@ -2931,8 +2932,23 @@ function openZukan(){
   document.getElementById('zCount').textContent=`集めた言葉 ${gotCount()} / ${GLOSSARY.length}。ステージやラウンドをクリアすると増える。`;
   document.getElementById('zList').innerHTML=Object.entries(groups).map(([k,list])=>`<section class="zsec"><h2>${unitLabel(k)}</h2>${list.map(g=>WORDS.got[g.id]
     ?`<button type="button" class="zi" data-g="${g.id}"><b>${g.w}</b>${memHtml(g.id)}<span>${g.s}</span></button>`
-    :`<div class="zi locked"><b>？？？</b><span>${unitLabel(k)} をクリアすると図鑑に入る</span></div>`).join('')}</section>`).join('');
+    :`<div class="zi locked"><b>？？？</b><span>${unitLabel(k)} をクリアすると図鑑に入る</span></div>`).join('')}</section>`).join('')+codeZukanHtml();
   show('zukan');document.getElementById('zukan').scrollTop=0;document.getElementById('zBack').focus({preventScroll:true});
+}
+// コード図鑑：タップして集めたコマンドの部品を、種類ごとに並べる
+const CTYPE_NAME={cmd:'コマンド',sub:'サブ命令',opt:'オプション',sym:'記号',kw:'言語の語',path:'場所',arg:'引数'};
+const codeKeys=()=>Object.keys(CODES.got);
+const codeCount=()=>codeKeys().length;
+function codeZukanHtml(){
+  const keys=codeKeys();
+  let body;
+  if(!keys.length){body='<p class="lead">まだ空っぽ。振り返りや画面で、コマンドの色のついた部品をタップすると、ここに集まる。</p>';}
+  else{
+    const g={};for(const k of keys){const t=codeType(k);(g[t]=g[t]||[]).push(k)}
+    body=['cmd','sub','opt','sym','kw','path','arg'].filter(t=>g[t]).map(t=>
+      `<div class="czrow"><h3 class="czh">${CTYPE_NAME[t]||t}</h3><div class="czchips">${g[t].sort().map(k=>`<button type="button" class="ct t${t}" data-ex="${escH(codeMeaning(k))}" data-code="${escH(k)}">${escH(codeLabel(k))}</button>`).join('')}</div></div>`).join('');
+  }
+  return `<section class="zsec"><h2>コード図鑑（集めた部品 ${keys.length}）</h2>${body}</section>`;
 }
 document.getElementById('toZukan').addEventListener('click',openZukan);
 document.getElementById('zBack').addEventListener('click',openList);
@@ -2956,25 +2972,35 @@ function pickTerms(n){
 const shuffle=a=>{for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
 function openDrill(){
   if(S)S.running=false;if(DR)DR.running=false;
-  const n=gotCount(),ok=n>=4;
+  const n=gotCount(),ok=n>=4,cn=codeCount(),cok=cn>=4;
   document.getElementById('dLead').textContent=ok
-    ?'左の言葉と、右の「ひとことで言うと」を、タップでつなごう。30秒で全部そろえたらクリア。'
+    ?'左と右を、タップでつなごう。30秒で全部そろえたらクリア。言葉のドリルと、コマンドの部品のドリルが選べる。'
     :`本編を進めると言葉が増えるよ。今は ${n}個。4個そろうとドリルができる。`;
   ['dBar','pairs','dRes'].forEach(id=>document.getElementById(id).hidden=true);document.getElementById('dBtns').hidden=false;
   document.getElementById('dStat').textContent='';
-  const st=document.getElementById('dStart');st.textContent=ok?'はじめる':'ステージ一覧へ';st.dataset.mode=ok?'go':'list';
+  const st=document.getElementById('dStart');st.textContent=ok?'言葉のドリル':'ステージ一覧へ';st.dataset.mode=ok?'go':'list';
+  const sc=document.getElementById('dStartCode');sc.hidden=!cok;sc.textContent=`コードのドリル（集めた部品 ${cn}）`;
   show('drill');document.getElementById('drill').scrollTop=0;st.focus({preventScroll:true});
 }
-function startDrill(){
+const LANGSET={sql:1,python:1,c:1,js:1,bash:1,conf:1,log:1};
+function codeLabel(k){const sp=k.indexOf(' ');return (sp>0&&LANGSET[k.slice(0,sp)])?k.slice(sp+1):k}
+function pickCodes(n){
+  const pool=codeKeys().map(k=>({id:k,w:codeLabel(k),s:codeMeaning(k)})).filter(x=>x.s),out=[];
+  while(out.length<n&&pool.length){let r=Math.random()*pool.reduce((a,g)=>a+drillWeight(g.id),0),i=0;
+    for(;i<pool.length-1;i++){r-=drillWeight(pool[i].id);if(r<=0)break}out.push(pool.splice(i,1)[0])}
+  return out;
+}
+function startDrill(mode){
   audio();
-  const items=pickTerms(Math.min(5,gotCount()));
-  DR={running:true,items,t:0,last:performance.now(),selL:null,selR:null,matched:new Set(),wrong:new Set(),mist:0,before:Object.fromEntries(items.map(g=>[g.id,lvOf(g.id)])),endAt:0};
+  const code=mode==='code';
+  const items=code?pickCodes(Math.min(5,codeCount())):pickTerms(Math.min(5,gotCount()));
+  DR={running:true,code,items,t:0,last:performance.now(),selL:null,selR:null,matched:new Set(),wrong:new Set(),mist:0,before:Object.fromEntries(items.map(g=>[g.id,lvOf(g.id)])),endAt:0};
   const L=shuffle([...items]),R=shuffle([...items]);
-  document.getElementById('colL').innerHTML=L.map(g=>`<button type="button" class="pt L" data-g="${g.id}">${g.w}</button>`).join('');
-  document.getElementById('colR').innerHTML=R.map(g=>`<button type="button" class="pt R" data-g="${g.id}">${g.s}</button>`).join('');
+  document.getElementById('colL').innerHTML=L.map(g=>`<button type="button" class="pt L" data-g="${escH(g.id)}">${escH(g.w)}</button>`).join('');
+  document.getElementById('colR').innerHTML=R.map(g=>`<button type="button" class="pt R" data-g="${escH(g.id)}">${escH(g.s)}</button>`).join('');
   ['dBar','pairs'].forEach(id=>document.getElementById(id).hidden=false);
   document.getElementById('dRes').hidden=true;document.getElementById('dBtns').hidden=true;
-  document.getElementById('dLead').textContent='左の言葉と、右の「ひとことで言うと」を、タップでつなごう。';
+  document.getElementById('dLead').textContent=code?'左の「コマンドの部品」と、右の意味を、タップでつなごう。':'左の言葉と、右の「ひとことで言うと」を、タップでつなごう。';
   statDrill();requestAnimationFrame(loopDrill);
 }
 function statDrill(){document.getElementById('dStat').textContent=`${DR.matched.size}/${DR.items.length}ペア`}
@@ -3011,16 +3037,18 @@ function endDrill(win){
     if(!DR.matched.has(g.id)&&!DR.wrong.has(g.id)){m.lv=Math.max(0,m.lv-1);m.miss=(m.miss||0)+1}}   // そろえられなかった言葉も、もう一度出やすくする
   saveWords();
   const rows=DR.items.map(g=>{const a=DR.before[g.id],b=lvOf(g.id),ok=DR.matched.has(g.id)&&!DR.wrong.has(g.id);
-    return `<div class="rv"><span class="pt0 mk ${ok?'ok':'ng'}">${ok?'○':'×'}</span><span class="why"><b>${g.w}</b>${g.s}</span>${memHtml(g.id).replace('</i>',b>a?'<em class="up">↑</em></i>':b<a?'<em class="dn">↓</em></i>':'</i>')}</div>`}).join('');
+    return `<div class="rv"><span class="pt0 mk ${ok?'ok':'ng'}">${ok?'○':'×'}</span><span class="why"><b>${escH(g.w)}</b>${escH(g.s)}</span>${memHtml(g.id).replace('</i>',b>a?'<em class="up">↑</em></i>':b<a?'<em class="dn">↓</em></i>':'</i>')}</div>`}).join('');
   const r=document.getElementById('dRes');
   r.innerHTML=`<p><b>${win?`${DR.items.length}ペア そろえた！`:`時間切れ（${DR.matched.size}/${DR.items.length}ペア）`}</b> ${DR.t.toFixed(1)}秒・まちがい ${DR.mist}回</p>`+rows+
     '<p class="lead">右の●が「覚えた度」。まちがえた言葉は、次のドリルで多めに出る。</p>';
   ['dBar','pairs'].forEach(id=>document.getElementById(id).hidden=true);
   r.hidden=false;document.getElementById('dBtns').hidden=false;document.getElementById('drill').scrollTop=0;
-  const st=document.getElementById('dStart');st.textContent='もう一回';st.dataset.mode='go';st.focus({preventScroll:true});
+  const st=document.getElementById('dStart');st.textContent=DR.code?'もう一回（コード）':'もう一回';st.dataset.mode=DR.code?'code':'go';
+  document.getElementById('dStartCode').hidden=DR.code||codeCount()<4;st.focus({preventScroll:true});
 }
 document.getElementById('toDrill').addEventListener('click',openDrill);
-document.getElementById('dStart').addEventListener('click',e=>e.currentTarget.dataset.mode==='list'?openList():startDrill());
+document.getElementById('dStart').addEventListener('click',e=>{const m=e.currentTarget.dataset.mode;m==='list'?openList():startDrill(m==='code'?'code':'word')});
+document.getElementById('dStartCode').addEventListener('click',()=>startDrill('code'));
 document.getElementById('dZukan').addEventListener('click',()=>{if(DR)DR.running=false;openZukan()});
 document.getElementById('dBack').addEventListener('click',()=>{if(DR)DR.running=false;openList()});
 
