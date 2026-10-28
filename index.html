@@ -346,7 +346,7 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
   <div class="skywrap" id="sky" data-only="1 2-1 2-2 2-3"><canvas id="cv"></canvas><div class="skylabel">インターネット</div>
     <div class="logs" id="logs" data-only="2-3" hidden></div><div class="pointer" id="pointer23" hidden>▼ 次はこれ</div>
     <div class="cue" id="cue" hidden><b id="cueB"></b><span id="cueS"></span><i aria-hidden="true">▼</i></div></div>
-  <div class="panel" id="panel" data-only="3-1 3-2 4 5 6 7 8 9-1 9-2 10-1 10-2 11-1 11-2 11-3 11-4 11-5 11-6 12-1 12-2 12-3 12-4 12-5 12-6 13-1 13-2 13-3 13-4 13-5 13-6 14-1 14-2 14-3 15-1 15-2 15-3 16-1 16-2 16-3 17-1 17-2 17-3" hidden></div>
+  <div class="panel" id="panel" data-only="3-1 3-2 4 5 6 7 8 9-1 9-2 10-1 10-2 11-1 11-2 11-3 11-4 11-5 11-6 12-1 12-2 12-3 12-4 12-5 12-6 13-1 13-2 13-3 13-4 13-5 13-6 14-1 14-2 14-3 14-4 14-5 14-6 15-1 15-2 15-3 16-1 16-2 16-3 17-1 17-2 17-3" hidden></div>
   <div class="doors" id="doors" data-only="1"></div>
   <div class="gate" id="gate" data-only="2-2" hidden>
     <div class="door door22" id="door22"><span class="num">22</span><span class="nm">SSH</span><span class="st" id="door22st">パスワード</span></div>
@@ -1054,7 +1054,37 @@ const STAGES=[
           doors:[['入力を N 文字にする','箱の大きさを超える長さを選ぶ','N はレシピの中で変えられる'],['プログラムに入力を渡す','結果（フラグか、壊れたか）を見る','最後に置く'],['値を逆順にする','リトルエンディアン','ビッグエンディアンは、この問題では違う']],
           real:['入力の長さと、数値の並び順。このふたつを合わせられれば、模擬のプログラムは答えを出す。'],
           howto:`<div class="legend"><div><span class="dot d"></span>部品を押すと、レシピに下から足される（最大3手）</div><div><span class="dot k"></span>実行で、フラグが出れば勝ち</div></div>
-            <p>3体のボス。</p><p>★は「まちがいなし」「150秒以内」で1つずつ。</p>`}}
+            <p>3体のボス。</p><p>★は「まちがいなし」「150秒以内」で1つずつ。</p>`}},
+      {name:'パズル（上級）',hud:['14-4 パズル','戻り先を書き換えて、当たりの関数に飛ばす'],
+        room:'<span class="chip">入力</span><span class="arrow">→</span><span class="chip">戻り先</span><span class="arrow">→</span><span class="chip">win()</span>',
+        cue:['上級の Pwn に挑戦','オフセットと、アドレスの並び順'],
+        brief:{
+          situation:['20点の上級。あふれた入力で<b>戻り先アドレス</b>を書き換え、当たりの関数 win() に飛ばす。<b>オフセット</b>（戻り先までの長さ）を数え、アドレスを<b>リトルエンディアン</b>（下位バイトから）で並べる。メモリ配置の画面を見ながら進める。'],
+          doorsTitle:'道具と手がかり',
+          doors:[['パディングを N に','戻り先まで、ちょうど埋める','箱＋保存領域の長さ'],['戻り先に win() を置く','win のアドレスを LE で置く','アドレスはカードに'],['アドレスを LE に','4バイトを逆順に','リトルエンディアン'],['プログラムに渡す','結果を見る','最後に置く']],
+          real:['本物の Pwn でも、cyclic でオフセットを調べ、p32() でアドレスを並べる（pwntools）。練習用の模擬で、同じ考え方を試す。'],
+          howto:`<div class="legend"><div><span class="dot d"></span>N を変えて、長さを決める。メモリ配置のマスを見る</div><div><span class="dot k"></span>フラグが出たら「答えを提出」</div></div>
+            <p>4問。全体で140秒。</p><p>★は「やり直しが3回以内」「90秒以内」で1つずつ。</p>`}},
+      {name:'ドリル（上級）',hud:['14-5 ドリル','ヒント語から、上級の手口を当てる'],
+        room:'<span class="chip">問題文</span><span class="arrow">→</span><span class="chip">ヒント語</span><span class="arrow">→</span><span class="chip">手口</span>',
+        cue:['ヒント語を読もう','戻り先・LE・オフセットを見分ける'],
+        brief:{
+          situation:['上級の Pwn も、ヒント語で手口が分かる。「戻り先・win」は戻り先の書き換え、「リトルエンディアン・逆順」はアドレスの並べ方、「オフセット・ちょうどの長さ」はオフセット数え。'],
+          doorsTitle:'ヒント語の見分け方',
+          doors:[['戻り先・win・飛ばす','戻り先を win() に書き換える','当たりの関数へ'],['リトルエンディアン・逆順・下位バイト','アドレスを LE で並べる','4バイトを逆に'],['オフセット・ちょうどの長さ','戻り先までのオフセットを数える','箱＋保存領域']],
+          real:['どれも「戻り先を正しく上書きする」ための手順。問題文の決め手の言葉を選ぼう。'],
+          howto:`<div class="legend"><div><span class="dot k"></span>問題文を読んで、手口を3つから選ぶ</div><div><span class="dot r"></span>まちがいは3回まで</div></div>
+            <p>8問。問題は自動で作られる（毎回違う）。</p><p>★は「まちがいなし」「70秒以内」で1つずつ。</p>`}},
+      {name:'ボス戦（上級）',hud:['14-6 ボス戦','道具を並べて、win() に飛ばす'],
+        room:'<span class="chip">入力</span><span class="arrow">レシピ（3手まで）</span><span class="arrow">→</span><span class="chip">フラグ</span>',
+        cue:['上級ボスの Pwn','入力を組み立てて、戻り先を書き換えよう'],
+        brief:{
+          situation:['ボスのプログラムは、戻り先を正しく書き換えないと、当たりの関数に飛ばない。道具を順番に並べて、入力を組み立てる。'],
+          doorsTitle:'レシピの部品',
+          doors:[['パディングを N に → 戻り先に win()','オフセットぶん埋めて、win を置く','2手＋送る'],['アドレスを LE に','逆順のバイト列にする','リトルエンディアン'],['プログラムに渡す','結果（フラグか）を見る','最後に置く']],
+          real:['pwntools では p32(win) と cyclic で、同じことを短く書く。手順をあとから見直せる。'],
+          howto:`<div class="legend"><div><span class="dot d"></span>部品を押すと、レシピに下から足される（最大3手）</div><div><span class="dot k"></span>実行で、フラグが出れば勝ち</div></div>
+            <p>3体のボス。</p><p>★は「まちがいなし」「180秒以内」で1つずつ。</p>`}}
     ]},
   {id:15, name:'Misc', sub:'何重にも包まれた答えと、仕様書の中の1行', ready:true,
     rounds:[
@@ -1392,6 +1422,12 @@ const GLOSSARY=[
     s:'関数が終わったあと、どこへ戻るかを覚えている場所',e:'用事を終えたあと、帰る道順のメモ。書き換えられると、知らない場所へ行く'},
   {id:'hex16',   w:'16進数（ヘキサ）',at:['14-1','14-3'],a:['16進数'],
     s:'0〜9とA〜Fで数を書く書き方。1バイトは2けたで表す',e:'0から15までを、1けたで書く数え方'},
+  {id:'retover', w:'戻り先の書き換え',at:['14-4','14-5','14-6'],a:['戻り先の書き換え'],
+    s:'あふれた入力で戻りアドレスを上書きし、プログラムの流れを変えること',e:'帰り道のメモを書き換えて、別の場所へ行かせる'},
+  {id:'offset',  w:'オフセット',      at:['14-4','14-5','14-6'],a:['オフセット'],
+    s:'目的の場所（戻り先など）までの、ちょうどの長さ',e:'目的の棚までの、正確な歩数'},
+  {id:'pwntools',w:'pwntools（ピーダブリュエヌツールズ）',at:['14-4','14-6'],a:['pwntools'],
+    s:'Pwn の問題を解くための Python の道具。p32() や cyclic がある',e:'攻め方を短く書ける、専用の工具箱'},
   {id:'base32',  w:'Base32（ベースさんじゅうに）',at:['15-1','15-2','15-3'],a:['Base32'],
     s:'大文字と2〜7の32種類の文字で、データを書く符号化',e:'5ビットずつ、数字の札に置きかえて並べる'},
   {id:'bin2',    w:'2進数（バイナリ）',at:['15-1','15-3'],a:['2進数','バイナリ'],
@@ -4100,6 +4136,65 @@ const W2={key1:'13-4',key2:'13-5',key3:'13-6',
   dur1:130,par1:85,dur2:120,dur3:230,par3:170
 };
 const GAMES_W2={'13-4':()=>runStart(mkPuz(W2,4)),'13-5':()=>runStart(mkDri(W2,8)),'13-6':()=>runStart(mkBos(W2,3,3))};
+/* ---- Pwn 20点（ステージ14-4〜14-6）：戻り先の書き換え・リトルエンディアン・オフセット ---- */
+const leBytes=hex=>{const h=String(hex).replace(/^0x/,'').padStart(8,'0');return h.match(/../g).reverse().join(' ')};
+const P2PHRASE={
+  'p2-ret':{jp:['戻り先を、当たりの関数 win() のアドレスに書き換える','あふれた先の戻りアドレスを、win に向ける','戻り先アドレスを上書きして、win() に飛ばす'],en:['Overwrite the return address with win()','Redirect the saved return address to win','Point the return address at the win function']},
+  'p2-le':{jp:['アドレスは、リトルエンディアンで並べて送る','4バイトのアドレスを、逆順のバイト列にする','下位バイトから並べる（リトルエンディアン）'],en:['Pack the address in little-endian','Reverse the 4 bytes of the address','Low byte first: little-endian']},
+  'p2-offset':{jp:['戻り先までの、ちょうどの長さ（オフセット）を数える','箱と保存領域のぶんだけ、ぴったり埋める','オフセットを合わせて、戻り先に届かせる'],en:['Count the exact offset to the return address','Fill buffer plus saved frame exactly','Get the offset right to reach the return']}
+};
+const P2={key1:'14-4',key2:'14-5',key3:'14-6',
+  pats:['p2-ret','p2-le','p2-offset'],
+  pname:{'p2-ret':'戻り先を win() に書き換える','p2-le':'アドレスをリトルエンディアンで並べる','p2-offset':'戻り先までのオフセットを数える'},
+  why:{'p2-ret':'あふれた入力で、戻り先アドレスを当たりの関数 win() に書き換えると、そこへ飛ぶ','p2-le':'アドレスは、下位バイトから並べる（リトルエンディアン）。逆順にして送る','p2-offset':'箱と保存領域（sfp）のぶんだけ、ちょうど埋めると、次が戻り先になる'},
+  palette:['pad','jmpwin','le','send'],
+  OP:{
+    pad:{label:'パディングを N バイトにする',par:true,cmd:p=>`python3 -c "import sys;sys.stdout.write('A'*${p})"`,run:(t,p)=>`pad=${p}`},
+    jmpwin:{label:'戻り先に win() を置く(LE)',cmd:()=>`python3 -c "import struct;sys.stdout.buffer.write(struct.pack('<I', WIN))"`,run:(t,p,pr)=>String(t).startsWith('pad=')?`${t};ret=${leBytes(pr.win)}`:null},
+    le:{label:'アドレスをリトルエンディアンに',cmd:(p,t)=>`python3 -c "import struct;print(struct.pack('<I', ADDR).hex(' '))"`,run:(t,p,pr)=>leBytes(pr.addr)},
+    send:{label:'入力をプログラムに渡す',cmd:()=>'./vuln < input.bin',run:(t,p,pr)=>{t=String(t);
+      if(pr.kind==='ret'){const m=t.match(/^pad=(\d+);ret=(.+)$/);if(!m)return '（pad と ret の両方が必要）';return(+m[1]===pr.offset&&m[2]===leBytes(pr.win))?pr.flag:'ずれている（pad の長さか ret を直す）'}
+      if(pr.kind==='le'){return t===leBytes(pr.addr)?pr.flag:'並びが違う（リトルエンディアンで）'}
+      const m=t.match(/^pad=(\d+)$/);return(m&&+m[1]===pr.offset)?pr.flag:'ずれている（オフセットを合わせる）'}}
+  },
+  make(pat){
+    const ans=cflag();const buf=gpickA([12,16,20]);const offset=buf+4;
+    const addr='0x'+['0804a','08049','0804b'][cint(0,2)]+cint(16,255).toString(16).padStart(3,'0');
+    let pr={flag:ans,buf,offset,win:addr,addr};
+    const memv=(hi)=>{let c='';for(let i=0;i<buf+8;i++){const col=i<buf?'#4a7':i<buf+4?'#c84':'#84c';c+=`<span class="pkt" style="background:${col};opacity:${i<offset||hi?1:.35}">${i<buf?'A':i<buf+4?'s':'R'}</span>`}return c};
+    if(pat==='p2-ret'){
+      pr.kind='ret';pr.card=`箱 ${buf} + 保存領域(sfp) 4 → 戻り先は ${offset} バイト目の先\n当たりの関数 win() のアドレス：${addr}`;
+      pr.term=`$ objdump -d ./vuln | grep win\n${addr} <win>:`;
+      pr.ops=['pad','jmpwin','send'];pr.file='./vuln';pr.solve=[{op:'pad',p:offset},{op:'jmpwin'},{op:'send'}];
+    }else if(pat==='p2-le'){
+      pr.kind='le';pr.card=`送りたいアドレス：${addr}\nリトルエンディアン（下位バイトから）で並べる`;
+      pr.term=`$ python3 -c "import struct;print(struct.pack('<I', ${addr}).hex(' '))"`;
+      pr.ops=['le','send'];pr.file='addr.txt';pr.solve=[{op:'le'},{op:'send'}];
+    }else{
+      pr.kind='offset';pr.card=`箱 ${buf} + 保存領域(sfp) 4 → 戻り先まで ${offset} バイト\nちょうど ${offset} 埋めると、次が戻り先`;
+      pr.term=`$ cyclic -l 0x6161616b   # オフセットを調べる\n→ ${offset}`;
+      pr.ops=['pad','send'];pr.file='./vuln';pr.solve=[{op:'pad',p:offset},{op:'send'}];
+    }
+    pr.view=()=>`<div class="tool"><div class="tbar">メモリ配置（緑:箱 / 橙:保存領域 / 紫:戻り先）</div><div class="twire">${memv(false)}</div></div>`;
+    pr.done=t=>isFlag(t)&&t===ans;
+    pr.text=`${gpickA(SET20)}：${gpickA(CG.rnd()<.5?P2PHRASE[pat].jp:P2PHRASE[pat].en)}`;
+    pr.phrase=pr.text.split('：')[1];pr.ans=ans;
+    return pr;
+  },
+  res:{win:'戻り先を書き換えて、当たりの関数に飛ばした！',lose:'フラグに届かなかった',sumWin:'オフセットを数え、アドレスをリトルエンディアンで並べ、戻り先を書き換える。Pwn の基本の形。',sumLose:'箱と保存領域の長さ、アドレスの並び順を、もう一度数えよう。'},
+  rev:[['戻り先の書き換え','あふれた入力で戻りアドレスを win() に向けると、そこへ飛ぶ',true],['リトルエンディアン','アドレスは下位バイトから並べる。逆順にして送る',true],['オフセット','箱＋保存領域のぶん、ちょうど埋めると次が戻り先',true]],
+  extra:`<div class="real"><div>振り返り：<b>戻り先アドレスを書き換えると、プログラムの流れを変えられる。アドレスはリトルエンディアンで並べる</b>。</div>
+    <code>python3 -c "import struct;import sys;sys.stdout.buffer.write(b'A'*offset+struct.pack('&lt;I',win))"</code><div class="m">pwntools の p32(win) でも同じ（練習用のプログラムで）</div>
+    <code>cyclic -l 0x6161616b</code><div class="m">pwntools の cyclic で、戻り先までのオフセットを調べる</div></div>
+    <div class="warn"><b>安全メモ</b><ul><li>実在のプログラムやサービスに、このような入力を送らない。練習用の模擬プログラムだけで</li><li>本物の環境には、戻り先を守るしくみ（スタックカナリア等）がある。これは入門の形</li></ul></div>`,
+  next(key){
+    if(key==='14-4')return '次は14-5「ドリル(上級)」。問題文のヒント語から、どの手口かを当てよう。';
+    if(key==='14-5')return '次は14-6「ボス戦(上級)」。道具を並べて、フラグを取り出そう。';
+    return 'Pwn の20点は、これで一区切り。ほかのジャンルの20点にも挑戦しよう。';
+  },
+  dur1:140,par1:90,dur2:120,dur3:240,par3:180
+};
+const GAMES_P2={'14-4':()=>runStart(mkPuz(P2,4)),'14-5':()=>runStart(mkDri(P2,8)),'14-6':()=>runStart(mkBos(P2,3,3))};
 const GAMES={
   ...GAMES_FO,
   ...GAMES_WB,
@@ -4110,6 +4205,7 @@ const GAMES={
   ...GAMES_C2,
   ...GAMES_F2,
   ...GAMES_W2,
+  ...GAMES_P2,
   '1':()=>{newGame();requestAnimationFrame(loop)},
   '2-1':()=>{newGame21();requestAnimationFrame(loop21)},
   '2-2':()=>{newGame2();requestAnimationFrame(loop2)},
