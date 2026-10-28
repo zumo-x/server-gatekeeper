@@ -294,6 +294,8 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
 .prow.gone{opacity:.25;pointer-events:none}
 .ptag{font-size:11px;font-weight:800;padding:2px 8px;border-radius:99px;background:var(--panel);color:var(--muted);white-space:nowrap}
 .ptag.bad{color:#ffb3b0}.ptag.ok{color:var(--ok)}
+.mlink{all:unset;box-sizing:border-box;cursor:pointer;touch-action:manipulation;display:block;padding:9px 10px;border-radius:10px;background:#0f1229;color:var(--ok);font-family:var(--f-term);font-size:13px;line-height:1.5;word-break:break-all;-webkit-user-select:none;user-select:none}
+.mlink:focus-visible{outline:3px solid var(--ink);outline-offset:2px}
 .shake{animation:shk .35s}
 @keyframes shk{20%{transform:translate(-6px,2px)}40%{transform:translate(5px,-3px)}60%{transform:translate(-4px,1px)}80%{transform:translate(3px,0)}}
 @media (prefers-reduced-motion:reduce){.shake,.door.hit,.door.sad,.act.hit,.act.sad,.act.guide,.ip.guide,.pt.sad,.pt.gone,.ln,.bin.hit,.bin.sad,.bin.guide,.acts.hint .act,.pointer,.cue,.cue i{animation:none}.door,.big,.act,.bin{transition:none}}
@@ -640,7 +642,26 @@ const STAGES=[
         <p>送る前に、秘密を全部選ぶのが理想。残ったまま送ったら、6秒以内に「キーを作り直す」。</p>
         <p>★は「まちがいなし」「キーを作り直す必要がなかった」で1つずつ。</p>`
     }},
-  {id:7, name:'偽メール',     sub:'GitHubやサーバー会社を名乗るフィッシング'},
+  {id:7, name:'偽メール',     sub:'サーバー会社を名乗るフィッシング', ready:true,
+    hud:['7 偽メール','送り主とリンク先を見比べる'],
+    room:'<span class="chip">受信箱</span><span class="arrow">→</span><span class="chip">本物 ／ 偽物</span>',
+    cue:['メールは、ニセモノ','送り主とリンク先のドメインを見比べよう'],
+    brief:{
+      situation:['サーバー会社や開発サービスを名乗る<b>フィッシング</b>（ニセの画面やメールで、IDとパスワードをだまし取る手口）がある。届いたメールが本物か、見分ける力が必要になる。'],
+      doorsTitle:'見分けるポイント',
+      doors:[
+        ['ドメイン','住所の名前の部分（右から読む）','右端（.com・.net など）で、本当の場所が決まる。途中の名前に騙されない'],
+        ['URL','ページの住所（全部）','表示されているリンクは、いくらでも似せられる。長押しで本当の行き先を見る'],
+        ['二段階認証','パスワードの後の、もう一つの確認','「二段階認証を解除して」は罠の典型。外すのは、いつものページから自分で']
+      ],
+      real:['メールのリンクからログインしない。会社のサイトは、いつものブックマークから開く。「至急」「停止します」という急がせる文面は、だましの合図。'],
+      howto:`<div class="legend">
+          <div><span class="dot k"></span>本物 ＝ 送り主とリンク先のドメインが、同じ正しい場所</div>
+          <div><span class="dot r"></span>偽物 ＝ どこかのドメインが、本物と違う</div>
+        </div>
+        <p>8通のメールを、本物か偽物かに分ける。リンクは長押しで本当の行き先が見える（0.6秒）。まちがいは3回まで。</p>
+        <p>★は「まちがいなし」「長押しで3回以上確かめた」で1つずつ。</p>`
+    }},
   {id:8, name:'足あと探し',   sub:'ログから怪しいアクセスを見つける'},
   {id:9, name:'入力の罠',     sub:'SQLインジェクション'},
   {id:10,name:'溢れるロッカー',sub:'バッファオーバーフロー'}
@@ -776,7 +797,15 @@ const GLOSSARY=[
   {id:'push',    w:'プッシュ',        at:['6'],a:['プッシュ'],
     s:'自分のパソコンの記録を、GitHubへ送ること',e:'作品を公開の本棚へ運ぶこと'},
   {id:'history', w:'履歴',            at:['6'],a:['履歴'],
-    s:'過去の変更の記録。消しても、どこかに残ることがある',e:'日記の過去のページ。ページを破っても、コピーが残っていることがある'}
+    s:'過去の変更の記録。消しても、どこかに残ることがある',e:'日記の過去のページ。ページを破っても、コピーが残っていることがある'},
+  {id:'phish',   w:'フィッシング',    at:['7'],a:['フィッシング'],
+    s:'ニセの画面やメールで、IDやパスワードをだまし取る手口',e:'偽物の受付で、名前と暗証番号を書かせる詐欺'},
+  {id:'domain',  w:'ドメイン',        at:['7'],a:['ドメイン'],
+    s:'Webサイトの住所の、名前の部分（example.com など）',e:'店の看板の名前。似せた看板でも、住所の右側（ドメイン）を見ればニセモノと分かる'},
+  {id:'url',     w:'URL（ユーアールエル）',at:['7'],a:['URL'],
+    s:'Webページの住所（全体）',e:'建物の住所。番地まで全部読む'},
+  {id:'twofa',   w:'二段階認証',      at:['7'],a:['二段階認証'],
+    s:'パスワードに加えて、もう一つの確認を求める仕組み',e:'家の玄関で鍵と、顔の確認の両方を必要とすること'}
 ];
 const GBYID=Object.fromEntries(GLOSSARY.map(g=>[g.id,g]));
 const GMATCH=GLOSSARY.flatMap(g=>g.a.map(a=>({a,g}))).sort((x,y)=>y.a.length-x.a.length);
@@ -2129,6 +2158,74 @@ function r6(win,leak,why){return {eyebrow:win?(leak?'STAGE 6 CLEAR':'STAGE 6 CLE
     <div class="warn"><b>安全メモ</b><ul><li>一度でも公開されたキーは、必ず作り直す。ファイルから消しただけでは、履歴に残る</li><li>.env は、必ず .gitignore に書く。送った後では遅い</li></ul></div>`,
   next:win?'次はステージ7「偽メール」。秘密は、ニセのメールからも盗まれる。':''};}
 
+/* ===== ステージ7「偽メール」：送り主とリンク先のドメインで、本物かどうか見分ける ===== */
+// 会社名はすべて架空。ドメインは説明用（example.com／.net／.org）だけを使う
+const MAIL7=[
+  {from:'サポート <support@kumo-hosting.example.com>',sub:'サーバーの更新のお知らせ',body:'ダッシュボードで、更新の予定をご確認ください。',shown:'https://kumo-hosting.example.com/dashboard',real:'https://kumo-hosting.example.com/dashboard',fake:false,why:'送り主もリンク先も、同じ正しいドメイン。本物'},
+  {from:'サポート <support@kumo-hosting-verify.example.net>',sub:'【至急】アカウントを停止します',body:'24時間以内にログインして、本人確認をしてください。',shown:'https://kumo-hosting.example.com/login',real:'https://kumo-hosting-verify.example.net/login',fake:true,why:'送り主のドメインが別物（example.net）。表示のURLは本物に似せてあるが、長押しで本当の行き先が分かる'},
+  {from:'請求 <billing@nagi-cloud.example.com>',sub:'今月のご請求について',body:'請求内容は、アカウントのページで確認できます。',shown:'https://nagi-cloud.example.com/billing',real:'https://nagi-cloud.example.com/billing',fake:false,why:'正しいドメインで、正しい行き先。本物'},
+  {from:'請求 <billing@nagi-c1oud.example.com>',sub:'お支払いが確認できません',body:'カード情報を、今すぐ更新してください。',shown:'https://nagi-cloud.example.com/pay',real:'https://nagi-c1oud.example.com/pay',fake:true,why:'「cloud」の l が、数字の 1 に変わっている。文字だけでは気づきにくい'},
+  {from:'ドメイン管理 <info@sakura-domain.example.org>',sub:'更新期限のお知らせ',body:'期限前に、いつものページで更新できます。',shown:'https://sakura-domain.example.org/renew',real:'https://sakura-domain.example.org/renew',fake:false,why:'正しいドメイン。本物'},
+  {from:'セキュリティ <notice@sakura-domain.example.org>',sub:'二段階認証の設定を解除してください',body:'確認のため、下のリンクから二段階認証を解除してください。',shown:'https://sakura-domain.example.org/2fa',real:'https://sakura-domain.example.org.login-check.example.net/2fa',fake:true,why:'送り主は本物に見える。でも、リンク先の本当のドメインは login-check.example.net。二段階認証を外させるのは典型的な罠'},
+  {from:'サポート <support@kumo-hosting.example.com>',sub:'ご利用ありがとうございます',body:'アカウントの設定は、いつものブックマークから変更できます。',shown:'https://kumo-hosting.example.com/settings',real:'https://kumo-hosting.example.com/settings',fake:false,why:'正しいドメイン。本物'},
+  {from:'サポート <support@kumo-hosting.example.com.verify-now.example.net>',sub:'ログインの確認',body:'見覚えがなければ、下のリンクからログインしてください。',shown:'https://kumo-hosting.example.com/login',real:'https://kumo-hosting.example.com.verify-now.example.net/login',fake:true,why:'途中に本物のドメイン名が入っているが、本当のドメインは右端の verify-now.example.net。名前の一部に騙されない'}
+];
+function show7(){
+  const m=MAIL7[RUN.i];
+  document.getElementById('qN').textContent=`${RUN.i+1}/${MAIL7.length}`;
+  document.getElementById('slot').innerHTML=`<div class="scard slide"><div class="pm"><span class="ptag">送り主</span>${m.from}</div><div class="sh">${m.sub}</div>
+    <div class="ppre">${m.body}</div>
+    <button class="mlink" data-act="hold" aria-label="リンク（長押しで本当の行き先）">リンク：${m.shown}</button>
+    <div class="pm" id="realrow" hidden><span class="ptag bad">本当の行き先</span><b id="realurl"></b></div></div>`;
+  term('$ （メールのリンクを長押し）',`# 表示は ${m.shown}`);
+  guideOn(RUN.i<1?document.querySelector(`[data-act="${m.fake?'fake':'ok'}"]`):null);
+}
+// 長押し（0.6秒）で、本当のリンク先を見る
+P.addEventListener('pointerdown',e=>{const h=e.target.closest('.mlink');if(!h||!RUN.running)return;clearTimeout(RUN.hold);RUN.hold=setTimeout(()=>{const m=MAIL7[RUN.i];const row=document.getElementById('realrow');
+  document.getElementById('realurl').textContent=m.real;row.hidden=false;RUN.longs=(RUN.longs||0)+1;sfx.click();buzz(20);
+  term(`$ curl -IL ${m.real}`,'# 本当の行き先。表示と比べてみよう（本物のサーバーでも、同じように確かめられる）')},600)});
+['pointerup','pointerleave','pointercancel'].forEach(t=>P.addEventListener(t,()=>clearTimeout(RUN.hold)));
+const U7={dur:90,
+  init(){
+    RUN.i=0;RUN.mist=0;RUN.longs=0;
+    mount(`<div class="pbar"><span>メール <b id="qN"></b></span><span class="sp"></span><span class="plives" id="pl">${lives(3,3)}</span></div>
+      <div class="slot" id="slot"></div>
+      <div class="acts">
+        <button class="act" data-act="ok"><span class="al">本物</span><small>いつものサイト</small></button>
+        <button class="act" data-act="fake"><span class="al">偽物</span><small>ニセの可能性</small></button>
+      </div>
+      <p class="pnote" id="pnote">リンクは長押しすると、本当の行き先が見える。</p>`);
+    show7();
+  },
+  tap(act,el){
+    if(act==='hold')return;
+    const m=MAIL7[RUN.i];
+    if((act==='fake')===m.fake){
+      okFx(el);RUN.i++;
+      document.getElementById('pnote').textContent=`正解。${m.why}`;
+      if(RUN.i>=MAIL7.length){const st=1+(RUN.mist===0?1:0)+(RUN.longs>=3?1:0);return runEnd(true,st,r7(true,st))}
+      show7();
+    }else{
+      RUN.mist++;strike(el);setLives(3-RUN.mist,3);
+      document.getElementById('pnote').textContent=`ちがう。${m.why}`;
+      if(RUN.mist>=3)runEnd(false,0,r7(false,0));
+    }
+  },
+  onTime(){runEnd(false,0,r7(false,0,'時間切れ'))}
+};
+function r7(win,st,why){return {eyebrow:win?'STAGE 7 CLEAR':'STAGE 7',title:win?'ニセのメールを見抜いた！':(why||'だまされそうになった'),
+  summary:win?`${MAIL7.length}通を判定した（まちがい ${RUN.mist}回）。`:'3回まちがえた。送り主とリンク先のドメインを、右側から読もう。',
+  review:rvRows([
+    ['ドメイン','ドメインは、右側（.net、.com など）で決まる。名前の途中に本物の名前が入っていても、本物とは限らない',true],
+    ['URL','表示は、いくらでも似せられる。長押しで、本当の行き先を見る',true],
+    ['二段階認証','「二段階認証を解除してください」は罠の典型。解除は、いつものページから自分で行う',true],
+    ['リンク','メールのリンクから、ログインしない。いつものブックマークから開く',true]]),
+  extra:`<div class="real"><div>振り返り：<b>メールのリンクは信じず、自分で正しい場所へ行く</b>。</div>
+    <code>curl -IL https://example.com</code><div class="m">リンク先の行き先（転送の先）を、見るだけで確かめる例</div>
+    <code>ssh-keygen -t ed25519</code><div class="m">パスワードより、鍵でログインする（ステージ2で学んだ）</div></div>
+    <div class="warn"><b>安全メモ</b><ul><li>パスワードや確認コードを、メールのリンク先に入力しない</li><li>会社から来た「至急」の連絡は、いつものページで確かめる</li></ul></div>`,
+  next:win?'次はステージ8「足あと探し」。ログを読むと、あやしいアクセスが見えてくる。':''};}
+
 const GAMES={
   '1':()=>{newGame();requestAnimationFrame(loop)},
   '2-1':()=>{newGame21();requestAnimationFrame(loop21)},
@@ -2138,7 +2235,8 @@ const GAMES={
   '3-2':()=>runStart(U32),
   '4':()=>runStart(U4),
   '5':()=>runStart(U5),
-  '6':()=>runStart(U6)
+  '6':()=>runStart(U6),
+  '7':()=>runStart(U7)
 };
 function start(){
   audio();show(null);
