@@ -307,6 +307,14 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
 .cell.flag.admin{background:var(--attacker);color:#3a0f0f;box-shadow:0 3px 0 #a84a46;animation:hit .4s}
 .cell.over{background:transparent;border:2px dashed var(--shut);color:var(--muted);font-family:var(--f-body);font-size:12px;box-shadow:none;min-width:48px}
 .hl{background:rgba(255,111,107,.35);color:#ffd6d4;border-radius:3px}
+.recipe{display:grid;gap:6px}
+.rstep{display:grid;grid-template-columns:auto 1fr auto;gap:8px;align-items:center;background:var(--night);border-radius:10px;padding:8px 10px;font-size:13px;box-shadow:0 3px 0 #14183a}
+.rstep b{font-family:var(--f-term);color:var(--amber)}
+.rbtns{display:flex;gap:4px;align-items:center}
+.mini{all:unset;box-sizing:border-box;cursor:pointer;touch-action:manipulation;font-size:12px;font-weight:700;padding:4px 8px;border-radius:8px;background:var(--panel);color:var(--ink);box-shadow:0 2px 0 #14183a}
+.mini:active{transform:translateY(2px)}
+.mini:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+.rout{font-family:var(--f-term);font-size:12px;color:var(--ok);padding:0 10px 4px;word-break:break-all}
 .shake{animation:shk .35s}
 @keyframes shk{20%{transform:translate(-6px,2px)}40%{transform:translate(5px,-3px)}60%{transform:translate(-4px,1px)}80%{transform:translate(3px,0)}}
 @media (prefers-reduced-motion:reduce){.shake,.door.hit,.door.sad,.act.hit,.act.sad,.act.guide,.ip.guide,.pt.sad,.pt.gone,.ln,.bin.hit,.bin.sad,.bin.guide,.acts.hint .act,.pointer,.cue,.cue i{animation:none}.door,.big,.act,.bin{transition:none}}
@@ -330,7 +338,7 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
   <div class="skywrap" id="sky" data-only="1 2-1 2-2 2-3"><canvas id="cv"></canvas><div class="skylabel">インターネット</div>
     <div class="logs" id="logs" data-only="2-3" hidden></div><div class="pointer" id="pointer23" hidden>▼ 次はこれ</div>
     <div class="cue" id="cue" hidden><b id="cueB"></b><span id="cueS"></span><i aria-hidden="true">▼</i></div></div>
-  <div class="panel" id="panel" data-only="3-1 3-2 4 5 6 7 8 9-1 9-2 10-1 10-2" hidden></div>
+  <div class="panel" id="panel" data-only="3-1 3-2 4 5 6 7 8 9-1 9-2 10-1 10-2 11-1 11-2 11-3" hidden></div>
   <div class="doors" id="doors" data-only="1"></div>
   <div class="gate" id="gate" data-only="2-2" hidden>
     <div class="door door22" id="door22"><span class="num">22</span><span class="nm">SSH</span><span class="st" id="door22st">パスワード</span></div>
@@ -778,6 +786,72 @@ const STAGES=[
             <p>選ぶと、9文字の入力で試す結果が出る。</p>
             <p>★は「まちがいなし」「45秒以内」で1つずつ。</p>`
         }}
+    ]},
+  {id:11, name:'暗号（Crypto）', sub:'Base64・ROT13・シーザー・EXIF', ready:true,
+    rounds:[
+      {name:'パズル',
+        hud:['11-1 パズル','道具で、暗号を一段ずつ解く'],
+        room:'<span class="chip">暗号文</span><span class="arrow">→</span><span class="chip">道具</span><span class="arrow">→</span><span class="chip">GK{…}</span>',
+        cue:['暗号を解こう','道具を試して、フラグ（GK{…}）を出す'],
+        brief:{
+          situation:['ある人が、お宝のフラグ（<b>GK{…}</b>）を、<b>暗号</b>にして残した。解けるのは、どの道具を、どの順番で使うか分かる人だけ。CTFは、この暗号を解いてフラグを提出する競技。'],
+          doorsTitle:'道具と手がかり',
+          doors:[
+            ['Base64','末尾の = や、英数字だけの並び','デコードで元に戻す（base64 -d）'],
+            ['ROT13','アルファベットを13ずらす','もう一度かけると元に戻る'],
+            ['戻す（N）','シーザー暗号。ずらした数だけ戻す','N を変えて、読める文字が出る数を探す'],
+            ['EXIF','写真の撮影情報（メタデータ）','隠された行を選んで、そこから解く']
+          ],
+          real:['本物の現場では、暗号化とエンコードを見分けることが大事。Base64 は「暗号」ではなく「形を変えただけ」なので、誰でも戻せる。だから、秘密は暗号化して守る。'],
+          howto:`<div class="legend">
+              <div><span class="dot d"></span>道具を押すと、今の文字が変わる（一つ戻すで元に戻せる）</div>
+              <div><span class="dot k"></span>GK{…} の形が出たら、「フラグを提出」</div>
+            </div>
+            <p>5問。全体で100秒。道具を重ねて、フラグを出そう。</p>
+            <p>★は「やり直しが3回以内」「70秒以内」で1つずつ。</p>`
+        }},
+      {name:'ドリル',
+        hud:['11-2 ドリル','ヒント語から手法を当てる'],
+        room:'<span class="chip">問題文</span><span class="arrow">→</span><span class="chip">ヒント語</span><span class="arrow">→</span><span class="chip">手法</span>',
+        cue:['ヒント語を読もう','問題文の言葉から、使う手法を当てる'],
+        brief:{
+          situation:['CTFの問題文には、よく使われる言い回しがある。「=で終わる」はBase64、「13」はROT13、「古代ローマ」はシーザー暗号。言葉から手法を連想する力を練習する。'],
+          doorsTitle:'ヒント語の見分け方',
+          doors:[
+            ['= で終わる','Base64','末尾の = は、Base64 のサイン'],
+            ['13・ひっくり返す','ROT13','13ずらし。2回で元に戻る'],
+            ['古代ローマ・ずらす','シーザー暗号','ずらし数は探して当てる'],
+            ['二重・重ねがけ','重ねがけ','外からはがす順番が大事'],
+            ['写真・隠れている','EXIF','撮影情報（メタデータ）に隠れた文字']
+          ],
+          real:['手法は、言葉だけでは決まらないこともある。だから、ヒント語が複数あるときは、いちばん決め手になる言葉を選ぶ。'],
+          howto:`<div class="legend">
+              <div><span class="dot k"></span>問題文を読んで、使う手法を3つから選ぶ</div>
+              <div><span class="dot r"></span>まちがいは3回まで</div>
+            </div>
+            <p>8問。問題ごとに、手法は自動で作られる（毎回違う問題）。</p>
+            <p>★は「まちがいなし」「70秒以内」で1つずつ。</p>`
+        }},
+      {name:'ボス戦',
+        hud:['11-3 ボス戦','変換を並べて、フラグを取り出す'],
+        room:'<span class="chip">入力</span><span class="arrow">レシピ（3手まで）</span><span class="arrow">→</span><span class="chip">フラグ</span>',
+        cue:['ボスが守る暗号','レシピを並べて、フラグを取り出そう'],
+        brief:{
+          situation:['ボスは、2重3重に暗号化された、お宝を守っている。CyberChef という道具のように、変換を上から順番に並べて実行する。'],
+          doorsTitle:'レシピの部品',
+          doors:[
+            ['Base64をデコード','外側の包みを、はがす','base64 -d に当たる'],
+            ['ROT13','アルファベットを13ずらす','tr コマンドに当たる'],
+            ['戻す（N）','ずらした数だけ戻す','N を、ダイヤルで合わせる']
+          ],
+          real:['実際のCyberChefでも、同じように手順を並べて確かめる。どの手が効いたかを、あとから見直せる。'],
+          howto:`<div class="legend">
+              <div><span class="dot d"></span>部品を押すと、レシピに下から足される（最大3手）</div>
+              <div><span class="dot k"></span>実行で、フラグが出れば勝ち。まちがえると失敗が1つ減る</div>
+            </div>
+            <p>3体のボス。部品の順番と、戻す数を見つけよう。</p>
+            <p>★は「まちがいなし」「150秒以内」で1つずつ。</p>`
+        }}
     ]}
 ];
 
@@ -798,7 +872,7 @@ const GLOSSARY=[
     s:'Webページを運ぶ決まりごと（暗号化なし）',e:'はがき。ちゃんと届くけど、途中で運ぶ人に中身が見える'},
   {id:'https',   w:'HTTPS',           at:['1'],a:['HTTPS'],
     s:'暗号化されたHTTP。今のWebの標準',e:'封筒に入れて鍵をかけた手紙。途中の人には読めない'},
-  {id:'crypt',   w:'暗号化',          at:['1'],a:['暗号化'],
+  {id:'crypt',   w:'暗号化',          at:['1','11-1'],a:['暗号化'],
     s:'関係ない人に読めないよう、中身を変換すること',e:'自分たちだけが読み方を知っている暗号で、手紙を書くこと'},
   {id:'nginx',   w:'nginx（エンジンエックス）',at:['1','8'],a:['nginx'],
     s:'Webの受付係。来た通信を中のプログラムへ取り次ぐ',e:'ホテルのフロント。お客さんは直接部屋には行かず、フロントが案内する'},
@@ -949,7 +1023,25 @@ const GLOSSARY=[
   {id:'ctf',     w:'CTF（シーティーエフ）',at:['10-1'],a:['CTF'],
     s:'セキュリティの腕を試す、問題を解く競技',e:'謎解きイベント。鍵を探し出すとポイントがもらえる'},
   {id:'pwn',     w:'Pwn（ピーウィン）',at:['10-1'],a:['Pwn'],
-    s:'プログラムの弱点を突いて、思い通りに動かす問題のジャンル',e:'金庫の仕組みを理解して、扉を開けるような問題'}
+    s:'プログラムの弱点を突いて、思い通りに動かす問題のジャンル',e:'金庫の仕組みを理解して、扉を開けるような問題'},
+  {id:'b64',     w:'Base64（ベースろくじゅうよん）',at:['11-1','11-2','11-3'],a:['Base64'],
+    s:'データを英数字と記号だけで書き直す決まり（末尾に = が付くことがある）',e:'荷物を、郵便で送れる文字だけの箱に詰め替えること。中身は隠れていない'},
+  {id:'rot13',   w:'ROT13（ロットサーティーン）',at:['11-1','11-2','11-3'],a:['ROT13'],
+    s:'アルファベットを13文字ずらす暗号。もう一度やると元に戻る',e:'鏡に映した文字。2回映すと元に戻る'},
+  {id:'caesar',  w:'シーザー暗号',    at:['11-1','11-2','11-3'],a:['シーザー暗号','シーザー'],
+    s:'アルファベットを、決めた数だけずらす暗号',e:'古代ローマの将軍が、文字をずらして手紙を書いたと伝えられる。ずらす数を知れば、戻せる'},
+  {id:'encode',  w:'エンコード／デコード',at:['11-1','11-2','11-3'],a:['エンコード','デコード'],
+    s:'エンコードは、データを別の形に変えること。デコードは元に戻すこと',e:'お弁当箱に詰め替える（エンコード）と、食べるために開ける（デコード）'},
+  {id:'stackenc',w:'重ねがけ',        at:['11-2','11-3'],a:['重ねがけ'],
+    s:'エンコードを、2回以上続けてかけること。はがす順番が大事',e:'包装紙を何枚も重ねて包むこと。外側から順番にはがす'},
+  {id:'exif',    w:'EXIF（イグジフ）',at:['11-1','11-2'],a:['EXIF'],
+    s:'写真に入っている、撮影の情報（カメラの名前・日時など）',e:'写真の裏に貼られた、撮影メモの付箋'},
+  {id:'metadata',w:'メタデータ',      at:['11-1','11-2'],a:['メタデータ'],
+    s:'データについてのデータ。写真の撮影情報など、本体の外にある情報',e:'本の奥付（いつ・誰が作ったかが書いてあるページ）'},
+  {id:'flag',    w:'フラグ',          at:['11-1','11-3'],a:['フラグ'],
+    s:'CTFで答えとして提出する、決まった形の文字列（ここでは GK{…}）',e:'宝探しの「お宝」。見つけたら、それを提出する'},
+  {id:'cyberchef',w:'CyberChef（サイバーシェフ）',at:['11-3'],a:['CyberChef'],
+    s:'変換を、手順として並べて実行できるWebの道具',e:'料理のレシピのように、手順を上から順に並べてから作る'}
 ];
 const GBYID=Object.fromEntries(GLOSSARY.map(g=>[g.id,g]));
 const GMATCH=GLOSSARY.flatMap(g=>g.a.map(a=>({a,g}))).sort((x,y)=>y.a.length-x.a.length);
@@ -2620,7 +2712,252 @@ function r102(win,why){return {eyebrow:win?'STAGE 10-2 CLEAR':'STAGE 10-2',title
     <code>if (input.length > 8) reject();</code><div class="m">入る前に拒否する（入力チェック）</div>
     <code>strncpy(name, input, 8);</code><div class="m">C言語で、上限を指定してコピーする例</div></div>
     <div class="warn"><b>安全メモ</b><ul><li>本物の脆弱性を探して、他人のサービスで試さない。CTFは、練習用に用意された問題で遊ぶ</li><li>自分で作るプログラムは、入力の長さを必ず確かめる</li></ul></div>`,
-  next:win?'ステージ10まで、クリアおめでとう！ 本物のLinuxで練習してみよう。':''};}
+  next:win?'次はステージ11「暗号（Crypto）」。Base64・ROT13・シーザー暗号・EXIFに挑戦。':''};}
+
+/* ===== 問題の自動生成（Crypto）：型紙から問題を作り、答えは逆向きに変換して確かめる ===== */
+// 変換の部品。「解く向き」だけを持つ（ゲームのボタンになる）
+const rot=(t,n)=>t.replace(/[A-Za-z]/g,c=>{const b=c<='Z'?65:97;return String.fromCharCode((c.charCodeAt(0)-b+n)%26+b)});
+const b64e=t=>btoa(unescape(encodeURIComponent(t)));
+const b64d=t=>{try{return decodeURIComponent(escape(atob(t.trim())))}catch(e){return null}};
+// 「戻す（N）」の tr コマンドを作る（N文字ずらした分を戻す）
+function shiftMap(n){const k=(26-n)%26,U='ABCDEFGHIJKLMNOPQRSTUVWXYZ',L=U.toLowerCase();return (U.slice(k)+U.slice(0,k))+(L.slice(k)+L.slice(0,k))}
+const OP={
+  b64:{name:'Base64をデコード',cmd:()=>'base64 -d',run:t=>b64d(t)},
+  rot13:{name:'ROT13',cmd:()=>"tr 'A-Za-z' 'N-ZA-Mn-za-m'",run:t=>rot(t,13)},
+  back:{name:'戻す（N文字）',cmd:n=>`tr 'A-Za-z' '${shiftMap(n)}'`,run:(t,n)=>rot(t,(26-n)%26)}
+};
+const runChain=(c,chain)=>{let t=c;for(const st of chain){t=OP[st.op].run(t,st.n);if(t===null)return null}return t};
+// 乱数（種つき。同じ種なら同じ問題が出る）
+const CG={rnd:Math.random};
+function seedCG(n){let a=n>>>0;CG.rnd=()=>{a=(a+0x6D2B79F5)>>>0;let t=a;t=Math.imul(t^(t>>>15),t|1);t^=t+Math.imul(t^(t>>>7),t|61);return((t^(t>>>14))>>>0)/4294967296}}
+const cpick=a=>a[Math.floor(CG.rnd()*a.length)];
+const cint=(lo,hi)=>lo+Math.floor(CG.rnd()*(hi-lo+1));
+function cflag(){const c='abcdefghijklmnopqrstuvwxyz0123456789';let s='';const n=cint(10,14);for(let i=0;i<n;i++)s+=c[cint(0,c.length-1)];return 'GK{'+s+'}'}
+// 型紙：言い回し（日本語・英語）・物語の設定・ヒント語
+const PAT=['b64','rot13','caesar','stack','exif'];
+const PNAME={b64:'Base64',rot13:'ROT13',caesar:'シーザー暗号（ずらし）',stack:'重ねがけ（二重のエンコード）',exif:'EXIFのメタデータに隠す'};
+const PHRASE={
+  b64:{jp:['末尾が = で終わる、古い文字列です','ふつうの文字に見えない。= が付いている','外側に = が付いた、読めない英数字'],en:['It ends with "=" and looks like noise','Padding at the end. Sixty-four something','Looks random, and ends in equal signs']},
+  rot13:{jp:['ひっくり返すと読める。鍵は13','アルファベットを、ちょうど半分ずらした','13ずつ回すと、同じ文字に戻る'],en:['Turn it around: thirteen steps','Rotate the alphabet by half','Thirteen again, and it reads back']},
+  caesar:{jp:['古代ローマの将軍が使った、ずらし暗号','ずらした数だけ、文字を戻そう。ダイヤルを回す','昔の手紙の書き方。何文字ずらしたか'],en:['A general once shifted every letter','Shift each letter by a secret number','Caesar would be proud of this']},
+  stack:{jp:['二重に包まれている。外から順番に','重ねがけ。順番を間違えると読めない','一度では読めない。何度かはがそう'],en:['Layers of wrapping, peel from the outside','Double encoding: the order matters','Not once, not twice: peel the layers']},
+  exif:{jp:['写真の中に、見えない文字が隠れている','画像の撮影情報（メタデータ）を見てみよう','写真は、見た目より多くを覚えている'],en:['Hidden in plain sight: check the picture data','The photo remembers more than it shows','Check the picture data for a comment']}
+};
+const SETJP=['クモ・ホスティング社の古いログ','見知らぬ人から届いた暗号メモ','ゲーム「ゴーストラン」の攻略メモ','ナギ・クラウドの試作ファイル','ロボットの作業記録'];
+const SETEN=['a leftover file from an old server','a note from a stranger','the Ghost-run team notes','an old backup of a CTF challenge'];
+// 1問を作る。答えは、chain を逆にたどって確かめる（合わなければ作り直す）
+function genProblem(pat){
+  for(;;){
+    const ans=cflag();let cipher,chain,fields=null;
+    if(pat==='b64'){cipher=b64e(ans);chain=[{op:'b64'}]}
+    else if(pat==='rot13'){cipher=rot(ans,13);chain=[{op:'rot13'}]}
+    else if(pat==='caesar'){const k=cint(1,25);cipher=rot(ans,k);chain=[{op:'back',n:k}]}
+    else if(pat==='stack'){
+      if(CG.rnd()<.5){cipher=b64e(rot(ans,13));chain=[{op:'b64'},{op:'rot13'}]}
+      else{cipher=rot(b64e(ans),13);chain=[{op:'rot13'},{op:'b64'}]}
+    }else{
+      const enc=CG.rnd()<.5?'b64':'rot13';cipher=enc==='b64'?b64e(ans):rot(ans,13);chain=[{op:enc}];
+      const decoy=[['Make','KUMO-Cam'],['Model','K-200'],['DateTime','2026:10:0'+cint(1,9)+' 12:00:00'],['Software','GK-Editor 2.1'],['ImageDescription',cpick(['sunset','ferry','cat','lighthouse'])]];
+      fields=[...decoy,['UserComment',cipher]];
+      for(let i=fields.length-1;i>0;i--){const j=cint(0,i);[fields[i],fields[j]]=[fields[j],fields[i]]}
+    }
+    if(runChain(cipher,chain)!==ans)continue;
+    const lang=CG.rnd()<.5?'jp':'en';
+    const setting=lang==='jp'?cpick(SETJP):cpick(SETEN);
+    const phrase=cpick(PHRASE[pat][lang]);
+    return {pat,ans,cipher,chain,fields,text:`${setting}：${phrase}`,phrase,lang};
+  }
+}
+// ふつうの問題で、どれを間違えやすいかの記録（苦手なパターンほど多く出す）
+const GSTAT_KEY='gk-gen-v1';
+let GSTAT={miss:{},ok:{}};
+try{const g=JSON.parse(readStore(GSTAT_KEY)||'{}');if(g&&g.miss)GSTAT=g}catch(e){}
+function gstatSave(){try{localStorage.setItem(GSTAT_KEY,JSON.stringify(GSTAT))}catch(e){}}
+const gbump=(k,pat)=>{GSTAT[k][pat]=(GSTAT[k][pat]||0)+1;gstatSave()};
+// 直近に出たパターンは避けつつ、苦手なパターンほど重くして選ぶ
+function pickPat(recent){
+  const cand=PAT.filter(p=>!recent.slice(-2).includes(p));
+  const pool=cand.length?cand:PAT;
+  const w=pool.map(p=>1+2*(GSTAT.miss[p]||0)/(1+(GSTAT.ok[p]||0)*.5));
+  let r=Math.random()*w.reduce((a,b)=>a+b,0);
+  for(let i=0;i<pool.length;i++){r-=w[i];if(r<=0)return pool[i]}
+  return pool[pool.length-1];
+}
+const isFlag=t=>t!==null&&/^GK\{[a-z0-9]+\}$/.test(t);
+/* ===== ステージ11「暗号（Crypto）」：パズル → ドリル → ボス戦 ===== */
+// 11-1 パズル：いろいろな道具を試して、一段ずつ解く
+const U111={dur:100,
+  init(){
+    RUN.pz=shuffle([...PAT]).map(p=>genProblem(p));RUN.i=0;RUN.undo=0;RUN.k=1;RUN.solved=0;
+    mount(`<div class="pbar"><span>問題 <b id="qN"></b></span><span class="sp"></span><span class="plives" id="pl">${lives(3,3)}</span></div>
+      <div class="scard" id="cardP"></div>
+      <div class="ppre" id="curT"></div>
+      <div class="acts3">
+        <button class="act" data-act="b64"><span class="al">Base64をデコード</span></button>
+        <button class="act" data-act="rot13"><span class="al">ROT13</span></button>
+        <button class="act" data-act="back"><span class="al" id="backLab">戻す（1）</span></button>
+      </div>
+      <div class="acts"><button class="act" data-act="n-"><span class="al">N −</span></button><button class="act" data-act="n+"><span class="al">N +</span></button></div>
+      <div class="acts"><button class="act" data-act="undo"><span class="al">一つ戻す</span></button><button class="act" data-act="sub" id="sub" disabled><span class="al">フラグを提出</span></button></div>
+      <p class="pnote" id="pnote">暗号文を、道具で一段ずつ解こう。</p>`);
+    showP111();
+  },
+  tap(act,el){
+    const pz=RUN.pz[RUN.i];
+    if(act.startsWith('f')){const f=pz.fields[+act.slice(1)];RUN.hist=[];setCur111(f[1],`# ${f[0]} の値を開いた`);return}
+    if(act==='n-'){RUN.k=Math.max(1,RUN.k-1);document.getElementById('backLab').textContent=`戻す（${RUN.k}）`;return}
+    if(act==='n+'){RUN.k=Math.min(25,RUN.k+1);document.getElementById('backLab').textContent=`戻す（${RUN.k}）`;return}
+    if(act==='undo'){if(RUN.hist.length){RUN.cur=RUN.hist.pop();RUN.undo++;showCur111()}return}
+    if(act==='sub'){
+      if(RUN.cur===pz.ans){okFx(el);RUN.solved++;gbump('ok',pz.pat);
+        term(`# フラグ ${pz.ans}`,'# 正しい！ 次の問題へ');
+        if(RUN.solved>=RUN.pz.length){const st=1+(RUN.undo<=3?1:0)+(RUN.t<=70?1:0);return runEnd(true,st,r111(true,st))}
+        RUN.i++;showP111();return}
+      RUN.mist++;strike(el);setLives(3-RUN.mist,3);gbump('miss',pz.pat);
+      document.getElementById('pnote').textContent='それはフラグではない。もう一段、解こう。';
+      if(RUN.mist>=3)runEnd(false,0,r111(false,0,'まちがえすぎた'));return;
+    }
+    const ops={b64:['b64',0],rot13:['rot13',0],back:['back',RUN.k]};
+    const [op,n]=ops[act]||[];if(!op)return;
+    if(RUN.cur===null)return;
+    const res=OP[op].run(RUN.cur,n);
+    RUN.hist.push(RUN.cur);
+    term(`$ ${OP[op].cmd(n)}`,`# ${OP[op].name}${op==='back'?'（'+n+'）':''}`);
+    RUN.cur=res===null?'（この道具では、読めない形）':res;
+    showCur111();
+  },
+  onTime(){runEnd(false,0,r111(false,0,'時間切れ'))}
+};
+function setCur111(v,note){RUN.cur=v;RUN.hist=[];showCur111();if(note)term('$ （行を選ぶ）',note)}
+function showCur111(){
+  document.getElementById('curT').textContent=RUN.cur===null?'（下の行を1つ選ぶ）':RUN.cur;
+  document.getElementById('sub').disabled=!isFlag(RUN.cur);
+}
+function showP111(){
+  const pz=RUN.pz[RUN.i];
+  document.getElementById('qN').textContent=`${RUN.i+1}/${RUN.pz.length}`;
+  const rows=pz.fields?`<div class="plist">${pz.fields.map((f,k)=>`<button class="prow" data-act="f${k}"><span style="font-family:var(--f-term);font-size:12px">${f[0]}</span><small>${f[1].length>40?f[1].slice(0,40)+'…':f[1]}</small></button>`).join('')}</div>`:'';
+  document.getElementById('cardP').innerHTML=`<div class="sh">${pz.text}</div>${rows}`;
+  RUN.cur=pz.fields?null:pz.cipher;RUN.hist=[];
+  term('$ cat message.txt',`# ${pz.phrase}`);
+  showCur111();
+  guideOn(RUN.i<1?document.querySelector(pz.fields?'[data-act="f0"]':'[data-act="b64"]'):null);
+}
+function r111(win,st,why){return {eyebrow:win?'STAGE 11-1 CLEAR':'STAGE 11-1',title:win?'暗号を5つ解いた！':(why||'解ききれなかった'),
+  summary:win?'5つの暗号を、道具を使って一段ずつ解いた。':'フラグの形（GK{…}）が出るまで、道具を重ねよう。',
+  review:rvRows([
+    ['Base64','末尾の = と、英数字だけの並びが目印。デコードで元に戻る',true],
+    ['ROT13','アルファベットを13ずらす。もう一度かけると元に戻る',true],
+    ['シーザー暗号','ずらす数は、ダイヤルを回して探す。正しい数で、GK{…} が見える',true],
+    ['EXIF','写真の撮影情報の中に、文字が隠れていることがある。どの行かを探す',true]]),
+  extra:`<div class="real"><div>振り返り：<b>道具は、答えが見えるまで、一段ずつ試す</b>。</div>
+    <code>base64 -d</code><div class="m">Base64 を元に戻す</div>
+    <code>tr 'A-Za-z' 'N-ZA-Mn-za-m'</code><div class="m">ROT13（アルファベットを13ずらす）</div>
+    <code>exiftool photo.jpg</code><div class="m">写真の撮影情報を見る（自分の写真で試す）</div></div>`,
+  next:win?'次は11-2「ドリル」。問題文のヒント語から、使う手法を当てよう。':''};}
+
+// 11-2 ドリル：問題文のヒント語から、手法を当てる（苦手な型ほど多く出る）
+const U112={dur:120,
+  init(){RUN.n=0;RUN.mist=0;RUN.total=8;RUN.recent=[];
+    mount(`<div class="pbar"><span>問題 <b id="qN">0/8</b></span><span class="sp"></span><span class="plives" id="pl">${lives(3,3)}</span></div>
+      <div class="scard" id="qc"></div>
+      <div class="acts3" id="opts"></div>
+      <p class="pnote" id="pnote">問題文のヒント語から、使う手法を当てよう。</p>`);
+    next112();},
+  tap(act,el){
+    if(!act.startsWith('o'))return;
+    const q=RUN.q,pick=q.opts[+act.slice(1)];
+    if(pick===q.pat){okFx(el);gbump('ok',q.pat);RUN.n++;document.getElementById('qN').textContent=`${RUN.n}/${RUN.total}`;
+      document.getElementById('pnote').textContent=`正解。${WHY112[q.pat]}`;
+      if(RUN.n>=RUN.total){const st=1+(RUN.mist===0?1:0)+(RUN.t<=70?1:0);return runEnd(true,st,r112(true,st))}
+      next112();
+    }else{RUN.mist++;strike(el);setLives(3-RUN.mist,3);gbump('miss',q.pat);
+      document.getElementById('pnote').textContent=`ちがう。このヒントは「${PNAME[q.pat]}」。${WHY112[q.pat]}`;
+      if(RUN.mist>=3)runEnd(false,0,r112(false,0,'まちがえすぎた'));}
+  },
+  onTime(){runEnd(false,0,r112(false,0,'時間切れ'))}
+};
+const WHY112={b64:'末尾の = や、英数字だけの並びは Base64 のサイン',rot13:'13 は ROT13。2回やると元に戻る',caesar:'ずらし数を変える暗号。ダイヤルを回して探す',stack:'エンコードを重ねると、外から順番にはがす',exif:'写真の撮影情報（メタデータ）に、文字が隠れていることがある'};
+function next112(){
+  const pat=pickPat(RUN.recent);RUN.recent.push(pat);
+  const pz=genProblem(pat);
+  const others=shuffle(PAT.filter(p=>p!==pat)).slice(0,2);
+  const opts=shuffle([pat,...others]);
+  RUN.q={pat,opts};
+  document.getElementById('qc').innerHTML=`<div class="sh">${pz.text}</div><div class="ppre">${pz.phrase}</div>`;
+  document.getElementById('opts').innerHTML=opts.map((p,k)=>`<button class="act" data-act="o${k}"><span class="al">${PNAME[p]}</span></button>`).join('');
+  document.getElementById('pnote').textContent='問題文のヒント語から、使う手法を当てよう。';
+  term('$ cat hint.txt',`# ${pz.phrase}`);
+}
+function r112(win,st,why){return {eyebrow:win?'STAGE 11-2 CLEAR':'STAGE 11-2',title:win?'ヒント語から手法を当てた！':(why||'ヒントを読みきれなかった'),
+  summary:win?`${RUN.total}問を、ヒント語から手法を当てて解いた（まちがい ${RUN.mist}回）。`:'ヒント語と手法の対応を、もう一度見直そう。',
+  review:rvRows([
+    ['=で終わる','末尾の = は、Base64 のサイン',true],
+    ['13・ひっくり返す','ROT13。アルファベットを半分ずらす',true],
+    ['ローマ・ずらす','シーザー暗号。ずらす数は、探して当てる',true],
+    ['二重・重ねがけ','エンコードの組み合わせ。外からはがす順番が大事',true],
+    ['写真・隠れている','EXIF（メタデータ）に隠れた文字',true]]),
+  extra:`<div class="real"><div>振り返り：<b>ヒント語は、手法を当てるための「手がかり」</b>。</div>
+    <code>echo "..." | base64 -d</code><div class="m">Base64 をデコードする形</div>
+    <code>exiftool photo.jpg</code><div class="m">写真の撮影情報を見る（自分の写真で）</div></div>`,
+  next:win?'次は11-3「ボス戦」。道具を並べて、フラグを取り出そう。':''};}
+
+// 11-3 ボス戦：CyberChef 風。変換を順番に並べて、フラグを取り出す（1問3手まで）
+const U113={dur:200,
+  init(){RUN.bi=0;RUN.mist=0;RUN.boss=shuffle(['b64','rot13','caesar','stack']).slice(0,3).map(p=>genProblem(p));RUN.rec=[];
+    mount(`<div class="pbar"><span>ボス <b id="qN"></b></span><span class="sp"></span><span class="plives" id="pl">${lives(3,3)}</span></div>
+      <div class="scard" id="bossC"></div>
+      <div class="acts3">
+        <button class="act" data-act="add-b64"><span class="al">Base64をデコード</span></button>
+        <button class="act" data-act="add-rot13"><span class="al">ROT13</span></button>
+        <button class="act" data-act="add-back"><span class="al">戻す（N文字）</span></button>
+      </div>
+      <div class="acts"><button class="act" data-act="run"><span class="al">実行</span><small>フラグが出るか</small></button><button class="act" data-act="clr"><span class="al">全部消す</span></button></div>
+      <p class="pnote" id="pnote">レシピ（上から順番に）を作って、実行しよう。最大3手。</p>`);
+    showB113();},
+  tap(act,el){
+    const b=RUN.boss[RUN.bi];
+    if(act==='clr'){RUN.rec=[];showB113();return}
+    if(act==='run'){
+      const fin=outsB113().slice(-1)[0];
+      if(fin===b.ans){okFx(el);term(`# フラグ ${b.ans}`,'# 取り出せた！ 次のボスへ');RUN.bi++;RUN.rec=[];
+        if(RUN.bi>=RUN.boss.length){const st=1+(RUN.mist===0?1:0)+(RUN.t<=150?1:0);return runEnd(true,st,r113(true,st))}
+        showB113();return}
+      RUN.mist++;strike(el);setLives(3-RUN.mist,3);
+      document.getElementById('pnote').textContent='まだフラグが出ない。順番を入れ替えるか、戻す数を変えよう。';
+      if(RUN.mist>=3)runEnd(false,0,r113(false,0,'まちがえすぎた'));return;
+    }
+    const m=act.match(/^(add|rm|n)-?(b64|rot13|back|\d+)?([+-])?$/);
+    if(act.startsWith('add-')){
+      if(RUN.rec.length>=3){document.getElementById('pnote').textContent='レシピは3手まで。';return}
+      const op=act.slice(4);RUN.rec.push({op,n:op==='back'?1:0});
+      term(`$ ${OP[op].cmd(1)}`,`# ${OP[op].name}を、レシピの ${RUN.rec.length} 手目に入れた`);
+      showB113();return;
+    }
+    if(act.startsWith('rm')){RUN.rec.splice(+act.slice(2),1);showB113();return}
+    if(act.startsWith('n')){const [,i,d]=act.match(/^n(\d+)([+-])$/);const st=RUN.rec[+i];st.n=Math.max(1,Math.min(25,st.n+(d==='+'?1:-1)));showB113();}
+  },
+  onTime(){runEnd(false,0,r113(false,0,'時間切れ'))}
+};
+function outsB113(){const b=RUN.boss[RUN.bi];const o=[b.cipher];let t=b.cipher;for(const st of RUN.rec){t=OP[st.op].run(t,st.n);o.push(t===null?'（ここでは読めない）':t);if(t===null)break}return o}
+function showB113(){
+  const b=RUN.boss[RUN.bi];
+  document.getElementById('qN').textContent=`${RUN.bi+1}/${RUN.boss.length}`;
+  const o=outsB113();
+  const steps=RUN.rec.map((st,i)=>`<div class="rstep"><b>${i+1}</b><span>${OP[st.op].name}${st.op==='back'?'（'+st.n+'）':''}</span><span class="rbtns">${st.op==='back'?`<button class="mini" data-act="n${i}-">−</button><button class="mini" data-act="n${i}+">+</button>`:''}<button class="mini" data-act="rm${i}">外す</button></span></div><div class="rout">→ ${escH(o[i+1]||'')}</div>`).join('');
+  document.getElementById('bossC').innerHTML=`<div class="sh">ボス：${b.text}</div><div class="ppre">入力：${escH(b.cipher)}</div><div class="recipe">${steps||'<p class="pnote">まだ手がない。下の道具を入れよう</p>'}</div>`;
+  term('$ cat input.txt',`# ${b.phrase}`);
+}
+function r113(win,st,why){return {eyebrow:win?'STAGE 11-3 CLEAR':'STAGE 11-3',title:win?'ボスを倒した！':(why||'ボスに負けた'),
+  summary:win?'3体のボスから、順番に変換を重ねて、フラグを取り出した。':'手の順番と、戻す数を見直そう。',
+  review:rvRows([
+    ['順番','重ねがけは、外からはがす。手の順番が違うと、読めない',true],
+    ['戻す（N）','ずらした数だけ戻す。ダイヤルの数が合うと、GK{…} が出る',true],
+    ['レシピ','CyberChef のように、手順を並べてから実行する。見直しやすい',true]]),
+  extra:`<div class="real"><div>振り返り：<b>手順を並べると、やり直しが速い</b>。</div>
+    <code>cat input.txt | base64 -d | tr 'A-Za-z' 'N-ZA-Mn-za-m'</code><div class="m">パイプでつなぐと、CyberChef のレシピと同じ流れになる</div></div>
+    <div class="warn"><b>安全メモ</b><ul><li>暗号を解くのは、自分で作った問題か、許可された練習問題だけにする</li></ul></div>`,
+  next:win?'暗号の章クリア！ 次は、ほかのジャンルへ（ROADMAPの計画どおり）。':''};}
 
 const GAMES={
   '1':()=>{newGame();requestAnimationFrame(loop)},
@@ -2637,7 +2974,10 @@ const GAMES={
   '9-1':()=>runStart(U91),
   '9-2':()=>runStart(U92),
   '10-1':()=>runStart(U101),
-  '10-2':()=>runStart(U102)
+  '10-2':()=>runStart(U102),
+  '11-1':()=>runStart(U111),
+  '11-2':()=>runStart(U112),
+  '11-3':()=>runStart(U113)
 };
 function start(){
   audio();show(null);
