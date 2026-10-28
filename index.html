@@ -599,7 +599,26 @@ const STAGES=[
         <p>ニュースが届く。危ない版が攻撃される前に、3つとも安全にする。45秒。</p>
         <p>★は「クリア」「非LTSを選ばなかった」「30秒以内」で1つずつ。</p>`
     }},
-  {id:5, name:'部品屋の罠',   sub:'npmの部品の乗っ取り'},
+  {id:5, name:'部品屋の罠',   sub:'npmの部品の乗っ取り', ready:true,
+    hud:['5 部品屋の罠','入れる部品を見分ける'],
+    room:'<span class="chip">npm（部品屋）</span><span class="arrow">→</span><span class="chip">あなたのプログラム</span>',
+    cue:['部品には罠がある','名前・作者・インストール時の動きを確かめよう'],
+    brief:{
+      situation:['プログラムは、<b>npm</b>（部品屋）から<b>パッケージ</b>（再利用できる部品）を取ってきて組み立てる。部品は、さらに別の部品を使う（<b>依存関係</b>）。だから、知らない部品が、気づかないうちに入っていることがある。'],
+      doorsTitle:'見分けるポイント',
+      doors:[
+        ['名前','人気の部品と1文字違う？','打ち間違いを狙う偽物（タイポスクワッティング）の典型'],
+        ['作者','最近、作者が変わった？','乗っ取られた部品は、作者が変わった直後に危ない更新をする'],
+        ['スクリプト','インストール時に、勝手に処理が動く？','入れた瞬間に、知らないコードが動くことがある']
+      ],
+      real:['本物では、部品を入れる前に、<b>npm audit</b>（既知の脆弱性を調べるコマンド）で確かめる。これは、材料の仕入れ先に罠を仕込む<b>サプライチェーン攻撃</b>を防ぐ、いちばん基本の習慣。'],
+      howto:`<div class="legend">
+          <div><span class="dot k"></span>入れる ＝ 名前・作者・動きに怪しい点がない</div>
+          <div><span class="dot r"></span>入れない ＝ 偽物の疑い・乗っ取りの疑い・脆弱性あり</div>
+        </div>
+        <p>部品が流れてくる。1つずつ見分けて、10個すべて。まちがいは3回まで。</p>
+        <p>★は「まちがいなし」「60秒以内」で1つずつ。</p>`
+    }},
   {id:6, name:'秘密の置き忘れ',sub:'APIキーをGitHubに公開してしまう'},
   {id:7, name:'偽メール',     sub:'GitHubやサーバー会社を名乗るフィッシング'},
   {id:8, name:'足あと探し',   sub:'ログから怪しいアクセスを見つける'},
@@ -715,7 +734,17 @@ const GLOSSARY=[
   {id:'eol',     w:'EOL（イーオーエル）',at:['4'],a:['EOL'],
     s:'サポート終了（もう修正が出ない）',e:'保証期間が切れた家電。壊れても直してもらえない'},
   {id:'upgrade', w:'アップグレード',  at:['4'],a:['アップグレード'],
-    s:'ソフトを新しい版に上げること',e:'家を、広くて新しい部屋へ引っ越すこと'}
+    s:'ソフトを新しい版に上げること',e:'家を、広くて新しい部屋へ引っ越すこと'},
+  {id:'npm',     w:'npm（エヌピーエム）',at:['5'],a:['npm'],
+    s:'Node.jsの部品（パッケージ）を取ってくる道具',e:'部品屋の注文窓口。欲しい部品の名前を言えば、取り寄せてくれる'},
+  {id:'package', w:'パッケージ',      at:['5'],a:['パッケージ'],
+    s:'再利用できる部品のプログラム',e:'レゴブロックのセット。組み立てれば、すぐ使える'},
+  {id:'deps',    w:'依存関係',        at:['5'],a:['依存関係'],
+    s:'部品が、さらに別の部品を必要とする関係',e:'部品の箱の中に、さらに小さな箱が入っている入れ子'},
+  {id:'supply',  w:'サプライチェーン攻撃',at:['5'],a:['サプライチェーン攻撃'],
+    s:'材料の仕入れ先や運び屋に罠を仕込み、最後に使う人を狙う攻撃',e:'食材の仕入れ先に毒を混ぜて、店ごと被害を出すやり方'},
+  {id:'audit',   w:'npm audit（エヌピーエム オーディット）',at:['5'],a:['npm audit'],
+    s:'使っている部品に、既知の脆弱性がないか調べるコマンド',e:'食材の検査表を見て、危ないものがないか確かめる'}
 ];
 const GBYID=Object.fromEntries(GLOSSARY.map(g=>[g.id,g]));
 const GMATCH=GLOSSARY.flatMap(g=>g.a.map(a=>({a,g}))).sort((x,y)=>y.a.length-x.a.length);
@@ -1910,6 +1939,71 @@ function r4(win,v,why){
     next:win?'次はステージ5「部品屋の罠」。版を守れても、使っている部品（パッケージ）にも罠が潜むことがある。':''};
 }
 
+/* ===== ステージ5「部品屋の罠」：npmの部品を、入れるか入れないか見分ける ===== */
+// 部品名はすべて架空。実在の部品を悪者にしない
+const PKG5=[
+  {n:'hako-validator',ok:true,dl:'週 1.8万件',tags:[['ok','作者は何年も同じ'],['ok','インストール時に動く処理なし'],['ok','名前は正しいつづり']],why:'作者が変わらず、インストール時の処理もない。安心して入れられる'},
+  {n:'lodahs-kit',ok:false,dl:'週 3件',tags:[['bad','人気の部品と1文字違い（偽物の疑い）'],['bad','ダウンロードが極端に少ない']],why:'名前が人気の部品と1文字違う。これは「タイポスクワッティング」（打ち間違いを狙う偽物）の典型'},
+  {n:'sakura-log-lib',ok:true,dl:'週 4.2万件',tags:[['ok','公式の作者が長く管理'],['ok','脆弱性の報告なし（npm audit）']],why:'作者も、更新の歴史も安定している。入れてOK'},
+  {n:'reqeust-lite',ok:false,dl:'週 12件',tags:[['bad','人気の部品と1文字違い（偽物の疑い）'],['bad','インストール時に知らないコードが動く']],why:'打ち間違いを狙った偽物。さらに、入れた瞬間に知らないコードが動く'},
+  {n:'nagomi-cache',ok:false,dl:'週 6万件',tags:[['bad','npm audit：脆弱性あり（修正版あり）'],['ok','作者は同じ']],why:'人気だが、既知の脆弱性がある。直った版（修正版）を入れれば安全。古い版は入れない'},
+  {n:'kumo-date-kit',ok:true,dl:'週 9千件',tags:[['ok','作者は同じ・更新が続いている'],['ok','脆弱性の報告なし']],why:'規模は小さいが、怪しい点はない。入れてOK'},
+  {n:'tiny-jsn-parse',ok:false,dl:'週 40件',tags:[['bad','人気の部品と1文字違い（偽物の疑い）']],why:'名前のつづりが違う。見た目では気づきにくいので、名前を必ず確かめる'},
+  {n:'maple-queue',ok:false,dl:'週 2万件',tags:[['bad','作者が先週変わった'],['bad','インストール時に知らないスクリプトが動く']],why:'作者が変わった直後に、インストール時に動く処理が増えた。乗っ取られた部品の典型（サプライチェーン攻撃）'},
+  {n:'color-kitz',ok:false,dl:'週 150件',tags:[['bad','人気の部品と1文字違い（偽物の疑い）']],why:'名前が人気の部品に似ている。ダウンロードも少ない'},
+  {n:'aozora-utils',ok:true,dl:'週 7千件',tags:[['ok','作者は同じ'],['ok','インストール時に動く処理なし']],why:'怪しい点がない。入れてOK'}
+];
+const U5={dur:90,
+  init(){
+    RUN.q=shuffle([...PKG5]);RUN.i=0;RUN.mist=0;
+    mount(`<div class="pbar"><span>部品 <b id="qN"></b></span><span class="sp"></span><span class="plives" id="pl">${lives(3,3)}</span></div>
+      <div class="slot" id="slot"></div>
+      <div class="acts">
+        <button class="act" data-act="in"><span class="al">入れる</span><small>安全だと思う</small></button>
+        <button class="act" data-act="out"><span class="al">入れない</span><small>まだ危ないかも</small></button>
+      </div>
+      <p class="pnote" id="pnote">名前・作者・インストール時の動きを見て、決めよう。</p>`);
+    show5();
+  },
+  tap(act,el){
+    const c=RUN.q[RUN.i];
+    if((act==='in')===c.ok){
+      okFx(el);term(`$ npm install ${c.n}`,c.ok?'# 入れた。確かめたので安心':'# （入れてはいけなかった）');
+      RUN.i++;
+      if(RUN.i>=RUN.q.length){const st=1+(RUN.mist===0?1:0)+(RUN.t<=60?1:0);return runEnd(true,st,r5(st,true))}
+      show5();document.getElementById('pnote').textContent='正解。次の部品へ。';
+    }else{
+      RUN.mist++;strike(el);setLives(3-RUN.mist,3);
+      term(c.ok?`# ${c.n} は入れても安全だった`:`! ${c.n} を入れていたら危なかった`,`# ${c.why}`);
+      document.getElementById('pnote').textContent=c.ok?'安全な部品だった。入れてOK。':'危ない部品だった。入れない。';
+      if(RUN.mist>=3)runEnd(false,0,r5(0,false));
+    }
+  },
+  onTime(){runEnd(false,0,r5(0,false,'時間切れ'))}
+};
+function show5(){
+  const c=RUN.q[RUN.i];
+  document.getElementById('qN').textContent=`${RUN.i+1}/${RUN.q.length}`;
+  document.getElementById('slot').innerHTML=`<div class="scard slide"><div class="sh">${c.n}</div>
+    <div class="ppre"><span class="c">$ npm info ${c.n}</span><br>ダウンロード：${c.dl}</div>
+    <div class="plist">${c.tags.map(([k,t])=>`<div class="pm"><span class="ptag ${k}">${k==='ok'?'OK':'注意'}</span>${t}</div>`).join('')}</div></div>`;
+  term(`$ npm info ${c.n}`,`# ダウンロード ${c.dl}。${c.tags.map(x=>x[1]).join('、')}`);
+  guideOn(RUN.i<1?document.querySelector(`[data-act="${c.ok?'in':'out'}"]`):null);
+}
+function r5(st,win,why){return {eyebrow:win?'STAGE 5 CLEAR':'STAGE 5',title:win?'罠に引っかからなかった！':(why||'罠を入れてしまった'),
+  summary:win?`${RUN.q.length}個の部品を見分けた（まちがい ${RUN.mist}回）。`:'危ない部品を入れそうになった。名前・作者・インストール時の動きを、必ず確かめよう。',
+  review:rvRows([
+    ['名前','人気の部品と1文字違う名前は、偽物の疑い。打ち間違いを狙う（タイポスクワッティング）',true],
+    ['作者','作者が最近変わった直後の更新は、乗っ取りの疑い',true],
+    ['スクリプト','インストール時に、知らない処理が動くかを見る。動くなら、中身を読んでから入れる',true],
+    ['脆弱性','npm audit で既知の穴を調べる。修正版（直った版）があれば、それを入れる',true]]),
+  extra:`<div class="real"><div>振り返り：<b>部品は、入れた時点で、自分のパソコンやサーバーの中で動く</b>。</div>
+    <code>npm audit</code><div class="m">使っている部品に、既知の脆弱性がないか調べる</div>
+    <code>npm ls</code><div class="m">どの部品が、どの部品に頼っているか（依存関係）を見る</div>
+    <code>npm install --ignore-scripts</code><div class="m">インストール時の処理（スクリプト）を動かさずに入れる</div></div>
+    <div class="warn"><b>安全メモ</b><ul><li>--ignore-scripts は、インストール時の処理を止める。ただし、動かないと困る部品もあるので、中身を読んでから決める</li><li>知らない部品を、サーバーで直接入れない。まず自分のパソコンで確かめる</li></ul></div>`,
+  next:win?'次はステージ6「秘密の置き忘れ」。部品ではなく、自分の鍵（パスワード）をGitHubに置いてしまう事故。':''};}
+
 const GAMES={
   '1':()=>{newGame();requestAnimationFrame(loop)},
   '2-1':()=>{newGame21();requestAnimationFrame(loop21)},
@@ -1917,7 +2011,8 @@ const GAMES={
   '2-3':()=>{newGame23();requestAnimationFrame(loop23)},
   '3-1':()=>runStart(U31),
   '3-2':()=>runStart(U32),
-  '4':()=>runStart(U4)
+  '4':()=>runStart(U4),
+  '5':()=>runStart(U5)
 };
 function start(){
   audio();show(null);
