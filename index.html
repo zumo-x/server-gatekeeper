@@ -683,7 +683,49 @@ const STAGES=[
         <p>流れてくる行から、あやしいものを10件見つける。ふつうの行を3回押すと失敗。行は4秒たつと消える。</p>
         <p>★は「まちがいなし」「40秒以内」で1つずつ。</p>`
     }},
-  {id:9, name:'入力の罠',     sub:'SQLインジェクション'},
+  {id:9, name:'入力の罠',     sub:'SQLインジェクション', ready:true,
+    rounds:[
+      {name:'しくみを見る',
+        hud:['9-1 しくみを見る','入力が命令になる瞬間'],
+        room:'<span class="chip">ログイン画面</span><span class="arrow">→</span><span class="chip">データベース</span>',
+        cue:['入力欄の文字は','命令の一部になることがある'],
+        brief:{
+          situation:['ログイン画面の入力欄に名前を入れると、裏で<b>SQL</b>（データベースへの命令）が組み立てられる。入力の文字をそのままつなげると、入力が命令の一部になってしまう。これが<b>SQLインジェクション</b>。'],
+          doorsTitle:'画面に出てくるもの',
+          doors:[
+            ['SQL','データベースに命令を出す言葉','SELECT * FROM users WHERE name = ... のように書く'],
+            ['引用符（\'）','文字の区切り','入力の中の \' が、命令の文字列を閉じてしまうことがある'],
+            ['条件','どの人かを決める部分（WHERE）','条件が「いつも真」になると、全員が取り出される']
+          ],
+          real:['実際のサービスでは、入力欄の文字が、そのまま命令に混ざると、データを盗まれたり、ログインを突破されたりする。ここでは、画面の上だけで、その動きを見る。'],
+          howto:`<div class="legend">
+              <div><span class="dot d"></span>3つの入力を、順番に試す（ボタンを押す）</div>
+              <div><span class="dot r"></span>命令の形が変わったところは、赤く出る</div>
+            </div>
+            <p>3つ試したらクリア。これは見るだけの練習。直し方は次のラウンドで。</p>
+            <p>★は「SQLインジェクションを見た」「30秒以内」で1つずつ。</p>`
+        }},
+      {name:'直す',
+        hud:['9-2 直す','安全な書き方を選ぶ'],
+        room:'<span class="chip">入力</span><span class="arrow">→</span><span class="chip">命令（SQL）</span>',
+        cue:['安全な書き方を','3つから選ぼう'],
+        brief:{
+          situation:['9-1で見たように、入力を文字としてつなげると危ない。直すには、<b>入力を命令の外側（データ）として渡す</b>のが基本。'],
+          doorsTitle:'選択肢に出てくるもの',
+          doors:[
+            ['A','文字をつなげる','いちばん危ない。入力が命令の一部になる'],
+            ['B','プレースホルダ（?）','入力を、データとして別に渡す。正解'],
+            ['C','引用符を消す','見かけは安全そうだが、名前も壊れ、ほかの方法で抜けられることがある']
+          ],
+          real:['正しい名前（O\'Brien）でも試す。安全な書き方は、攻撃を止めつつ、正しい名前を壊さない。さらに、<b>入力チェック</b>（長さや文字を確かめる）も一緒に行うと、より安心。'],
+          howto:`<div class="legend">
+              <div><span class="dot r"></span>危ない・壊れる書き方は、まちがい（3回で失敗）</div>
+              <div><span class="dot k"></span>攻撃は止まり、正しい名前も通る書き方が正解</div>
+            </div>
+            <p>選ぶと、攻撃の入力と正しい名前の両方で試す結果が出る。</p>
+            <p>★は「まちがいなし」「45秒以内」で1つずつ。</p>`
+        }}
+    ]},
   {id:10,name:'溢れるロッカー',sub:'バッファオーバーフロー'}
 ];
 
@@ -835,7 +877,15 @@ const GLOSSARY=[
   {id:'scan',    w:'スキャン',        at:['8'],a:['スキャン'],
     s:'無差別に、いろいろな道を試し回ること',e:'泥棒が町中の家の玄関を、順番に一軒ずつ確かめて回る'},
   {id:'tail',    w:'tail（テイル）',  at:['8'],a:['tail'],
-    s:'ファイルの最後の行を見るコマンド（-fで流し続ける）',e:'本の最後のページを開いて、新しく書き足されるのを見張る'}
+    s:'ファイルの最後の行を見るコマンド（-fで流し続ける）',e:'本の最後のページを開いて、新しく書き足されるのを見張る'},
+  {id:'sql',     w:'SQL（エスキューエル）',at:['9-1','9-2'],a:['SQL'],
+    s:'データベースに命令を出すための言葉',e:'お店の倉庫係への注文書の書き方'},
+  {id:'sqli',    w:'SQLインジェクション',at:['9-1','9-2'],a:['SQLインジェクション'],
+    s:'入力欄に命令の一部を混ぜて、データベースを勝手に動かす攻撃',e:'注文書の「数量」欄に、「全部持ってきて」と書き足す'},
+  {id:'placeholder',w:'プレースホルダ',at:['9-2'],a:['プレースホルダ'],
+    s:'入力は「データ」として別に渡し、命令の一部として混ざらないようにする書き方',e:'注文書の空欄に、中身をそっと書き入れる。空欄の外には命令を書かない'},
+  {id:'inputcheck',w:'入力チェック',    at:['9-2','10-2'],a:['入力チェック'],
+    s:'受け取る前に、入力が決まりに合っているか確かめること',e:'郵便局の「重さ・大きさ制限」。大きすぎる荷物は受け付けない'}
 ];
 const GBYID=Object.fromEntries(GLOSSARY.map(g=>[g.id,g]));
 const GMATCH=GLOSSARY.flatMap(g=>g.a.map(a=>({a,g}))).sort((x,y)=>y.a.length-x.a.length);
@@ -2322,6 +2372,95 @@ function r8(win,st,why){return {eyebrow:win?'STAGE 8 CLEAR':'STAGE 8',title:win?
     <div class="warn"><b>安全メモ</b><ul><li>ログを見るだけなら安全。ただし、あやしいIPを見つけても、むやみに触らない。ブロックは fail2ban などに任せると、自動でやってくれる</li></ul></div>`,
   next:win?'次はステージ9「入力の罠」。ログインの入力欄から、データベースを勝手に動かされる攻撃。':''};}
 
+/* ===== ステージ9「入力の罠」：入力欄の文字が、データベースの命令の一部になる ===== */
+// 入力はゲームの中だけの練習用。結果はすべて画面上のシミュレーション（実在のシステムには接続しない）
+const escH=t=>String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+const PRE9=[
+  {v:'alice',lab:'ふつうの名前',res:'名前が一致した人だけを取り出す。ふつうの動き',bad:false},
+  {v:"bob'",lab:'名前に \' を入れる',res:'SQLの文が途中で閉じられず、エラーになる。命令が壊れた',bad:false},
+  {v:"' OR '1'='1",lab:'命令の一部を混ぜる',res:'WHERE の条件が「いつも真」になり、全員が取り出される。パスワードを見ずにログインできてしまう',bad:true}
+];
+const sqlOf9=x=>`SELECT * FROM users WHERE name = '<span class="${x.v.includes("'")?'hl':''}">${escH(x.v)}</span>' AND pass = '…'`;
+const U91={dur:60,
+  init(){
+    RUN.tried=new Set();
+    mount(`<div class="pbar"><span>試した <b id="qN">0/3</b></span></div>
+      <div class="ppre" id="sql">SELECT * FROM users WHERE name = '（入力）' AND pass = '…'</div>
+      <div class="pm" id="res">入力を選んで、試してみよう。</div>
+      <div class="acts3">${PRE9.map((x,i)=>`<button class="act" data-act="p${i}"><span class="al">${x.lab}</span><small>${escH(x.v)}</small></button>`).join('')}</div>
+      <p class="pnote" id="pnote">3つの入力を、順に試す。画面のSQLがどう変わるかを見よう。</p>`);
+    term('$ 名前を入力 → SQLが組み立てられる','# 入力が、そのまま命令の文字列の中に入る');
+    guideOn(document.querySelector('[data-act="p0"]'));
+  },
+  tap(act,el){
+    const i=+act.slice(1),x=PRE9[i];
+    if(RUN.tried.has(i))return;RUN.tried.add(i);
+    el.disabled=true;el.classList.add('done');okFx(el);
+    document.getElementById('sql').innerHTML=sqlOf9(x);
+    document.getElementById('res').innerHTML=`<span class="${x.bad?'ng':'ok'}">${x.res}</span>`;
+    term(`$ 入力：${x.v}`,`# ${x.res}`);
+    document.getElementById('qN').textContent=`${RUN.tried.size}/3`;
+    if(x.bad)RUN.sawOr=true;
+    document.getElementById('pnote').textContent=x.bad?'入力の文字が、命令の一部として働いた。これがSQLインジェクション。':'次の入力も試そう。';
+    if(RUN.tried.size>=3){const st=1+(RUN.sawOr?1:0)+(RUN.t<=30?1:0);return runEnd(true,st,r91(true,st))}
+    guideOn(RUN.tried.size<1?document.querySelector(`[data-act="p${RUN.tried.size}"]`):null);
+  },
+  onTime(){runEnd(false,0,r91(false,0,'時間切れ'))}
+};
+function r91(win,st,why){return {eyebrow:win?'STAGE 9-1 CLEAR':'STAGE 9-1',title:win?'命令が変わるところを見た！':(why||'まだ試し終わっていない'),
+  summary:win?'入力の文字が、データベースへの命令の一部になる様子を見た。':'3つの入力を、最後まで試そう。',
+  review:rvRows([
+    ['SQL','データベースに命令を出すための言葉。文字をつなげて作ると、入力も命令になってしまう',true],
+    ['SQLインジェクション','入力欄に命令の一部を混ぜて、データベースを勝手に動かす攻撃',true],
+    ['引用符（\'）','文字の区切り。入力の中の \' が、命令の文字列を閉じてしまう',true],
+    ['条件','WHERE は「どの人か」の条件。それが「いつも真」になると、全員が通る',true]]),
+  extra:`<div class="real"><div>振り返り：<b>入力は、ただの文字として扱う</b>。直し方は次のラウンドで。</div>
+    <code>SELECT * FROM users WHERE name = ?</code><div class="m">? の場所に、入力を「データとして」渡す（次で学ぶ）</div></div>`,
+  next:win?'次は9-2「直す」。危ない書き方と、安全な書き方を比べて選ぼう。':''};}
+// 9-2：3つの書き方から、安全なものを選ぶ。選んだら、攻撃の入力と正しい名前で試す
+const ATTACK9="' OR '1'='1",LEGIT9="O'Brien";
+const CODE9=[
+  {k:'A',lab:'文字をつなげる',code:`db.query("SELECT * FROM users WHERE name = '" + name + "'")`},
+  {k:'B',lab:'入力は別に渡す（プレースホルダ）',code:`db.query("SELECT * FROM users WHERE name = ?", [name])`},
+  {k:'C',lab:'引用符（\'）を消す',code:`db.query("SELECT * FROM users WHERE name = '" + name.replace(/'/g, "") + "'")`}
+];
+function test9(k,input){
+  const attack=input===ATTACK9;
+  if(k==='A'){if(attack)return ['危ない：ログインできてしまった',false];return input.includes("'")?['SQLエラー：名前の引用符が、命令を壊した',false]:['ふつうに動いた',true]}
+  if(k==='B')return attack?['文字として扱われ、ログインできない',true]:['名前そのまま。正しく動いた',true];
+  return attack?['ログインできない（引用符が消えた）',true]:['名前が「OBrien」に変わってしまった',false];
+}
+const U92={dur:70,
+  init(){
+    RUN.n=0;RUN.mist=0;
+    mount(`<div class="pbar"><span>どれが安全？</span><span class="sp"></span><span class="plives" id="pl">${lives(3,3)}</span></div>
+      <div class="plist">${CODE9.map(c=>`<button class="prow" data-act="${c.k}"><span style="font-family:var(--f-term);font-size:12px;word-break:break-all">${c.k}：${escH(c.code)}</span><small>${c.lab}</small></button>`).join('')}</div>
+      <div class="pm" id="pm">選ぶと、攻撃の入力と、正しい名前の両方で試す。</div>
+      <p class="pnote" id="pnote">安全な書き方を選ぼう。</p>`);
+    term('$ 入力の受け取り方を選ぶ','# 攻撃の入力と、正しい名前（O\'Brien）で試す');
+  },
+  tap(act,el){
+    const a=test9(act,ATTACK9),l=test9(act,LEGIT9);
+    document.getElementById('pm').innerHTML=`<span>攻撃の入力：</span><b class="${a[1]?'ok':'ng'}">${a[0]}</b><br><span>O'Brien：</span><b class="${l[1]?'ok':'ng'}">${l[0]}</b>`;
+    if(act==='B'){okFx(el);term('$ db.query("... name = ?", [name])','# 入力は「データ」として渡す。命令の中には入らない');return runEnd(true,1+(RUN.mist===0?1:0)+(RUN.t<=45?1:0),r92(true))}
+    RUN.mist++;strike(el);setLives(3-RUN.mist,3);
+    document.getElementById('pnote').textContent=act==='A'?'これは危ない。入力が命令の一部になってしまう。':'これは壊れる。名前を変えてしまうのは正しくない。';
+    if(RUN.mist>=3)runEnd(false,0,r92(false,'まちがえすぎた'));
+  },
+  onTime(){runEnd(false,0,r92(false,'時間切れ'))}
+};
+function r92(win,why){return {eyebrow:win?'STAGE 9-2 CLEAR':'STAGE 9-2',title:win?'入力を、データとして渡せた！':(why||'直しきれなかった'),
+  summary:win?'入力を命令の外に出すと、攻撃もただの文字になる。':'危ない書き方は、入力を命令の中に入れてしまう。',
+  review:rvRows([
+    ['A','文字をつなげると、入力が命令の一部になる。だから、SQLインジェクションが起きる',false],
+    ['B','プレースホルダ（?）に、入力を「データ」として渡す。命令の形は変わらない。正解',true],
+    ['C','引用符を消すのは、直しきれない。名前も壊れるし、別のやり方で抜けられることがある',false],
+    ['入力チェック','受け取る前に、長さや文字の種類を確かめるのも大事（ステージ10で学ぶ）',true]]),
+  extra:`<div class="real"><div>振り返り：<b>命令の形は、先に決めて、入力はあとから渡す</b>。</div>
+    <code>db.query("... name = ?", [name])</code><div class="m">プレースホルダ。入力は、命令の外側で渡す</div></div>
+    <div class="warn"><b>安全メモ</b><ul><li>攻撃の入力を、実在のサービスに試さない。自分のサービスは、テスト用の環境で確かめる</li><li>入力は、必ずプレースホルダか、ライブラリの安全な機能で扱う</li></ul></div>`,
+  next:win?'次はステージ10「溢れるロッカー」。入力の長さを超えると、隣のメモリまで書き換わる。':''};}
+
 const GAMES={
   '1':()=>{newGame();requestAnimationFrame(loop)},
   '2-1':()=>{newGame21();requestAnimationFrame(loop21)},
@@ -2333,7 +2472,9 @@ const GAMES={
   '5':()=>runStart(U5),
   '6':()=>runStart(U6),
   '7':()=>runStart(U7),
-  '8':()=>runStart(U8)
+  '8':()=>runStart(U8),
+  '9-1':()=>runStart(U91),
+  '9-2':()=>runStart(U92)
 };
 function start(){
   audio();show(null);
