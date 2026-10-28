@@ -313,6 +313,21 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
 #mkpop code{font-family:var(--f-term);font-size:13px;color:var(--accent);word-break:break-all}
 #mkpop p{margin:0;font-size:14px;line-height:1.6}
 #mkpop .mkclose{all:unset;cursor:pointer;font-size:22px;line-height:1;color:var(--muted);padding:2px 8px}
+/* コード解説（部品ごとにタップ） */
+.codeblk{margin:8px 0;background:#0f1229;border-radius:10px;padding:8px 10px;overflow-x:auto}
+.codeblk .codeline{display:block;font-family:var(--f-term);font-size:13px;line-height:1.8;white-space:pre-wrap;word-break:break-word;color:#d6dbe8}
+.clang{all:unset;cursor:pointer;display:inline-block;font-size:10px;letter-spacing:.06em;color:#aab0cc;background:#20244a;border-radius:6px;padding:2px 8px;margin-bottom:7px;border-bottom:2px dotted #8b90ad}
+.ct{all:unset;cursor:pointer;font:inherit;border-bottom:2px dotted currentColor;padding-bottom:1px}
+.ct:active{background:rgba(255,255,255,.14);border-radius:3px}
+.ct.tcmd{color:#4ec977}.ct.tsub{color:#48c9c9}.ct.topt{color:#e8c552}.ct.tpath{color:#5aa9ff}.ct.targ{color:#c7cce0}.ct.tsym{color:#c678dd}.ct.tkw{color:#b58cff}
+.ct.tcmt{border-bottom:0;color:#7a7f99;cursor:default}
+.codelegend{display:flex;flex-wrap:wrap;gap:5px 10px;align-items:center;font-size:11px;color:var(--ink);margin:8px 0 2px}
+.codelegend b{font-size:11px;color:var(--muted)}
+.codelegend .lg{position:relative;padding-left:15px}
+.codelegend .lg::before{content:"";position:absolute;left:0;top:9px;width:11px;border-top:2px dotted currentColor}
+.codelegend .lg.tcmd{color:#4ec977}.codelegend .lg.tsub{color:#48c9c9}.codelegend .lg.topt{color:#e8c552}.codelegend .lg.tpath{color:#5aa9ff}.codelegend .lg.targ{color:#c7cce0}.codelegend .lg.tsym{color:#c678dd}
+.codelegend .lghint{color:var(--muted);margin-left:auto}
+#term .ct{border-bottom-width:1px}
 .slide{animation:slidein .35s ease-out}
 @keyframes slidein{from{transform:translateX(36px);opacity:0}}
 .pm{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;font-size:13px;background:#0f1229;border-radius:10px;padding:10px;font-family:var(--f-term)}
@@ -1809,7 +1824,7 @@ function partHTML(p){
   return `<span${cls?` class="${cls}"`:''}${p.ex?` data-ex="${escH(p.ex)}"`:''}>${escH(p.x)}</span>`;
 }
 const lineHTML=l=>Array.isArray(l)?l.map(partHTML).join(''):escH(l);
-const dotsBar=t=>`<figcaption class="scrbar"><span class="dots"><i></i><i></i><i></i></span>${escH(t)}</figcaption>`;
+const dotsBar=t=>`<figcaption class="scrbar"><span class="dots"><i></i><i></i><i></i></span>${barTitle(t)}</figcaption>`;
 function screenHTML(id){
   const s=SCREENS[id];if(!s)return '';
   const k=s.k||'term';
@@ -1830,17 +1845,233 @@ function screenHTML(id){
   return `<figure class="scr ${k}">${dotsBar(s.t||'')}<pre class="scrbody">${body}</pre></figure>`;
 }
 function screensSection(ids){return ids&&ids.length?`<section class="sec"><h2>本物ではこう見える</h2><p class="scrhint">色のついた（点線の）部分をタップすると、それが何かを説明します。</p>${ids.map(screenHTML).join('')}</section>`:'';}
+/* ---------- コードの解説（CODEX）：コマンドやコードを、部品ごとにタップして意味を見る ---------- */
+const LANGS={
+  bash:{w:'シェル（bash）',s:'Linux に命令を打つ言葉。1行で道具(コマンド)を呼び出して使う'},
+  python:{w:'Python',s:'読みやすい文法のプログラム言語。CTFの自動化や計算によく使う'},
+  c:{w:'C言語',s:'メモリを直接あつかう、古くからの言語。Pwn の舞台になりやすい'},
+  sql:{w:'SQL',s:'データベースに問い合わせる言葉。Webの裏側で使う'},
+  js:{w:'JavaScript',s:'ブラウザやサーバーで動くプログラム言語'},
+  conf:{w:'設定ファイル',s:'ソフトの動きを決める設定の書き方'},
+  log:{w:'ログ',s:'サーバーが残す記録。1行が1つの出来事'}
+};
+const SYM={
+  '|':{t:'sym',s:'パイプ：左のコマンドの出力を、右のコマンドの入力に渡す'},
+  '>':{t:'sym',s:'リダイレクト：出力を、画面でなくファイルに書き込む'},
+  '<':{t:'sym',s:'リダイレクト：ファイルの中身を、入力として渡す'},
+  ';':{t:'sym',s:'コマンドの区切り（続けて実行）'},
+  '&':{t:'sym',s:'つなぎ／背後で実行などの記号'},
+  '*':{t:'sym',s:'ワイルドカード：どんな文字でもよい（すべて）'},
+  '=':{t:'sym',s:'等しい（条件や代入）'},
+  '?':{t:'sym',s:'1文字ぶんのワイルドカード、または未定の値'}
+};
+// キーに空白を入れると「コマンド＋部品」の組み合わせ（例 'apt install'）。lang 名を前に付けると言語別（例 'sql *'）
+const CODEX={
+  'sudo':{t:'cmd',s:'管理者(root)の権限で実行する'},
+  'apt':{t:'cmd',s:'ソフトを入れたり更新したりする係(Debian/Ubuntu)'},
+  'apt install':{t:'sub',s:'入れて、と頼む'},
+  'apt list':{t:'sub',s:'ソフトの一覧を出す'},
+  'apt upgrade':{t:'sub',s:'入っているソフトを、まとめて新しくする'},
+  '--only-upgrade':{t:'opt',s:'もう入っているものを、新しくするだけ(新規には入れない)'},
+  '--upgradable':{t:'opt',s:'新しくできるものだけ表示'},
+  'nodejs':{t:'arg',s:'Node.js(JavaScriptを動かす土台)'},
+  'node':{t:'cmd',s:'Node.js を動かす'},
+  'node -v':{t:'opt',s:'バージョン(版の番号)を表示'},
+  'php':{t:'cmd',s:'PHP を動かす'},
+  'php -v':{t:'opt',s:'バージョンを表示'},
+  '-v':{t:'opt',s:'バージョンを表示'},
+  'npm':{t:'cmd',s:'Node.js の部品(パッケージ)を管理する係'},
+  'npm audit':{t:'sub',s:'入れた部品に危険(脆弱性)がないか調べる'},
+  'npm install':{t:'sub',s:'部品を入れる'},
+  'npm ls':{t:'sub',s:'入っている部品の一覧'},
+  'fix':{t:'sub',s:'直して、と頼む(npm audit fix でまとめて直す)'},
+  '--ignore-scripts':{t:'opt',s:'部品を入れるとき、付属のスクリプトを勝手に動かさない(安全策)'},
+  'ls':{t:'cmd',s:'ファイルやフォルダの一覧を見る'},
+  'ls -la':{t:'opt',s:'詳しく(l)・隠しファイルも全部(a)表示'},
+  'pm2':{t:'cmd',s:'Node.js のアプリを動かし続ける管理係'},
+  'pm2 list':{t:'sub',s:'動いているアプリの一覧'},
+  'ss':{t:'cmd',s:'通信の待ち受け(どのポートが開いているか)を見る'},
+  'ss -tlnp':{t:'opt',s:'TCP・待ち受け中・数字のまま・プロセス名つきで表示'},
+  'ufw':{t:'cmd',s:'ファイアウォール(通すポートの管理)'},
+  'ufw status':{t:'sub',s:'今の設定を表示'},
+  'status':{t:'sub',s:'状態を表示'},
+  'verbose':{t:'arg',s:'より詳しく表示'},
+  'uname':{t:'cmd',s:'OS(システム)の情報を表示'},
+  'uname -r':{t:'opt',s:'カーネル(OSの中心)の版を表示'},
+  'journalctl':{t:'cmd',s:'システムの記録(ログ)を読む'},
+  'journalctl -u':{t:'opt',s:'対象のサービスを指定して絞る'},
+  'ssh':{t:'arg',s:'SSH(遠くのサーバーに安全に入るしくみ)のサービス'},
+  'sshd':{t:'cmd',s:'SSH の受付係(サーバー側)'},
+  'sshd -T':{t:'opt',s:'今の設定を、全部まとめて表示'},
+  'passwordauthentication':{t:'arg',s:'設定項目：パスワードでのログインを許すか'},
+  'fail2ban-client':{t:'cmd',s:'何度も失敗するIPを、自動で締め出す係'},
+  'fail2ban-client status':{t:'sub',s:'見張りの状態を表示'},
+  'grep':{t:'cmd',s:'当てはまる行だけを取り出す'},
+  'grep -i':{t:'opt',s:'大文字・小文字を区別しない'},
+  'grep -o':{t:'opt',s:'当てはまった部分だけを出す'},
+  'wc':{t:'cmd',s:'行数や単語数を数える'},
+  'wc -l':{t:'opt',s:'行数を数える'},
+  'cat':{t:'cmd',s:'ファイルの中身を全部表示する'},
+  'strings':{t:'cmd',s:'ファイルの中の、読める文字だけを取り出す'},
+  'xxd':{t:'cmd',s:'ファイルを16進数で表示する'},
+  'xxd -l':{t:'opt',s:'先頭から何バイトぶん見るか'},
+  'xxd -s':{t:'opt',s:'何バイト目から見るか(オフセット)'},
+  'xxd -r':{t:'opt',s:'16進数から、元のデータに戻す'},
+  'xxd -p':{t:'opt',s:'区切りのない、素の16進数として扱う'},
+  'exiftool':{t:'cmd',s:'写真などの撮影情報(メタデータ)を見る'},
+  'binwalk':{t:'cmd',s:'ファイルに埋め込まれた別のファイルを探す'},
+  'binwalk -e':{t:'opt',s:'見つけた中身を取り出す'},
+  'fcrackzip':{t:'cmd',s:'zip のパスワードを試して開ける道具'},
+  'fcrackzip -u':{t:'opt',s:'本当に開けるかを確かめながら試す'},
+  'fcrackzip -D':{t:'opt',s:'辞書(単語リスト)を使って試す'},
+  'fcrackzip -p':{t:'opt',s:'使う単語リストのファイルを指定'},
+  'tshark':{t:'cmd',s:'Wireshark のコマンド版。pcap(通信記録)を読む'},
+  'tshark -r':{t:'opt',s:'読み込む pcap ファイルを指定'},
+  'tshark -q':{t:'opt',s:'余計な表示を出さない'},
+  'tshark -z':{t:'opt',s:'統計や「追跡」の機能を指定'},
+  'tshark -Y':{t:'opt',s:'表示フィルタ(条件で絞る)'},
+  'tshark -T':{t:'opt',s:'出力の形式を指定'},
+  'tshark -e':{t:'opt',s:'出したい項目(フィールド)を指定'},
+  'fields':{t:'arg',s:'指定した項目だけを出す形式'},
+  'cyclic':{t:'cmd',s:'pwntools の道具。オフセットを調べる並びを作る/探す'},
+  'cyclic -l':{t:'opt',s:'この値が、並びの何バイト目かを探す'},
+  'curl':{t:'cmd',s:'URL に通信を送って、結果(レスポンス)を受け取る'},
+  'curl -i':{t:'opt',s:'応答のヘッダ(札)も表示する'},
+  'curl -I':{t:'opt',s:'ヘッダ(札)だけを取る'},
+  'curl -IL':{t:'opt',s:'ヘッダだけ(I)・リダイレクトも追う(L)'},
+  'curl -s':{t:'opt',s:'途中経過を出さない(静かに)'},
+  'curl -sI':{t:'opt',s:'静かに(s)・ヘッダだけ(I)'},
+  'curl -X':{t:'opt',s:'送り方(メソッド)を指定'},
+  'curl -b':{t:'opt',s:'送る Cookie を指定'},
+  'POST':{t:'arg',s:'データを送るメソッド'},
+  'base64':{t:'cmd',s:'Base64 を、作る/戻す道具'},
+  'base64 -d':{t:'opt',s:'Base64 を元に戻す(デコード)'},
+  'base32':{t:'cmd',s:'Base32 を、作る/戻す道具'},
+  'base32 -d':{t:'opt',s:'Base32 を元に戻す(デコード)'},
+  'tr':{t:'cmd',s:'文字を別の文字に置きかえる'},
+  'rev':{t:'cmd',s:'行の文字を、逆順にする'},
+  'echo':{t:'cmd',s:'文字をそのまま出力する'},
+  'awk':{t:'cmd',s:'行を項目に分けて処理する'},
+  'sort':{t:'cmd',s:'行を並べ替える'},
+  'sort -rn':{t:'opt',s:'数として、大きい順に並べる'},
+  'uniq':{t:'cmd',s:'同じ行をまとめる'},
+  'uniq -c':{t:'opt',s:'同じ行が何回あったかを数える'},
+  'head':{t:'cmd',s:'先頭の数行だけを出す'},
+  'tail':{t:'cmd',s:'末尾を出す'},
+  'tail -f':{t:'opt',s:'増えるたびに、表示し続ける'},
+  'git':{t:'cmd',s:'変更を記録・管理する道具(バージョン管理)'},
+  'git status':{t:'sub',s:'いまの変更の状態を表示'},
+  'git log':{t:'sub',s:'これまでの履歴を表示'},
+  '--all':{t:'opt',s:'すべてのブランチをまとめて'},
+  'git log -p':{t:'opt',s:'変更の中身(差分)も表示'},
+  'ssh-keygen':{t:'cmd',s:'SSH の鍵のペア(公開鍵と秘密鍵)を作る'},
+  'ssh-keygen -t':{t:'opt',s:'鍵の種類を指定'},
+  'ed25519':{t:'arg',s:'鍵の種類(安全で速い)'},
+  'ssh-copy-id':{t:'cmd',s:'自分の公開鍵を、相手のサーバーに登録する'},
+  'python3':{t:'cmd',s:'Python を動かす'},
+  'python3 -c':{t:'opt',s:'続く文字列を、その場のプログラムとして実行'},
+  // Python / C / SQL / JS の語
+  'python from':{t:'kw',s:'from … import …：部品(モジュール)の一部を読み込む'},
+  'python import':{t:'kw',s:'部品(ライブラリ)を読み込む'},
+  'python for':{t:'kw',s:'くり返し(ループ)の始まり'},
+  'python in':{t:'kw',s:'「…の中を順に」というつなぎ'},
+  'python range':{t:'kw',s:'0 から数える、くり返しの回数'},
+  'c char':{t:'kw',s:'文字を入れる箱(1バイト)の型'},
+  'c strcpy':{t:'kw',s:'文字をコピーする関数。長さを確かめず危険(あふれる)'},
+  'c strncpy':{t:'kw',s:'長さを決めてコピーする関数。strcpy より安全'},
+  'c if':{t:'kw',s:'もし…なら、という条件'},
+  'js db':{t:'kw',s:'データベースを表すオブジェクト'},
+  'js if':{t:'kw',s:'もし…なら、という条件'},
+  'js reject':{t:'kw',s:'受け付けを断る(入力をはじく)'},
+  'sql SELECT':{t:'kw',s:'データを取り出す命令'},
+  'sql FROM':{t:'kw',s:'どの表(テーブル)からか'},
+  'sql WHERE':{t:'kw',s:'どんな条件でしぼるか'},
+  'sql users':{t:'arg',s:'利用者の表(テーブル)の名前'},
+  'sql name':{t:'arg',s:'列(項目)の名前'},
+  'sql *':{t:'sym',s:'すべての列'},
+  'sql ?':{t:'sym',s:'プレースホルダ：あとで値を安全に入れる場所(注入を防ぐ)'},
+  'sql =':{t:'sym',s:'等しい(条件)'}
+};
+// 言語を見分ける
+function detectLang(x){
+  if(/\b(SELECT|INSERT|UPDATE|DELETE)\b/i.test(x)||/\bFROM\b[\s\S]*\bWHERE\b/i.test(x))return 'sql';
+  if(/\b(char|strcpy|strncpy)\b/.test(x)||/\[\s*\d+\s*\]\s*;/.test(x))return 'c';
+  if(/db\.query|reject\(\)|\.length/.test(x))return 'js';
+  if(/^\s*from\s+[\w.]+\s+import|^\s*import\s|^\s*for\s+\w+\s+in\b/.test(x))return 'python';
+  return 'bash';
+}
+function codeLookup(tok,lang,cmd,isCmd){
+  let key=cmd+' '+tok,e=CODEX[key];
+  if(!e){key=lang+' '+tok;e=CODEX[key]}
+  if(!e){key=tok;e=CODEX[key]}
+  if(e)return {t:e.t,s:e.s,k:key};
+  if(/^(['"]).*\1$/.test(tok))return cmd==='python3'?{t:'arg',s:'その場で動かす Python のプログラム(文字列)',k:'py-prog'}:{t:'arg',s:'文字列(引数)',k:'str'};
+  if(/^--/.test(tok))return {t:'opt',s:'オプション(細かい指定)',k:tok};
+  if(/^-[A-Za-z]/.test(tok))return {t:'opt',s:'オプション(細かい指定)',k:tok};
+  if(/^https?:/.test(tok))return {t:'path',s:'通信の宛先(URL)',k:'url'};
+  if(tok.indexOf('/')>=0||tok[0]==='~')return {t:'path',s:'ファイルやフォルダの場所',k:'path'};
+  if(/^0x[0-9a-f]+$/i.test(tok))return {t:'arg',s:'16進数の値',k:'hex'};
+  const sy=CODEX[lang+' '+tok]||SYM[tok];if(sy)return {t:sy.t,s:sy.s,k:tok};
+  if(isCmd)return {t:'cmd',s:'コマンド(道具)',k:tok};
+  return null;
+}
+const CODE_RE=/(\s+)|(#.*)|('[^']*'|"[^"]*")|(https?:\/\/[^\s'"]+)|(~?[\w.$-]*\/[\w./*@=-]*)|(--[\w-]+)|(-[A-Za-z]+)|(0x[0-9A-Fa-f]+)|([A-Za-z0-9_][\w.$@-]*)|([|><;&*=?()\[\]{}:+,%^!])|([\s\S])/g;
+function codeInner(raw,lang){
+  CODE_RE.lastIndex=0;let out='',m,cmd='',expectCmd=true;
+  while((m=CODE_RE.exec(raw))){
+    const tok=m[0];
+    if(m[1]){out+=escH(tok);continue}
+    if(m[2]){out+=`<span class="ct tcmt">${escH(tok)}</span>`;continue}
+    if(m[11]){out+=escH(tok);continue}
+    let isCmd=false;
+    if(m[9]&&/[A-Za-z]/.test(tok)){if(expectCmd){if(tok==='sudo'){}else{cmd=tok;expectCmd=false;isCmd=true}}}
+    if(m[10]&&(tok==='|'||tok===';')){expectCmd=true}
+    const info=codeLookup(tok,lang,cmd,isCmd);
+    if(info)out+=`<button type="button" class="ct t${info.t}" data-ex="${escH(info.s)}" data-code="${escH(info.k)}">${escH(tok)}</button>`;
+    else out+=escH(tok);
+  }
+  return out;
+}
+function barTitle(t){return (/^(sudo |\/|[a-z][\w-]* )/.test(t)&&!/Wireshark|CyberChef|Kali|Python|ブラウザ|メール|メモリ|パケット|ターミナル|検索/.test(t))?codeInner(t,'bash'):escH(t);}
+// 振り返りなどの <code> を、言語ラベル・凡例つきの、タップできるコードに変える
+const CODELEG=[['tcmd','コマンド'],['tsub','サブ命令'],['topt','オプション'],['tpath','場所・URL'],['targ','引数'],['tsym','記号']];
+function annotateAll(root){
+  if(!root)return;
+  const codes=[...root.querySelectorAll('code:not([data-ca])')];
+  if(!codes.length)return;
+  codes.forEach(el=>{
+    el.dataset.ca='1';
+    const raw=el.textContent,lang=el.dataset.lang||detectLang(raw);
+    const blk=document.createElement('div');blk.className='codeblk';
+    blk.innerHTML=`<button type="button" class="ct clang" data-ex="${escH(LANGS[lang].s)}">${escH(LANGS[lang].w)}</button><code class="codeline">${codeInner(raw,lang)}</code>`;
+    el.replaceWith(blk);
+  });
+  const first=root.querySelector('.codeblk');
+  if(first&&!root.querySelector('.codelegend')){
+    const lg=document.createElement('div');lg.className='codelegend';
+    lg.innerHTML='<b>凡例</b>'+CODELEG.map(([c,n])=>`<span class="lg ${c}">${n}</span>`).join('')+'<span class="lghint">タップで意味</span>';
+    first.parentNode.insertBefore(lg,first);
+  }
+}
+/* コード図鑑の記録（gk-codes-v1）：got＝タップして図鑑に入ったコード部品 */
+const CKEY='gk-codes-v1';const CODES={got:{}};
+try{const c=JSON.parse(readStore(CKEY)||'{}');if(c&&c.got)CODES.got=c.got}catch(e){}
+function saveCodes(){try{localStorage.setItem(CKEY,JSON.stringify(CODES))}catch(e){}}
+const CODE_SKIP={path:1,url:1,str:1,hex:1,'py-prog':1,quote:1};
+function regCode(k){if(!k||CODE_SKIP[k]||CODES.got[k])return;if(!CODEX[k]&&!SYM[k])return;CODES.got[k]=today();saveCodes()}
+function codeMeaning(k){const e=CODEX[k]||SYM[k];return e?e.s:''}
+function codeType(k){const e=CODEX[k]||SYM[k];return e?e.t:'arg'}
 // タップ説明（下から出る小さなシート）
 function showMk(m){const p=document.getElementById('mkpop');p.innerHTML=`<div class="mkx"><code>${escH(m.textContent)}</code><button class="mkclose" aria-label="とじる">×</button></div><p>${escH(m.dataset.ex)}</p>`;p.hidden=false;}
 function hideMk(){const p=document.getElementById('mkpop');if(p){p.hidden=true;p.innerHTML=''}}
 document.addEventListener('click',e=>{
-  const m=e.target.closest('.mk[data-ex]');
-  if(m){e.preventDefault();e.stopPropagation();showMk(m);return}
+  const m=e.target.closest('.mk[data-ex],.ct[data-ex]');
+  if(m){e.preventDefault();e.stopPropagation();if(m.dataset.code)regCode(m.dataset.code);showMk(m);return}
   if(e.target.closest('.mkclose')||!e.target.closest('#mkpop'))hideMk();
 },true);
 function glossify(root,seen=new Set()){
   if(!root)return seen;
-  const w=document.createTreeWalker(root,NodeFilter.SHOW_TEXT,{acceptNode:n=>n.parentElement.closest('button,.gw,.scr,.tool')?NodeFilter.FILTER_REJECT:NodeFilter.FILTER_ACCEPT});
+  const w=document.createTreeWalker(root,NodeFilter.SHOW_TEXT,{acceptNode:n=>n.parentElement.closest('button,.gw,.scr,.tool,.codeblk,code')?NodeFilter.FILTER_REJECT:NodeFilter.FILTER_ACCEPT});
   const nodes=[];while(w.nextNode())nodes.push(w.currentNode);
   for(const node of nodes){
     const t=node.nodeValue,frag=document.createDocumentFragment();let i=0,last=0,hit=false;
@@ -1964,7 +2195,7 @@ function toggle(i){
   o?sfx.open():sfx.close();buzz(12);
   term(`$ sudo ufw ${o?'allow':'deny'} ${PORTS[i].p}`,`# ${PORTS[i].p}番を${o?'開けた':'閉めた'}`);
 }
-function term(cmd,note){const el=document.getElementById('term');el.innerHTML=`<span class="c">${cmd}</span><br><span class="m">${note}</span>`;glossify(el)}
+function term(cmd,note){const el=document.getElementById('term');const c=/^\$ /.test(cmd)?'$ '+codeInner(cmd.slice(2),'bash'):escH(cmd);el.innerHTML=`<span class="c">${c}</span><br><span class="m">${escH(note)}</span>`;glossify(el)}
 function pulse(i,cls){const b=doorsEl.children[i];b.classList.remove('hit','sad');void b.offsetWidth;b.classList.add(cls)}
 function flashRoom(kind){room.classList.remove('good','bad');void room.offsetWidth;room.classList.add(kind);clearTimeout(flashRoom.t);flashRoom.t=setTimeout(()=>room.classList.remove(kind),350)}
 
@@ -2094,6 +2325,7 @@ function finish(win,st,o){
   nb.hidden=!win;nb.disabled=!nextGo;nb.innerHTML=nx.label;
   ag.className=win?'sub':'big';
   {const seen=new Set();['rSummary','rReview','rExtra','rNext'].forEach(id=>glossify(document.getElementById(id),seen))}
+  annotateAll(document.getElementById('rExtra'));
   show('result');
   document.getElementById('result').scrollTop=0;
   (win&&!nb.disabled?nb:ag).focus({preventScroll:true});
@@ -2672,6 +2904,7 @@ function openBrief(id,mode,r){
     screensSection(b.screens)+
     `<section class="sec"><h2>遊び方</h2>${b.howto}</section>`;
   glossify(document.getElementById('bBody'));
+  annotateAll(document.getElementById('bBody'));
   const review=mode==='review';
   document.getElementById('briefBack').textContent=review?'‹ 結果にもどる':'‹ ステージ一覧';
   document.getElementById('briefSkip').hidden=review||!unitRec().seen;
