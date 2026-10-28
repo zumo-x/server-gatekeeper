@@ -338,7 +338,7 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
   <div class="skywrap" id="sky" data-only="1 2-1 2-2 2-3"><canvas id="cv"></canvas><div class="skylabel">インターネット</div>
     <div class="logs" id="logs" data-only="2-3" hidden></div><div class="pointer" id="pointer23" hidden>▼ 次はこれ</div>
     <div class="cue" id="cue" hidden><b id="cueB"></b><span id="cueS"></span><i aria-hidden="true">▼</i></div></div>
-  <div class="panel" id="panel" data-only="3-1 3-2 4 5 6 7 8 9-1 9-2 10-1 10-2 11-1 11-2 11-3 12-1 12-2 12-3 13-1 13-2 13-3 14-1 14-2 14-3" hidden></div>
+  <div class="panel" id="panel" data-only="3-1 3-2 4 5 6 7 8 9-1 9-2 10-1 10-2 11-1 11-2 11-3 12-1 12-2 12-3 13-1 13-2 13-3 14-1 14-2 14-3 15-1 15-2 15-3" hidden></div>
   <div class="doors" id="doors" data-only="1"></div>
   <div class="gate" id="gate" data-only="2-2" hidden>
     <div class="door door22" id="door22"><span class="num">22</span><span class="nm">SSH</span><span class="st" id="door22st">パスワード</span></div>
@@ -951,6 +951,39 @@ const STAGES=[
           real:['入力の長さと、数値の並び順。このふたつを合わせられれば、模擬のプログラムは答えを出す。'],
           howto:`<div class="legend"><div><span class="dot d"></span>部品を押すと、レシピに下から足される（最大3手）</div><div><span class="dot k"></span>実行で、フラグが出れば勝ち</div></div>
             <p>3体のボス。</p><p>★は「まちがいなし」「150秒以内」で1つずつ。</p>`}}
+    ]},
+  {id:15, name:'Misc', sub:'何重にも包まれた答えと、仕様書の中の1行', ready:true,
+    rounds:[
+      {name:'パズル',hud:['15-1 パズル','包みを、外側から一枚ずつ戻す'],
+        room:'<span class="chip">包み</span><span class="arrow">→</span><span class="chip">戻す</span><span class="arrow">→</span><span class="chip">答え</span>',
+        cue:['包まれた答えを、ほどこう','外側の包みから、順番に戻す'],
+        brief:{
+          situation:['拾った古いメモには、答えが何重にも包まれている。Base64・16進数・2進数・Base32は、どれも<b>符号化</b>（形を変える書き方）で、鍵はない。外側から順番に戻せば、中身が出てくる。'],
+          doorsTitle:'道具と手がかり',
+          doors:[['Base64 を戻す','英字と数字と + / の並び','最後が = で終わることも'],['16進数を文字に戻す','47 4b のように、2けたずつ','0〜9 と A〜F で書かれる'],['2進数を文字に戻す','0 と 1 だけで、8けたずつ','1バイトずつ戻す'],['Base32 を戻す','大文字と 2〜7 の並び','最後が = で埋められる']],
+          real:['符号化は、データを運びやすくするための書き方。秘密を隠す役目はないので、包んだだけでは安全にならない。'],
+          howto:`<div class="legend"><div><span class="dot d"></span>道具を押すと、今の値が一段ほどける</div><div><span class="dot k"></span>GK{…} が出たら、「答えを提出」</div></div>
+            <p>4問。全体で110秒。包みの順番を、外側から読もう。</p><p>★は「やり直しが3回以内」「70秒以内」で1つずつ。</p>`}},
+      {name:'ドリル',hud:['15-2 ドリル','ヒント語から、手口を当てる'],
+        room:'<span class="chip">問題文</span><span class="arrow">→</span><span class="chip">ヒント語</span><span class="arrow">→</span><span class="chip">手口</span>',
+        cue:['ヒント語を読もう','包みを戻すか、仕様書の行を選ぶか'],
+        brief:{
+          situation:['Miscの問題文には、手口を示すヒント語がある。「何重」「包まれ」「外側」は、符号化を順番に戻す手口。「仕様書」「行」「確認コード」は、仕様書の行から値を取り出す手口。'],
+          doorsTitle:'ヒント語の見分け方',
+          doors:[['何重・包まれ・外側','何重もの符号化を、外側から戻す','一枚ずつ、順番に'],['仕様書・行・確認コード','仕様書の行から、値だけを取り出す','ほかの行は、ジョークや古い版のことも']],
+          real:['似た言葉に注意。「メモ」は、どちらの手口にもなりうる。何重になっているか、行が並んでいるかで決めよう。'],
+          howto:`<div class="legend"><div><span class="dot k"></span>問題文を読んで、手口を2つから選ぶ</div><div><span class="dot r"></span>まちがいは3回まで</div></div>
+            <p>8問。問題は自動で作られる（毎回違う）。</p><p>★は「まちがいなし」「70秒以内」で1つずつ。</p>`}},
+      {name:'ボス戦',hud:['15-3 ボス戦','道具を並べて、答えを取り出す'],
+        room:'<span class="chip">入力</span><span class="arrow">レシピ（3手まで）</span><span class="arrow">→</span><span class="chip">フラグ</span>',
+        cue:['ボスの仕様書','行を選んで、包みを戻そう'],
+        brief:{
+          situation:['ボスの仕様書には、確認コードの行が1つだけある。N行目を取り出し、「: 」の後ろを切り取り、符号化を戻す。順番を間違えると、答えは出ない。'],
+          doorsTitle:'レシピの部品',
+          doors:[['N行目を取り出す','Nを変えて、行を選ぶ','確認コードの行番号を数える'],['「: 」の後ろの値','値だけを残す','ラベルは捨てる'],['符号化を戻す','Base64・16進数・2進数・Base32','種類を当てて選ぶ']],
+          real:['仕様書を読むときは、行の番号と、値の部分を分けて考えるのが基本。見る場所を絞れば、答えは早く出る。'],
+          howto:`<div class="legend"><div><span class="dot d"></span>部品を押すと、レシピに下から足される（最大3手）</div><div><span class="dot k"></span>実行で、フラグが出れば勝ち</div></div>
+            <p>3体のボス。</p><p>★は「まちがいなし」「150秒以内」で1つずつ。</p>`}}
     ]}
 ];
 
@@ -1166,7 +1199,13 @@ const GLOSSARY=[
   {id:'retaddr', w:'戻り先（戻りアドレス）',at:['14-1','14-3'],a:['戻り先','戻りアドレス'],
     s:'関数が終わったあと、どこへ戻るかを覚えている場所',e:'用事を終えたあと、帰る道順のメモ。書き換えられると、知らない場所へ行く'},
   {id:'hex16',   w:'16進数（ヘキサ）',at:['14-1','14-3'],a:['16進数'],
-    s:'0〜9とA〜Fで数を書く書き方。1バイトは2けたで表す',e:'0から15までを、1けたで書く数え方'}
+    s:'0〜9とA〜Fで数を書く書き方。1バイトは2けたで表す',e:'0から15までを、1けたで書く数え方'},
+  {id:'base32',  w:'Base32（ベースさんじゅうに）',at:['15-1','15-2','15-3'],a:['Base32'],
+    s:'大文字と2〜7の32種類の文字で、データを書く符号化',e:'5ビットずつ、数字の札に置きかえて並べる'},
+  {id:'bin2',    w:'2進数（バイナリ）',at:['15-1','15-3'],a:['2進数','バイナリ'],
+    s:'0と1だけで数を書く書き方。1バイトは8けたで表す',e:'電灯のオンとオフだけで数えるやり方'},
+  {id:'rfc',     w:'RFC（アールエフシー）',at:['15-2','15-3'],a:['RFC'],
+    s:'インターネットの技術仕様の文書。RFC 2324は1998年のジョーク仕様で、お茶を入れる手順を定めた',e:'インターネットの取扱説明書。たまにユーモアの説明書も混ざる'}
 ];
 const GBYID=Object.fromEntries(GLOSSARY.map(g=>[g.id,g]));
 const GMATCH=GLOSSARY.flatMap(g=>g.a.map(a=>({a,g}))).sort((x,y)=>y.a.length-x.a.length);
@@ -3481,10 +3520,73 @@ const PW={key1:'14-1',key2:'14-2',key3:'14-3',
   dur1:110,par1:70,dur2:120,dur3:200,par3:150
 };
 const GAMES_PW={'14-1':()=>runStart(mkPuz(PW,4)),'14-2':()=>runStart(mkDri(PW,8)),'14-3':()=>runStart(mkBos(PW,3,3))};
+/* ===== ステージ15「Misc」：いろいろな形に包まれた答え・仕様書の中の1行を、順番にほどく ===== */
+const B32='ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
+const b32E=t=>{let bits='';for(const b of new TextEncoder().encode(t))bits+=b.toString(2).padStart(8,'0');let o='';for(let i=0;i<bits.length;i+=5)o+=B32[parseInt(bits.slice(i,i+5).padEnd(5,'0'),2)];while(o.length%8)o+='=';return o};
+const b32D=t=>{if(!/^[A-Z2-7]+=*$/.test(t))return null;let bits='';for(const ch of t.replace(/=+$/,''))bits+=B32.indexOf(ch).toString(2).padStart(5,'0');const by=[];for(let i=0;i+8<=bits.length;i+=8)by.push(parseInt(bits.slice(i,i+8),2));return new TextDecoder().decode(new Uint8Array(by))};
+const hexE=t=>[...new TextEncoder().encode(t)].map(b=>b.toString(16).padStart(2,'0')).join(' ');
+const hexD=t=>/^[0-9a-f]{2}( [0-9a-f]{2})*$/i.test(t)?new TextDecoder().decode(new Uint8Array(t.split(' ').map(x=>parseInt(x,16)))):null;
+const binE=t=>[...new TextEncoder().encode(t)].map(b=>b.toString(2).padStart(8,'0')).join(' ');
+const binD=t=>/^[01]{8}( [01]{8})*$/.test(t)?new TextDecoder().decode(new Uint8Array(t.split(' ').map(x=>parseInt(x,2)))):null;
+const MENC={b64:b64e,hex:hexE,bin:binE,b32:b32E};
+const MOPK={b64:'b64d',hex:'hexd',bin:'bind',b32:'b32d'};
+const SETM=['架空の会社「ナギ・ラボ」の内部メモ（練習用）','古い学校のホームページの点検記録（練習用）','練習用に配られた仕様書 KW-2026','拾った古い電子メモ（練習用の架空データ）'];
+const MPHRASE={
+  'mi-layers':{jp:['何重にも包まれている。外側から、順番に戻そう','同じ答えが、別の表し方で並んでいる','包みを一枚ずつはがすと、中身が出てくる'],en:['It is wrapped in several encodings: peel from outside','Same data, different notation, layer by layer','Unwrap each layer in the right order']},
+  'mi-spec':{jp:['仕様書の中に、確認コードの行が1つだけある','何行目かを数えて、値だけを取り出そう','ほかの行は、古い版やジョークのこともある'],en:['One spec line carries the confirmation code','Count the lines and take only the value','Other lines are old versions or jokes']}
+};
+const MI={key1:'15-1',key2:'15-2',key3:'15-3',
+  pats:['mi-layers','mi-spec'],
+  pname:{'mi-layers':'何重もの符号化を、外側から戻す（Base64・16進数・2進数・Base32）','mi-spec':'仕様書の行から、値だけを取り出して戻す'},
+  why:{'mi-layers':'同じ答えが、別の表し方で何重にも包まれていることがある。外側の包みから、一枚ずつ戻す','mi-spec':'仕様書は、ほかの行に古い版やジョークを混ぜることがある。確認コードの行だけを選ぶ'},
+  palette:['line','val','b64d','hexd','bind','b32d'],
+  OP:{
+    line:{label:'N行目を取り出す',par:true,cmd:p=>`sed -n '${p}p' spec.txt`,run:(t,p)=>{const l=t.split('\n')[p-1];return l===undefined?null:l}},
+    val:{label:'「: 」の後ろの値を取り出す',cmd:()=>`awk -F': ' '{print $2}'`,run:t=>{const i=t.indexOf(': ');return i<0?null:t.slice(i+2)}},
+    b64d:{label:'Base64 を戻す',cmd:()=>'base64 -d',run:t=>b64d(t)},
+    hexd:{label:'16進数を文字に戻す',cmd:()=>`python3 -c "print(bytes.fromhex(input).decode())"`,run:t=>hexD(t)},
+    bind:{label:'2進数を文字に戻す',cmd:()=>`python3 -c "print(bytes(int(b,2) for b in input.split()).decode())"`,run:t=>binD(t)},
+    b32d:{label:'Base32 を戻す',cmd:()=>'base32 -d',run:t=>b32D(t)}
+  },
+  make(pat){
+    const ans=cflag();let pr={};
+    if(pat==='mi-layers'){
+      const L=shuffle(['b64','hex','bin','b32']).slice(0,cint(2,3));
+      let t=ans;for(const k of L)t=MENC[k](t);
+      const chain=[...L].reverse().map(k=>({op:MOPK[k]}));
+      pr={start:t,ops:['b64d','hexd','bind','b32d'],file:'layers.txt',solve:chain,bsolve:chain};
+    }else{
+      const kind=gpickA(['b64','hex','b32']);
+      const rows=shuffle([['予備',b64e('keep-alive')],['古い版',hexE('v1 note')],['RFC 2324（1998年のジョーク仕様）',"418 I'm a teapot"],['確認コード',MENC[kind](ans)]]);
+      const lines=['仕様書 KW-2026（架空の文書）',...rows.map(([l,v])=>`${l}: ${v}`)];
+      const n=lines.findIndex(x=>x.startsWith('確認コード: '))+1;
+      const dec=MOPK[kind];const chain=[{op:'line',p:n},{op:'val'},{op:dec}];
+      pr={start:lines.join('\n'),ops:['line','val',dec],file:'spec.txt',solve:chain,bsolve:chain};
+    }
+    pr.done=t=>isFlag(t)&&t===ans;
+    pr.text=`${gpickA(SETM)}：${gpickA(CG.rnd()<.5?MPHRASE[pat].jp:MPHRASE[pat].en)}`;
+    pr.phrase=pr.text.split('：')[1];pr.ans=ans;
+    return pr;
+  },
+  res:{win:'包みを戻して、確認コードを取り出した！',lose:'フラグに届かなかった',sumWin:'符号化は、形を変えるだけで、鍵ではない。順番どおりに戻せば、中身が見える。',sumLose:'外側の包みから、順番に戻そう。仕様書は、行の値だけを使おう。'},
+  rev:[['Base64・16進数・2進数・Base32','どれも形を変えるだけ。鍵はないので、戻せば中身が見える',true],['仕様書の読み方','同じ仕様書の中にも、古い版やジョークが混ざる。確認コードの行を選ぶ',true]],
+  extra:`<div class="real"><div>振り返り：<b>符号化は暗号ではない。形を変えただけなので、順番に戻せば中身が見える</b>。</div>
+    <code>echo 'R0s=' | base64 -d</code><div class="m">Base64 を戻す（R0s= は GK）</div>
+    <code>python3 -c "print(bytes.fromhex('47 4b').decode())"</code><div class="m">16進数を文字に戻す（47 4b は GK）</div></div>
+    <div class="warn"><b>安全メモ</b><ul><li>符号化は秘密を隠さない。「包んだから安全」と思わない（ステージ11の重ねがけ）</li><li>仕様書やメモに、本物の鍵やパスワードを書かない（ステージ6）</li></ul></div>`,
+  next(key){
+    if(key==='15-1')return '次は15-2「ドリル」。問題文のヒント語から、どの手口かを当てよう。';
+    if(key==='15-2')return '次は15-3「ボス戦」。道具を並べて、フラグを取り出そう。';
+    return '次はステージ16「Programming」。書かれたプログラムの動きを、頭の中で追ってみよう。';
+  },
+  dur1:110,par1:70,dur2:120,dur3:200,par3:150
+};
+const GAMES_MI={'15-1':()=>runStart(mkPuz(MI,4)),'15-2':()=>runStart(mkDri(MI,8)),'15-3':()=>runStart(mkBos(MI,3,3))};
 const GAMES={
   ...GAMES_FO,
   ...GAMES_WB,
   ...GAMES_PW,
+  ...GAMES_MI,
   '1':()=>{newGame();requestAnimationFrame(loop)},
   '2-1':()=>{newGame21();requestAnimationFrame(loop21)},
   '2-2':()=>{newGame2();requestAnimationFrame(loop2)},
