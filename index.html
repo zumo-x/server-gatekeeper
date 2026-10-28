@@ -346,7 +346,7 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
   <div class="skywrap" id="sky" data-only="1 2-1 2-2 2-3"><canvas id="cv"></canvas><div class="skylabel">インターネット</div>
     <div class="logs" id="logs" data-only="2-3" hidden></div><div class="pointer" id="pointer23" hidden>▼ 次はこれ</div>
     <div class="cue" id="cue" hidden><b id="cueB"></b><span id="cueS"></span><i aria-hidden="true">▼</i></div></div>
-  <div class="panel" id="panel" data-only="3-1 3-2 4 5 6 7 8 9-1 9-2 10-1 10-2 11-1 11-2 11-3 11-4 11-5 11-6 12-1 12-2 12-3 12-4 12-5 12-6 13-1 13-2 13-3 13-4 13-5 13-6 14-1 14-2 14-3 14-4 14-5 14-6 15-1 15-2 15-3 16-1 16-2 16-3 17-1 17-2 17-3" hidden></div>
+  <div class="panel" id="panel" data-only="3-1 3-2 4 5 6 7 8 9-1 9-2 10-1 10-2 11-1 11-2 11-3 11-4 11-5 11-6 12-1 12-2 12-3 12-4 12-5 12-6 13-1 13-2 13-3 13-4 13-5 13-6 14-1 14-2 14-3 14-4 14-5 14-6 15-1 15-2 15-3 15-4 15-5 15-6 16-1 16-2 16-3 17-1 17-2 17-3" hidden></div>
   <div class="doors" id="doors" data-only="1"></div>
   <div class="gate" id="gate" data-only="2-2" hidden>
     <div class="door door22" id="door22"><span class="num">22</span><span class="nm">SSH</span><span class="st" id="door22st">パスワード</span></div>
@@ -1117,7 +1117,37 @@ const STAGES=[
           doors:[['N行目を取り出す','Nを変えて、行を選ぶ','確認コードの行番号を数える'],['「: 」の後ろの値','値だけを残す','ラベルは捨てる'],['符号化を戻す','Base64・16進数・2進数・Base32','種類を当てて選ぶ']],
           real:['仕様書を読むときは、行の番号と、値の部分を分けて考えるのが基本。見る場所を絞れば、答えは早く出る。'],
           howto:`<div class="legend"><div><span class="dot d"></span>部品を押すと、レシピに下から足される（最大3手）</div><div><span class="dot k"></span>実行で、フラグが出れば勝ち</div></div>
-            <p>3体のボス。</p><p>★は「まちがいなし」「150秒以内」で1つずつ。</p>`}}
+            <p>3体のボス。</p><p>★は「まちがいなし」「150秒以内」で1つずつ。</p>`}},
+      {name:'パズル（上級）',hud:['15-4 パズル','順番を見抜いて、包みをほどく'],
+        room:'<span class="chip">重ねがけ/形式</span><span class="arrow">→</span><span class="chip">見分けてはがす</span><span class="arrow">→</span><span class="chip">GK{…}</span>',
+        cue:['上級の Misc に挑戦','どのエンコードか、見て当てる'],
+        brief:{
+          situation:['20点の上級。<b>順番の分からない重ねがけ</b>（Base64・16進数・Base32・ROT13 が混ざる）を、見分けて外からはがす。<b>ファイル形式の仕様</b>（マジックと offset）を読んで、中身の場所を探す。'],
+          doorsTitle:'道具と手がかり',
+          doors:[['Base64 / 16進数 / Base32 を戻す','見た目でどれかを当てる','= や A-Z2-7 や 2けたの並び'],['ROT13 を戻す','アルファベットのずれ','文字だけ変わっている'],['offset N から取り出す','仕様の offset を使う','マジックの後ろ'],['GK{…} だけ拾う','まわりを捨てる','最後に使う']],
+          real:['CyberChef の Magic は、層を自動で見分けてくれる。仕様を読む力は、未知の形式を解く基本。'],
+          howto:`<div class="legend"><div><span class="dot d"></span>道具を押すと、今の中身が一段変わる（一つ戻すで戻せる）</div><div><span class="dot k"></span>GK{…} が出たら「答えを提出」</div></div>
+            <p>4問。全体で130秒。</p><p>★は「やり直しが3回以内」「85秒以内」で1つずつ。</p>`}},
+      {name:'ドリル（上級）',hud:['15-5 ドリル','ヒント語から、上級の手口を当てる'],
+        room:'<span class="chip">問題文</span><span class="arrow">→</span><span class="chip">ヒント語</span><span class="arrow">→</span><span class="chip">手口</span>',
+        cue:['ヒント語を読もう','重ねがけか、仕様を読むか'],
+        brief:{
+          situation:['上級の Misc も、ヒント語で手口が分かる。「何重・順番・混ざっている」は重ねがけ、「ファイル形式・仕様・offset」は仕様読み。'],
+          doorsTitle:'ヒント語の見分け方',
+          doors:[['何重・順番・混ざっている','順番の分からない重ねがけ','見て当ててはがす'],['ファイル形式・仕様・offset','ファイル形式の仕様を読む','マジックと offset']],
+          real:['まぎらわしい偽物（ステガノ・QR・gzip展開）も混ざる。決め手の言葉を選ぼう。'],
+          howto:`<div class="legend"><div><span class="dot k"></span>問題文を読んで、手口を3つから選ぶ</div><div><span class="dot r"></span>まちがいは3回まで</div></div>
+            <p>8問。問題は自動で作られる（毎回違う）。</p><p>★は「まちがいなし」「70秒以内」で1つずつ。</p>`}},
+      {name:'ボス戦（上級）',hud:['15-6 ボス戦','道具を並べて、フラグを出す'],
+        room:'<span class="chip">入力</span><span class="arrow">レシピ（3手まで）</span><span class="arrow">→</span><span class="chip">フラグ</span>',
+        cue:['上級ボスの Misc','順番を見抜いて、道具を並べよう'],
+        brief:{
+          situation:['ボスは、順番の分からない重ねがけや、独自のファイル形式で、お宝を守る。道具を順番に並べて、フラグを取り出す。'],
+          doorsTitle:'レシピの部品',
+          doors:[['Base64 / 16進数 / Base32 / ROT13 を戻す','外側から順にはがす','見分けが大事'],['offset N から取り出す','仕様の offset を使う','マジックの後ろ'],['GK{…} だけ拾う','まわりを捨てる','最後に置く']],
+          real:['CyberChef でも、層を並べて確かめる。どの手が効いたか、あとから見直せる。'],
+          howto:`<div class="legend"><div><span class="dot d"></span>部品を押すと、レシピに下から足される（最大3手）</div><div><span class="dot k"></span>実行で、フラグが出れば勝ち</div></div>
+            <p>3体のボス。</p><p>★は「まちがいなし」「170秒以内」で1つずつ。</p>`}}
     ]},
   {id:16, name:'Programming', sub:'書かれた計算を一行ずつ追う、鍵を試す', ready:true,
     rounds:[
@@ -1434,6 +1464,10 @@ const GLOSSARY=[
     s:'0と1だけで数を書く書き方。1バイトは8けたで表す',e:'電灯のオンとオフだけで数えるやり方'},
   {id:'rfc',     w:'RFC（アールエフシー）',at:['15-2','15-3'],a:['RFC'],
     s:'インターネットの技術仕様の文書。RFC 2324は1998年のジョーク仕様で、お茶を入れる手順を定めた',e:'インターネットの取扱説明書。たまにユーモアの説明書も混ざる'},
+  {id:'magicn',  w:'マジックナンバー（ファイルの先頭）',at:['15-4','15-5','15-6'],a:['マジック'],
+    s:'ファイルの先頭にある、形式を表す決まったバイト列',e:'本の最初のページに書かれた、種類を表す合図'},
+  {id:'offsetf', w:'オフセット（ファイルの中の位置）',at:['15-4','15-5','15-6'],a:['offset'],
+    s:'ファイルの先頭から数えた、中身のある場所（バイト数）',e:'本の「何ページ目」にあたる番号'},
   {id:'xor',     w:'XOR（エックスオア）',at:['16-2','16-3'],a:['XOR'],
     s:'2つの値のビットが違うときだけ1にする計算。同じ鍵で2回かけると元に戻る',e:'2つの電灯のスイッチを見て、違うときだけ点くしくみ'},
   {id:'python',  w:'Python（パイソン）',at:['16-1','16-3'],a:['Python'],
@@ -4195,6 +4229,58 @@ const P2={key1:'14-4',key2:'14-5',key3:'14-6',
   dur1:140,par1:90,dur2:120,dur3:240,par3:180
 };
 const GAMES_P2={'14-4':()=>runStart(mkPuz(P2,4)),'14-5':()=>runStart(mkDri(P2,8)),'14-6':()=>runStart(mkBos(P2,3,3))};
+/* ---- Misc 20点（ステージ15-4〜15-6）：順番の分からない重ねがけ・ファイル形式の仕様 ---- */
+const MENC2={b64:b64e,hex:hexE,b32:b32E,rot:t=>rot(t,13)};
+const MDEC2={b64:'b64d',hex:'hexd',b32:'b32d',rot:'rot13'};
+const M2PHRASE={
+  'm2-mix':{jp:['何重にも包まれているが、順番が分からない','どのエンコードか、見て当てて、順にはがす','Base64・16進数・Base32・ROT13 が混ざっている'],en:['Several encodings, but the order is unknown','Identify each layer and peel in order','A mix of base64, hex, base32 and rot13']},
+  'm2-spec':{jp:['ファイル形式の仕様を読んで、中身の場所を探す','マジックの後ろ、決まったオフセットに中身がある','仕様書の offset を見て、そこを取り出す'],en:['Read the file-format spec to locate the data','The payload sits at a fixed offset','Use the spec offset to extract the bytes']}
+};
+const M2={key1:'15-4',key2:'15-5',key3:'15-6',
+  pats:['m2-mix','m2-spec'],
+  pname:{'m2-mix':'順番の分からない重ねがけ(見分けてはがす)','m2-spec':'ファイル形式の仕様を読む(offsetで取り出す)'},
+  why:{'m2-mix':'どのエンコードかを見て当て、外側から順にはがす。Base64・16進数・Base32・ROT13 が混ざる','m2-spec':'ファイル形式の仕様（マジックと offset）を読めば、中身の場所が分かる'},
+  dstract:['ステガノグラフィー（画像に隠す）','QRコードを読み取る','圧縮（gzip）を展開する'],
+  palette:['b64d','hexd','b32d','rot13','at','xtr'],
+  OP:{
+    b64d:{label:'Base64 を戻す',cmd:()=>'base64 -d',run:t=>b64d(String(t))},
+    hexd:{label:'16進数を文字に戻す',cmd:()=>`python3 -c "print(bytes.fromhex(input).decode())"`,run:t=>hexD(String(t))},
+    b32d:{label:'Base32 を戻す',cmd:()=>'base32 -d',run:t=>b32D(String(t))},
+    rot13:{label:'ROT13 を戻す',cmd:()=>"tr 'A-Za-z' 'N-ZA-Mn-za-m'",run:t=>rot(String(t),13)},
+    at:{label:'offset N から取り出す',par:true,cmd:p=>`xxd -s ${p} file.kwf`,run:(t,p)=>{const b=h2b(String(t));if(b.some(Number.isNaN))return null;try{return String.fromCharCode(...b.slice(p))}catch(e){return null}}},
+    xtr:{label:'フラグの形(GK{…})だけ拾う',cmd:()=>"grep -o 'GK{[a-z0-9]*}'",run:t=>{const m=String(t).match(/GK\{[a-z0-9]+\}/);return m?m[0]:null}}
+  },
+  make(pat){
+    const ans=cflag();let pr={};
+    if(pat==='m2-mix'){
+      const L=shuffle(['b64','hex','b32','rot']).slice(0,cint(2,3));
+      let t=ans;for(const k of L)t=MENC2[k](t);
+      const chain=[...L].reverse().map(k=>({op:MDEC2[k]}));
+      pr={start:t,term:`$ cat layered.txt\n${t}`,view(){return termView(pr)},ops:['b64d','hexd','b32d','rot13'],file:'layered.txt',solve:chain,bsolve:chain};
+    }else{
+      const off=cint(8,18);const head=[0x4B,0x57,0x46,0x31];while(head.length<off)head.push(cint(0,255));
+      const bytes=[...head,...[...ans].map(c=>c.charCodeAt(0))];
+      pr={start:b2h(bytes),card:`ファイル形式 KWF-1（架空）\noffset 0: マジック 'KWF1'\noffset ${off}: 中身（文字列）`,term:`$ xxd -s ${off} file.kwf`,view(){return termView(pr)},ops:['at','xtr'],file:'file.kwf',solve:[{op:'at',p:off},{op:'xtr'}]};
+    }
+    pr.done=t=>isFlag(t)&&t===ans;
+    pr.text=`${gpickA(SET20)}：${gpickA(CG.rnd()<.5?M2PHRASE[pat].jp:M2PHRASE[pat].en)}`;
+    pr.phrase=pr.text.split('：')[1];pr.ans=ans;
+    return pr;
+  },
+  res:{win:'包みをほどき、仕様を読んで、フラグを取り出した！',lose:'フラグに届かなかった',sumWin:'順番が分からない重ねがけも、見て当てれば、外からはがせる。仕様を読めば中身の場所が分かる。',sumLose:'どのエンコードかを見て当てよう。仕様書の offset も確かめよう。'},
+  rev:[['順番の分からない重ねがけ','どのエンコードかを見て当て、外側から順にはがす（Base64・16進数・Base32・ROT13）',true],['ファイル形式の仕様','マジックと offset を読めば、中身の場所が分かる',true]],
+  extra:`<div class="real"><div>振り返り：<b>重ねがけは、順番さえ見抜けば必ずほどける。ファイル形式は仕様を読む</b>。</div>
+    <code>echo '…' | base64 -d | xxd -r -p | rev</code><div class="m">CyberChef でも、Magic（自動判定）で層を見分けられる</div>
+    <code>xxd -s 12 file.kwf</code><div class="m">仕様の offset から、中身を取り出す</div></div>
+    <div class="warn"><b>安全メモ</b><ul><li>エンコードは秘密を守らない。重ねても、順番が分かれば戻せる</li><li>練習用の架空のファイル形式・データだけで試す</li></ul></div>`,
+  next(key){
+    if(key==='15-4')return '次は15-5「ドリル(上級)」。問題文のヒント語から、どの手口かを当てよう。';
+    if(key==='15-5')return '次は15-6「ボス戦(上級)」。道具を並べて、フラグを取り出そう。';
+    return 'Misc の20点は、これで一区切り。ほかのジャンルの20点にも挑戦しよう。';
+  },
+  dur1:130,par1:85,dur2:120,dur3:230,par3:170
+};
+const GAMES_M2={'15-4':()=>runStart(mkPuz(M2,4)),'15-5':()=>runStart(mkDri(M2,8)),'15-6':()=>runStart(mkBos(M2,3,3))};
 const GAMES={
   ...GAMES_FO,
   ...GAMES_WB,
@@ -4206,6 +4292,7 @@ const GAMES={
   ...GAMES_F2,
   ...GAMES_W2,
   ...GAMES_P2,
+  ...GAMES_M2,
   '1':()=>{newGame();requestAnimationFrame(loop)},
   '2-1':()=>{newGame21();requestAnimationFrame(loop21)},
   '2-2':()=>{newGame2();requestAnimationFrame(loop2)},
