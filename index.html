@@ -579,7 +579,26 @@ const STAGES=[
             <p>すべて押せたらクリア。★は「まちがいなし」「70秒以内」で1つずつ。</p>`
         }}
     ]},
-  {id:4, name:'古い料理人',   sub:'サポート終了版には修正が出ない'},
+  {id:4, name:'古い料理人',   sub:'サポート終了版には修正が出ない', ready:true,
+    hud:['4 古い料理人','サポートの切れた版を守る'],
+    room:'<span class="chip">Node.js 20</span><span class="arrow">→</span><span class="chip">LTS（長期サポート版）</span>',
+    brief:{
+      situation:['あなたのサーバーでは、<b>Node.js 20</b>（サポート終了）と、<b>PHP 8.1</b>（サポート終了）が動いている。サポートが終わった版には、脆弱性が見つかっても<b>修正版（パッチ）が出ない</b>。ニュースは、これからも届く。'],
+      doorsTitle:'画面に出てくるもの',
+      doors:[
+        ['LTS','長期サポート版（安定して長く直してもらえる）','偶数の大きな版（22、24、26など）が対象。長く守りやすい'],
+        ['EOL','サポート終了（End of Life）','修正版はもう出ない。ここにいると、危ないまま'],
+        ['非LTS','短い期間だけ支えられる版','いちばん新しいが、すぐ次の版が必要になる']
+      ],
+      real:['本物では、サポートが終わったら<b>アップグレード</b>（新しい版への引っ越し）が必要になる。引っ越しには時間がかかるので、どれから先にやるか決めるのが大事。'],
+      howto:`<div class="legend">
+          <div><span class="dot k"></span>LTSへ引っ越す（6秒）＝ 長く守れる。正解</div>
+          <div><span class="dot r"></span>最新版へ（非LTS・2秒）＝ 速いが、すぐ期限が切れる</div>
+          <div><span class="dot d"></span>サポート中の版は、修正版に更新（2秒）</div>
+        </div>
+        <p>ニュースが届く。危ない版が攻撃される前に、3つとも安全にする。45秒。</p>
+        <p>★は「クリア」「非LTSを選ばなかった」「30秒以内」で1つずつ。</p>`
+    }},
   {id:5, name:'部品屋の罠',   sub:'npmの部品の乗っ取り'},
   {id:6, name:'秘密の置き忘れ',sub:'APIキーをGitHubに公開してしまう'},
   {id:7, name:'偽メール',     sub:'GitHubやサーバー会社を名乗るフィッシング'},
@@ -690,7 +709,13 @@ const GLOSSARY=[
   {id:'kernel',  w:'カーネル',        at:['3-2'],a:['カーネル'],
     s:'OSの心臓部。OSの中で一番中心になるプログラム',e:'家の配電盤。取り替えると、電源を入れ直す（再起動）まで反映されない'},
   {id:'eolsup',  w:'サポート終了',    at:['3-1','4'],a:['サポート終了'],
-    s:'修正のプログラムが、もう配られなくなった状態',e:'メーカーが部品の在庫を終えた製品。壊れても直してもらえない'}
+    s:'修正のプログラムが、もう配られなくなった状態',e:'メーカーが部品の在庫を終えた製品。壊れても直してもらえない'},
+  {id:'lts',     w:'LTS（エルティーエス）',at:['4'],a:['LTS'],
+    s:'長い間サポートが続く、安定版（長期サポート版）',e:'10年使える頑丈な橋。新しいだけの仮設の橋より安心'},
+  {id:'eol',     w:'EOL（イーオーエル）',at:['4'],a:['EOL'],
+    s:'サポート終了（もう修正が出ない）',e:'保証期間が切れた家電。壊れても直してもらえない'},
+  {id:'upgrade', w:'アップグレード',  at:['4'],a:['アップグレード'],
+    s:'ソフトを新しい版に上げること',e:'家を、広くて新しい部屋へ引っ越すこと'}
 ];
 const GBYID=Object.fromEntries(GLOSSARY.map(g=>[g.id,g]));
 const GMATCH=GLOSSARY.flatMap(g=>g.a.map(a=>({a,g}))).sort((x,y)=>y.a.length-x.a.length);
@@ -1803,13 +1828,96 @@ const U32={dur:100,
   onTime(){runEnd(false,0,r32(false,0,'時間切れ'))}
 };
 
+/* ===== ステージ4「古い料理人」：ニュースが届く。サポート切れの版は、修正版が出ない ===== */
+const JOB4={upd:[2,'修正版へ更新中'],lts:[6,'LTSへ引っ越し中'],q:[2,'最新版（非LTS）へ移動中']};
+function feed4(txt){const f=document.getElementById('feed');if(!f)return;const d=document.createElement('div');d.className='pm';d.innerHTML=`<span class="ng">ニュース</span>${txt}`;f.prepend(d);glossify(d)}
+function tag4(v){
+  if(v.job)return ['tg','引っ越し・更新中（あと'+Math.ceil(v.job.left)+'秒）'];
+  if(v.s==='hacked')return ['bad','侵入された'];
+  if(v.s==='ok')return ['ok',v.lts?'安全（LTS）':'安全（修正版）'];
+  if(v.s==='nonlts')return ['tg','非LTS：あと'+Math.ceil(v.exp-RUN.t)+'秒で期限切れ'];
+  if(v.s==='vuln')return ['bad','修正版が出た。危ない'];
+  if(v.said)return ['bad','危ない！ 攻撃まで'+Math.max(0,Math.ceil(v.hit-RUN.t))+'秒'];
+  return ['tg','サポート終了（まだニュースなし）'];
+}
+const U4={dur:45,
+  init(){
+    RUN.sv=[
+      {k:'a',name:'Node.js 22（LTS）',ver:'v22.20.0',s:'vuln',lts:true,news:5,hit:24,said:false,job:null},
+      {k:'b',name:'Node.js 20（サポート終了）',ver:'v20.19.0',s:'eol',news:9,hit:22,said:false,job:null},
+      {k:'c',name:'PHP 8.1（サポート終了）',ver:'PHP 8.1.2',s:'eol',news:18,hit:34,said:false,job:null}];
+    RUN.nonlts=0;
+    const card=v=>`<div class="scard" id="sv-${v.k}"><div class="sh">${v.name}</div><div class="pm"><span>${v.k==='c'?'php -v':'node -v'}</span><b id="ver-${v.k}">${v.ver}</b><span class="ptag" id="tg-${v.k}"></span></div><div class="acts">${
+      v.k==='a'?`<button class="act" data-act="a-upd">修正版に更新（2秒）</button><button class="act" data-act="a-none">そのまま</button>`
+      :`<button class="act" data-act="${v.k}-lts">LTSへ引っ越す（6秒）</button><button class="act" data-act="${v.k}-q">最新版へ（非LTS・2秒）</button>`}</div></div>`;
+    mount(`<div class="pbar"><span>残り <b id="tl">45</b>秒</span><span class="sp"></span><span>サポート切れの版：<b>${RUN.sv.length-1}</b></span></div>
+      <div class="plist" id="feed"></div>
+      ${RUN.sv.map(card).join('')}
+      <p class="pnote" id="pnote">ニュースが届いたら、その版を守る。サポートが切れた版には、修正版が出ない。</p>`);
+    render4();
+  },
+  update(dt){
+    const t=RUN.t;
+    for(const v of RUN.sv){
+      if(!v.said&&t>=v.news){v.said=true;sfx.open();buzz(15);
+        feed4(v.k==='a'?'Node.js 22 に重大な脆弱性。修正版（パッチ）が出た。更新しよう':v.k==='b'?'Node.js 20 に重大な脆弱性。サポート終了なので修正版は出ない':'PHP 8.1 に重大な脆弱性。サポート終了なので修正版は出ない')}
+      if(v.job){v.job.left-=dt;if(v.job.left<=0)job4Done(v)}
+      if(v.s==='nonlts'&&t>=v.exp){v.s='eol';v.hit=t+6}
+      if(v.hit!=null&&t>=v.hit&&v.said&&(v.s==='vuln'||v.s==='eol')){v.s='hacked';RUN.hacked=v;
+        term(`! ${v.name} に攻撃が届いた`,'# サポートが切れた版には、修正版がないので守れない');return runEnd(false,0,r4(false,v))}
+    }
+    if(RUN.sv.every(v=>v.said&&v.s==='ok'))return runEnd(true,1+(RUN.nonlts===0?1:0)+(RUN.t<=30?1:0),r4(true));
+    render4();
+  },
+  tap(act,el){
+    const [k,op]=act.split('-');const v=RUN.sv.find(x=>x.k===k);
+    if(op==='none'){document.getElementById('pnote').textContent='そのままにすると、危ない版が残る。';return}
+    if(v.job)return;
+    if(op==='upd'){if(v.s!=='vuln'){document.getElementById('pnote').textContent='この版はもう安全です。';return}v.job={type:'upd',left:JOB4.upd[0]};term('$ sudo apt upgrade nodejs','# 同じ大きな版（22）の中で、修正版へ上げている')}
+    if(op==='lts'){if(v.s==='ok'){document.getElementById('pnote').textContent='この版はもう安全です。';return}v.job={type:'lts',left:JOB4.lts[0]};term('$ sudo apt install nodejs@24  # 例：LTSへの引っ越し','# サポートが長く続く版（LTS）へ移している')}
+    if(op==='q'){v.job={type:'q',left:JOB4.q[0]};term('$ node -v','# 最新版は、いちばん新しいが、LTSではない（短い期間しか支えられない）')}
+    render4();
+  },
+  onTime(){if(RUN.sv.every(v=>v.s==='ok'))return runEnd(true,1+(RUN.nonlts===0?1:0),r4(true));runEnd(false,0,r4(false,null,'時間切れ'))}
+};
+function job4Done(v){
+  const j=v.job;v.job=null;
+  if(j.type==='upd'){v.s='ok';v.ver='v22.23.4';v.lts=true;v.hit=null;okFx(document.getElementById('sv-a'));term('$ node -v','# v22.23.4。修正版に上がった')}
+  if(j.type==='lts'){v.s='ok';v.ver=v.k==='b'?'v24.22.1':'PHP 8.4.27';v.lts=true;v.hit=null;okFx(document.getElementById('sv-'+v.k));term(`$ ${v.k==='b'?'node -v':'php -v'}`,`# ${v.ver}。LTSへ引っ越し完了`)}
+  if(j.type==='q'){v.s='nonlts';v.ver=v.k==='b'?'v25.1.0':'PHP 8.5.5';v.lts=false;v.exp=RUN.t+14;v.hit=null;RUN.nonlts++;sfx.sad();buzz([20,30,20]);term('! 非LTSを選んだ','# 短い期間だけ支えられる版。すぐ次の引っ越しが必要になる')}
+  render4();
+}
+function render4(){
+  const tl=document.getElementById('tl');if(tl)tl.textContent=Math.max(0,Math.ceil(RUN.def.dur-RUN.t));
+  for(const v of RUN.sv){
+    const vr=document.getElementById('ver-'+v.k);if(vr)vr.textContent=v.ver;
+    const tg=document.getElementById('tg-'+v.k);if(tg){const [c,txt]=tag4(v);tg.className='ptag '+(c==='ok'?'ok':c==='bad'?'bad':'');tg.textContent=txt}
+    const busy=!!v.job;
+    document.querySelectorAll(`#sv-${v.k} [data-act]`).forEach(b=>{if(b.dataset.act.endsWith('-none'))return;b.disabled=busy||v.s==='ok'})
+  }
+}
+function r4(win,v,why){
+  return {eyebrow:win?'STAGE 4 CLEAR':'STAGE 4',title:win?'サポート切れを守りきった！':(v?'侵入された':(why||'時間切れ')),
+    summary:win?'ニュースが届いた版を、修正版や、LTSへの引っ越しで守れた。':(v?`${v.name} に、修正版のない脆弱性が届いた。サポートが切れた版は、直せない。`:'まだ危ない版が残ったまま、時間が過ぎた。'),
+    review:rvRows([
+      ['LTS','サポートが長く続く版（偶数の大きな版：22、24、26など）。修正版が長く届くので、守りやすい',true],
+      ['EOL','サポート終了（End of Life）。修正版はもう出ない。見つかった脆弱性は、直せないまま残る',true],
+      ['非LTS','短い期間しか支えられない版。すぐ次の版への引っ越しが必要になる。長く守るには向かない',RUN.nonlts===0]]),
+    extra:`<div class="real"><div>振り返り：<b>サポートが切れていないか</b>を、まず確かめる。</div>
+      <code>node -v</code><div class="m">今のNode.jsの版を見る（22 や 24 が LTS）</div>
+      <code>cat /etc/os-release</code><div class="m">OSの版を見る（そのOSのサポートが切れていないか）</div></div>
+      <div class="warn"><b>安全メモ</b><ul><li>版をまたぐ引っ越しは、先にテスト用のサーバーで試し、バックアップを取ってから本番で行う</li></ul></div>`,
+    next:win?'次はステージ5「部品屋の罠」。版を守れても、使っている部品（パッケージ）にも罠が潜むことがある。':''};
+}
+
 const GAMES={
   '1':()=>{newGame();requestAnimationFrame(loop)},
   '2-1':()=>{newGame21();requestAnimationFrame(loop21)},
   '2-2':()=>{newGame2();requestAnimationFrame(loop2)},
   '2-3':()=>{newGame23();requestAnimationFrame(loop23)},
   '3-1':()=>runStart(U31),
-  '3-2':()=>runStart(U32)
+  '3-2':()=>runStart(U32),
+  '4':()=>runStart(U4)
 };
 function start(){
   audio();show(null);
