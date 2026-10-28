@@ -619,7 +619,27 @@ const STAGES=[
         <p>部品が流れてくる。1つずつ見分けて、10個すべて。まちがいは3回まで。</p>
         <p>★は「まちがいなし」「60秒以内」で1つずつ。</p>`
     }},
-  {id:6, name:'秘密の置き忘れ',sub:'APIキーをGitHubに公開してしまう'},
+  {id:6, name:'秘密の置き忘れ',sub:'APIキーをGitHubに公開してしまう', ready:true,
+    hud:['6 秘密の置き忘れ','送る前に、秘密を見つける'],
+    room:'<span class="chip">config.js</span><span class="arrow">→</span><span class="chip">GitHub（公開）</span>',
+    cue:['送る前に','秘密を見つけて、.env へ移そう'],
+    brief:{
+      situation:['設定ファイルには、<b>APIキー</b>（Webサービスを使うための合鍵）やパスワードを書くことがある。これを、<b>GitHub</b>（公開の場所）に送ってしまう事故が、毎年たくさん起きている。'],
+      doorsTitle:'画面に出てくるもの',
+      doors:[
+        ['.env','秘密を書いておくファイル','外に出さない。ここに秘密を移す'],
+        ['.gitignore','Gitに送らないファイルの一覧','.env をここに書いておくと、送られなくなる'],
+        ['履歴','過去の変更の記録','一度送ると、消しても履歴に残る。キーを作り直すしかない']
+      ],
+      real:['見分けかた：<b>KEY・PASSWORD・SECRET・TOKEN</b>の名前がついた行は、秘密の印。見つけたら、<b>.env へ移し、.gitignore に入れる</b>。もう送ってしまったら、キーを作り直す。'],
+      howto:`<div class="legend">
+          <div><span class="dot y"></span>秘密の行（キーやパスワード）をタップで選ぶ</div>
+          <div><span class="dot k"></span>「.envへ移す」で、外に出さない形にする</div>
+          <div><span class="dot r"></span>秘密を残したまま送ると、公開される</div>
+        </div>
+        <p>送る前に、秘密を全部選ぶのが理想。残ったまま送ったら、6秒以内に「キーを作り直す」。</p>
+        <p>★は「まちがいなし」「キーを作り直す必要がなかった」で1つずつ。</p>`
+    }},
   {id:7, name:'偽メール',     sub:'GitHubやサーバー会社を名乗るフィッシング'},
   {id:8, name:'足あと探し',   sub:'ログから怪しいアクセスを見つける'},
   {id:9, name:'入力の罠',     sub:'SQLインジェクション'},
@@ -744,7 +764,19 @@ const GLOSSARY=[
   {id:'supply',  w:'サプライチェーン攻撃',at:['5'],a:['サプライチェーン攻撃'],
     s:'材料の仕入れ先や運び屋に罠を仕込み、最後に使う人を狙う攻撃',e:'食材の仕入れ先に毒を混ぜて、店ごと被害を出すやり方'},
   {id:'audit',   w:'npm audit（エヌピーエム オーディット）',at:['5'],a:['npm audit'],
-    s:'使っている部品に、既知の脆弱性がないか調べるコマンド',e:'食材の検査表を見て、危ないものがないか確かめる'}
+    s:'使っている部品に、既知の脆弱性がないか調べるコマンド',e:'食材の検査表を見て、危ないものがないか確かめる'},
+  {id:'apikey',  w:'APIキー（エーピーアイキー）',at:['6'],a:['APIキー'],
+    s:'Webサービスを使うための、合鍵のような長い文字列',e:'会員カードの番号。他人に見られると、その人のふりをして使われる'},
+  {id:'env',     w:'.env（ドットエンブ）',at:['6'],a:['.env'],
+    s:'パスワードやキーを書いておく設定ファイル（外に出さない）',e:'金庫の中の暗証番号メモ'},
+  {id:'gitignore',w:'.gitignore（ギットイグノア）',at:['6'],a:['.gitignore'],
+    s:'Gitに送らないファイルを指定する一覧',e:'「このカバンは持ち出し禁止」と書いた札'},
+  {id:'commit',  w:'コミット',        at:['6'],a:['コミット'],
+    s:'ファイルの変更を、記録として1つ残すこと',e:'写真の現像。一度焼いた写真は、なかったことにできない'},
+  {id:'push',    w:'プッシュ',        at:['6'],a:['プッシュ'],
+    s:'自分のパソコンの記録を、GitHubへ送ること',e:'作品を公開の本棚へ運ぶこと'},
+  {id:'history', w:'履歴',            at:['6'],a:['履歴'],
+    s:'過去の変更の記録。消しても、どこかに残ることがある',e:'日記の過去のページ。ページを破っても、コピーが残っていることがある'}
 ];
 const GBYID=Object.fromEntries(GLOSSARY.map(g=>[g.id,g]));
 const GMATCH=GLOSSARY.flatMap(g=>g.a.map(a=>({a,g}))).sort((x,y)=>y.a.length-x.a.length);
@@ -2004,6 +2036,99 @@ function r5(st,win,why){return {eyebrow:win?'STAGE 5 CLEAR':'STAGE 5',title:win?
     <div class="warn"><b>安全メモ</b><ul><li>--ignore-scripts は、インストール時の処理を止める。ただし、動かないと困る部品もあるので、中身を読んでから決める</li><li>知らない部品を、サーバーで直接入れない。まず自分のパソコンで確かめる</li></ul></div>`,
   next:win?'次はステージ6「秘密の置き忘れ」。部品ではなく、自分の鍵（パスワード）をGitHubに置いてしまう事故。':''};}
 
+/* ===== ステージ6「秘密の置き忘れ」：送る前に、秘密を .env へ移す ===== */
+// 秘密の値はすべて EXAMPLE 入りの練習用の偽物
+const FILE6=[
+  {t:'const PORT = 3000;',s:0},
+  {t:'const API_URL = "https://api.example.com";',s:0},
+  {t:'const API_KEY = "EXAMPLE_KEY_1234abcd";',s:1},
+  {t:'const DB_PASSWORD = "EXAMPLE_pass_9f8e";',s:1},
+  {t:'const DEBUG = true;',s:0},
+  {t:'const SESSION_SECRET = "EXAMPLE_secret_77aa";',s:1},
+  {t:'app.listen(PORT);',s:0},
+  {t:'const TOKEN = "EXAMPLE_token_0a1b";',s:1}
+];
+const varOf6=t=>t.match(/const (\w+)/)[1];
+const U6={dur:60,
+  init(){
+    RUN.sel=new Set();RUN.mist=0;RUN.moved=false;RUN.sent=false;RUN.leak=false;RUN.rotated=false;RUN.leakT=0;
+    mount(`<div class="pbar"><span>config.js</span><span class="sp"></span><span class="plives" id="pl">${lives(3,3)}</span></div>
+      <div class="plist" id="fl">${FILE6.map((l,i)=>`<button class="prow" data-act="L${i}" style="font-family:var(--f-term);font-size:13px">${l.t}</button>`).join('')}</div>
+      <div class="acts3">
+        <button class="act" data-act="mv">.envへ移す</button>
+        <button class="act" data-act="send">GitHubに送る</button>
+        <button class="act" data-act="rot" disabled>キーを作り直す</button>
+      </div>
+      <p class="pnote" id="pnote">秘密（キーやパスワード）の行を、タップして選ぼう。</p>`);
+    term('$ git status','# 送る前に、何が送られるかを確かめる');
+    guideOn(document.querySelector('[data-act="L2"]'));
+  },
+  update(){
+    if(RUN.leak&&!RUN.rotated&&RUN.t-RUN.leakT>6)return runEnd(false,0,r6(false,false,'キーを作り直せなかった'));
+  },
+  tap(act,el){
+    if(act[0]==='L'){
+      if(RUN.moved||RUN.sent)return;
+      const i=+act.slice(1);
+      if(FILE6[i].s){
+        if(RUN.sel.has(i)){RUN.sel.delete(i);el.classList.remove('sel')}else{RUN.sel.add(i);el.classList.add('sel');okFx(el)}
+        document.getElementById('pnote').textContent=`秘密を ${RUN.sel.size} 個選んだ。`;
+      }else{
+        RUN.mist++;strike(el);setLives(3-RUN.mist,3);
+        document.getElementById('pnote').textContent='それは秘密ではない。（PORTやURLは送ってOK）';
+        if(RUN.mist>=3)runEnd(false,0,r6(false,false,'まちがえすぎた'));
+      }
+      return;
+    }
+    if(act==='mv'){
+      if(RUN.moved)return;
+      if(!RUN.sel.size){document.getElementById('pnote').textContent='先に、秘密の行を選ぼう。';return}
+      RUN.moved=true;
+      document.querySelectorAll('[data-act^="L"]').forEach(b=>{const i=+b.dataset.act.slice(1);if(FILE6[i].s&&RUN.sel.has(i)){b.textContent=`const ${varOf6(FILE6[i].t)} = process.env.${varOf6(FILE6[i].t)};`;b.classList.remove('sel');b.classList.add('gone')}});
+      term(`$ echo "${RUN.sel.size}個の秘密" >> .env`,'# 秘密を .env に移した。.env は外に出さない');
+      term('$ echo ".env" >> .gitignore','# .gitignore に書いたので、Gitは .env を送らなくなる');
+      document.getElementById('pnote').textContent='.envへ移し、.gitignore に入れた。送る準備ができた。';
+      guideOn(document.querySelector('[data-act="send"]'));
+      return;
+    }
+    if(act==='send'){
+      if(RUN.sent)return;RUN.sent=true;
+      const remain=FILE6.filter((l,i)=>l.s&&!(RUN.moved&&RUN.sel.has(i))).length;
+      if(remain>0){
+        RUN.leak=true;RUN.leakT=RUN.t;sfx.breach();buzz([60,60,120]);shake();flashRoom('bad');
+        term('! 秘密が残ったまま送ってしまった','# 消しても、履歴（過去の記録）に残る。キーを作り直すしかない');
+        document.querySelector('[data-act="rot"]').disabled=false;
+        document.getElementById('pnote').textContent=`秘密が ${remain} 個残ったまま送られた！ 6秒以内に「キーを作り直す」`;
+        guideOn(document.querySelector('[data-act="rot"]'));
+        return;
+      }
+      term('$ git push','# 秘密は1つも残っていない。安全に送れた');
+      const st=1+(RUN.mist===0?1:0)+1;
+      return runEnd(true,st,r6(true,false));
+    }
+    if(act==='rot'){
+      if(!RUN.leak||RUN.rotated)return;
+      RUN.rotated=true;term('$ 新しいAPIキーを発行 → 古いキーを無効化','# 漏れたキーは、もう使えない。これで被害を止められる');
+      const st=1+(RUN.mist===0?1:0);
+      return runEnd(true,st,r6(true,true));
+    }
+  },
+  onTime(){runEnd(false,0,r6(false,false,'時間切れ'))}
+};
+function r6(win,leak,why){return {eyebrow:win?(leak?'STAGE 6 CLEAR':'STAGE 6 CLEAR'):'STAGE 6',title:win?(leak?'キーを作り直して守った':'秘密を守りきった！'):(why||'秘密が漏れた'),
+  summary:win?(leak?'秘密は送られたが、キーを作り直して、漏れたキーを使えなくした。':'秘密を .env に移し、.gitignore で送らないようにした。'):'秘密が公開されたまま、対応が間に合わなかった。',
+  review:rvRows([
+    ['.env','秘密を書いておくファイル。外（GitHub）に送らない',true],
+    ['.gitignore','Gitに送らないファイルの一覧。.env をここに書く',true],
+    ['APIキー','キー名（KEY・PASSWORD・SECRET・TOKEN）が見えたら、秘密の印',true],
+    ['履歴','一度送ると、消しても過去の記録に残る。だから、送る前に見つける',true]]),
+  extra:`<div class="real"><div>振り返り：<b>送る前に、秘密を探す</b>。送ったら、キーを作り直す。</div>
+    <code>git status</code><div class="m">送る前に、何がGitに入るかを見る</div>
+    <code>cat .gitignore</code><div class="m">送らないファイルの一覧を見る</div>
+    <code>git log --all -p | grep -i key</code><div class="m">過去の記録に、キーが残っていないか探す（見るだけ）</div></div>
+    <div class="warn"><b>安全メモ</b><ul><li>一度でも公開されたキーは、必ず作り直す。ファイルから消しただけでは、履歴に残る</li><li>.env は、必ず .gitignore に書く。送った後では遅い</li></ul></div>`,
+  next:win?'次はステージ7「偽メール」。秘密は、ニセのメールからも盗まれる。':''};}
+
 const GAMES={
   '1':()=>{newGame();requestAnimationFrame(loop)},
   '2-1':()=>{newGame21();requestAnimationFrame(loop21)},
@@ -2012,7 +2137,8 @@ const GAMES={
   '3-1':()=>runStart(U31),
   '3-2':()=>runStart(U32),
   '4':()=>runStart(U4),
-  '5':()=>runStart(U5)
+  '5':()=>runStart(U5),
+  '6':()=>runStart(U6)
 };
 function start(){
   audio();show(null);
