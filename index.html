@@ -338,7 +338,7 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
   <div class="skywrap" id="sky" data-only="1 2-1 2-2 2-3"><canvas id="cv"></canvas><div class="skylabel">インターネット</div>
     <div class="logs" id="logs" data-only="2-3" hidden></div><div class="pointer" id="pointer23" hidden>▼ 次はこれ</div>
     <div class="cue" id="cue" hidden><b id="cueB"></b><span id="cueS"></span><i aria-hidden="true">▼</i></div></div>
-  <div class="panel" id="panel" data-only="3-1 3-2 4 5 6 7 8 9-1 9-2 10-1 10-2 11-1 11-2 11-3 12-1 12-2 12-3" hidden></div>
+  <div class="panel" id="panel" data-only="3-1 3-2 4 5 6 7 8 9-1 9-2 10-1 10-2 11-1 11-2 11-3 12-1 12-2 12-3 13-1 13-2 13-3" hidden></div>
   <div class="doors" id="doors" data-only="1"></div>
   <div class="gate" id="gate" data-only="2-2" hidden>
     <div class="door door22" id="door22"><span class="num">22</span><span class="nm">SSH</span><span class="st" id="door22st">パスワード</span></div>
@@ -885,6 +885,39 @@ const STAGES=[
           real:['ボスの中には、手順が4つ必要なものもある。途中の結果（→）を見て、どこで読めなくなるかを確かめよう。'],
           howto:`<div class="legend"><div><span class="dot d"></span>部品を押すと、レシピに下から足される（最大4手）</div><div><span class="dot k"></span>実行で、フラグが出れば勝ち。まちがえると失敗が1つ増える</div></div>
             <p>3体のボス。</p><p>★は「まちがいなし」「150秒以内」で1つずつ。</p>`}}
+    ]},
+  {id:13, name:'Web', sub:'../・SQL・robots.txt・ソースを、サイトに話しかけて調べる', ready:true,
+    rounds:[
+      {name:'パズル',hud:['13-1 パズル','サイトに話しかけて、奥を見る'],
+        room:'<span class="chip">ブラウザ</span><span class="arrow">→</span><span class="chip">リクエスト</span><span class="arrow">→</span><span class="chip">サイト</span>',
+        cue:['サイトに話しかけよう','道具で、リクエストを作って送る'],
+        brief:{
+          situation:['架空のネットショップは、記事やページを表示する。ブラウザは<b>リクエスト</b>（ページをくださいという頼み）を送り、サイトは<b>レスポンス</b>（ページと結果）を返す。見せていない情報が、この会話の中に残っていることがある。'],
+          doorsTitle:'道具と手がかり',
+          doors:[['../','ファイル名で、上の階層へ戻る','ディレクトリトラバーサルの入口'],['GET','ページを開く（レスポンスが出る）','curl で同じことができる'],['検索欄の \'','データベースの命令を壊してみる','SQLインジェクションの練習'],['robots.txt','検索ロボットへの案内','隠したい道が書かれていることがある'],['コメント・hidden','ページのソースの中身','ブラウザには出ないメモ']],
+          real:['本物のサイトでは、見せてはいけないファイルを守るのが、ディレクトリの設定の仕事。練習用のサイトでは、その守りが甘い。'],
+          howto:`<div class="legend"><div><span class="dot d"></span>道具を押すと、今のリクエストか、レスポンスが変わる</div><div><span class="dot k"></span>GK{…} が出たら、「答えを提出」</div></div>
+            <p>4問。全体で120秒。手がかりを探して、フラグを取り出そう。</p><p>★は「やり直しが3回以内」「80秒以内」で1つずつ。</p>`}},
+      {name:'ドリル',hud:['13-2 ドリル','ヒント語から、手口を当てる'],
+        room:'<span class="chip">問題文</span><span class="arrow">→</span><span class="chip">ヒント語</span><span class="arrow">→</span><span class="chip">手口</span>',
+        cue:['ヒント語を読もう','問題文の言葉から、手口を当てる'],
+        brief:{
+          situation:['Webの問題文には、手口を示すヒント語がある。「上の階層」「ファイル名」は ../。「検索」「引用符」は SQLインジェクション。「ロボット」「道」は robots.txt。「ページの中身」「メモ」はソースの中のコメントや hidden 欄。'],
+          doorsTitle:'ヒント語の見分け方',
+          doors:[['上の階層・ファイル名','../（ディレクトリトラバーサル）','ファイルの場所を、ずらして指定する'],['検索欄・データベース','SQLインジェクション','引用符で、命令を壊す'],['ロボット・案内','robots.txt','隠したい道の一覧'],['ソース・メモ・hidden','ページのソース','ブラウザに出ない情報']],
+          real:['似た言葉に注意。「ページ」は、どの手口にもなりうる。決め手になる言葉を選ぼう。'],
+          howto:`<div class="legend"><div><span class="dot k"></span>問題文を読んで、手口を3つから選ぶ</div><div><span class="dot r"></span>まちがいは3回まで</div></div>
+            <p>8問。サイトは問題ごとに自動で作られる（毎回違う）。</p><p>★は「まちがいなし」「70秒以内」で1つずつ。</p>`}},
+      {name:'ボス戦',hud:['13-3 ボス戦','道具を並べて、サイトの奥を開ける'],
+        room:'<span class="chip">入力</span><span class="arrow">レシピ（3手まで）</span><span class="arrow">→</span><span class="chip">フラグ</span>',
+        cue:['ボスのサイト','道具を並べて、奥のフラグを取り出そう'],
+        brief:{
+          situation:['ボスのサイトは、奥の情報を、ふつうのページからは見せていない。道具を順番に並べて、リクエストを作り、レスポンスからフラグを取り出す。'],
+          doorsTitle:'レシピの部品',
+          doors:[['../・GET','ファイルを指定して、開く','上の階層のファイルへ'],['robots.txt・Disallow','隠したい道を、番号で選ぶ','案内の中から、道を1つ'],['コメント・抜き出す','ソースや応答から、答えの行を取る','最後にフラグだけを残す']],
+          real:['リクエストとレスポンスを、自分で組み立てることが、Webの調査の基本。curl を使えば、同じことを本物のコマンドでできる。'],
+          howto:`<div class="legend"><div><span class="dot d"></span>部品を押すと、レシピに下から足される（最大3手）</div><div><span class="dot k"></span>実行で、フラグが出れば勝ち</div></div>
+            <p>3体のボス。</p><p>★は「まちがいなし」「160秒以内」で1つずつ。</p>`}}
     ]}
 ];
 
@@ -1084,7 +1117,17 @@ const GLOSSARY=[
   {id:'jsscript',  w:'JavaScript（ジャバスクリプト）',at:['12-1','12-2'],a:['JavaScript'],
     s:'ブラウザなどで動くプログラム。文書の中に入ると、読む人の知らないところで動くことがある',e:'勝手に開く、家の中の自動ドア'},
   {id:'forensic',  w:'Forensics（フォレンジック）',at:['12-1'],a:['Forensics','フォレンジック'],
-    s:'デジタルの痕跡を、証拠として調べること',e:'探偵が現場の足跡や指紋を調べる仕事'}
+    s:'デジタルの痕跡を、証拠として調べること',e:'探偵が現場の足跡や指紋を調べる仕事'},
+  {id:'traversal',w:'ディレクトリトラバーサル',at:['13-1','13-2'],a:['ディレクトリトラバーサル'],
+    s:'ファイルの場所を ../ などでずらして、本来は見せないファイルへ抜けること',e:'部屋の番号を「ひとつ上の階」へずらして、他人の部屋に入る'},
+  {id:'robots',  w:'robots.txt（ロボッツ・テキスト）',at:['13-1','13-2','13-3'],a:['robots.txt'],
+    s:'検索ロボットに「見てほしくない道」を伝えるファイル',e:'お店の入口の「立入禁止」の案内板。でも案内板があるだけで、鍵は付いていない'},
+  {id:'curl',    w:'curl（カール）',at:['13-1','13-3'],a:['curl'],
+    s:'コマンドでWebにリクエストを送って、レスポンスを見るツール',e:'自分の手で、ブラウザの代わりに手紙を出す'},
+  {id:'request', w:'リクエスト・レスポンス',at:['13-1','13-3'],a:['リクエスト','レスポンス'],
+    s:'リクエストは「ページをください」という頼み。レスポンスは、サイトが返す答え',e:'注文書（リクエスト）と、届いた商品と納品書（レスポンス）'},
+  {id:'htmlsrc', w:'HTML（エイチティーエムエル）',at:['13-2','13-3'],a:['HTML'],
+    s:'Webページの中身を書く言葉。コメントや hidden 欄も書ける',e:'ページの設計図。見えない場所に、メモを書き込める'}
 ];
 const GBYID=Object.fromEntries(GLOSSARY.map(g=>[g.id,g]));
 const GMATCH=GLOSSARY.flatMap(g=>g.a.map(a=>({a,g}))).sort((x,y)=>y.a.length-x.a.length);
@@ -3078,7 +3121,7 @@ function mkPuz(G,count){return {dur:G.dur1||110,
       const k=act.slice(3),op=G.OP[k];if(!op||RUN.cur===null)return;
       const res=op.run(RUN.cur,RUN.p,pr);
       RUN.hist.push(RUN.cur);
-      term(`$ ${op.cmd(RUN.p)}`,`# ${op.label}`);
+      term(`$ ${op.cmd(RUN.p,RUN.cur)}`,`# ${op.label}`);
       RUN.cur=res===null||res===undefined?'（この道具では読めない形）':res;
       showCurPz();
     }
@@ -3088,7 +3131,7 @@ function mkPuz(G,count){return {dur:G.dur1||110,
 function showPz(){
   const G=RUN.G,pr=RUN.pz[RUN.i];
   document.getElementById('qN').textContent=`${RUN.i+1}/${RUN.pz.length}`;
-  document.getElementById('gcard').innerHTML=`<div class="sh">${escH(pr.text)}</div>`+(pr.rows?`<div class="plist">${pr.rows.map((r,k)=>`<button class="prow" data-act="r${k}"><span style="font-family:var(--f-term);font-size:12px;word-break:break-all">${escH(r.label)}</span></button>`).join('')}</div>`:'');
+  document.getElementById('gcard').innerHTML=`<div class="sh">${escH(pr.text)}</div>`+(pr.card?`<div class="ppre">${escH(pr.card)}</div>`:'')+(pr.rows?`<div class="plist">${pr.rows.map((r,k)=>`<button class="prow" data-act="r${k}"><span style="font-family:var(--f-term);font-size:12px;word-break:break-all">${escH(r.label)}</span></button>`).join('')}</div>`:'');
   RUN.cur=pr.rows?null:pr.start;RUN.hist=[];
   term(`$ cat ${pr.file||'input.txt'}`,`# ${pr.phrase}`);
   showCurPz();
@@ -3165,7 +3208,7 @@ function mkBos(G,count,maxSteps){return {dur:G.dur3||200,
     if(act.startsWith('add-')){
       if(RUN.rec.length>=RUN.max){document.getElementById('pnote').textContent=`レシピは${RUN.max}手まで。`;return}
       const k=act.slice(4);RUN.rec.push({op:k,p:RUN.p});
-      term(`$ ${G.OP[k].cmd(RUN.p)}`,`# ${G.OP[k].label}を、レシピの ${RUN.rec.length} 手目に入れた`);
+      term(`$ ${G.OP[k].cmd(RUN.p,undefined)}`,`# ${G.OP[k].label}を、レシピの ${RUN.rec.length} 手目に入れた`);
       showBos();return;
     }
     const m=act.match(/^(rm|n)(\d+)([+-]?)$/);
@@ -3266,8 +3309,83 @@ const FO={key1:'12-1',key2:'12-2',key3:'12-3',
   dur1:110,par1:70,dur2:120,dur3:200,par3:150
 };
 const GAMES_FO={'12-1':()=>runStart(mkPuz(FO,4)),'12-2':()=>runStart(mkDri(FO,8)),'12-3':()=>runStart(mkBos(FO,3,4))};
+/* ===== ステージ13「Web」：架空のサイトに、道具で話しかけて、隠れた答えを出す ===== */
+const SETW=['架空のネットショップ「クモ・ショップ」','ナギ・クラウドの検索画面','学校の掲示板サイト（練習用）','ゲーム「ゴーストラン」の公式サイト'];
+const WPHRASE={
+  'wb-trav':{jp:['ファイル名の指定を、上の階層へ戻ってみよう','../ は、ひとつ上のフォルダを表す','表示するファイルを、ほかの場所から読めないか'],en:['Walk up the folder tree: dots and slashes','Escape the web root with ../','The file parameter trusts you too much']},
+  'wb-sqli':{jp:['検索欄に入れた文字が、そのままデータベースへ届く','引用符（\'）が、命令の文字列を壊すことがある','検索の結果を、わざと全部出してみよう'],en:['The search box talks to the database directly','A quote can break the query','Make the search return everything']},
+  'wb-robots':{jp:['ロボットに見せたくない道が、どこかに書いてある','検索ロボットへの案内を読もう','隠したつもりのページは、案内に書かれがち'],en:['Crawlers are told where not to go','The robot file reveals more than it should','Hidden pages are often listed in robots.txt']},
+  'wb-source':{jp:['ページの見えない部分（ソース）に、メモが残っている','HTMLのコメントや、隠し欄を見よう','開発者が残したメモが、画面には出ていない'],en:['View the page source: a note was left behind','Look for comments and hidden inputs','The developer left a secret in the markup']}
+};
+const WB={key1:'13-1',key2:'13-2',key3:'13-3',
+  pats:['wb-trav','wb-sqli','wb-robots','wb-source'],
+  pname:{'wb-trav':'../（上の階層へさかのぼる）','wb-sqli':'SQLインジェクション（検索欄）','wb-robots':'robots.txt（隠したい道の案内）','wb-source':'ページのソース（コメント・隠し欄）'},
+  why:{'wb-trav':'ファイル名の ../ は、ひとつ上の階層を表す。見せてはいけないファイルへ抜けられることがある','wb-sqli':'検索欄の引用符が命令を壊すと、本来は出てこないデータまで出てくることがある','wb-robots':'robots.txt は検索ロボットへの案内。隠したい道まで書かれていることがある','wb-source':'ページのソースに、コメントや hidden の入力欄が残っていることがある'},
+  palette:['up','get','quote','orop','search','comment','hidden','disallow','extract'],
+  OP:{
+    up:{label:'../ を足して、上の階層へ',cmd:()=>"curl -i 'https://kumo-site.example.com/view?file=../secret.txt'",run:(t,p,pr)=>t.startsWith('/view?file=')?'/view?file=../'+pr.secretName:null},
+    get:{label:'GET（ページを開く）',cmd:(p,t)=>`curl -i 'https://kumo-site.example.com${t===undefined?'/':t}'`,run:(t,p,pr)=>pr.site[t]!==undefined?pr.site[t]:null},
+    quote:{label:"検索欄に ' を足す",cmd:()=>"curl 'https://kumo-site.example.com/search?q=apple''",run:t=>t.startsWith('q=')?t+"'":null},
+    orop:{label:"検索欄に ' OR '1'='1 を足す",cmd:()=>"curl 'https://kumo-site.example.com/search?q=apple' OR '1'='1'",run:t=>t.startsWith('q=')?t+"' OR '1'='1":null},
+    search:{label:'検索する（GET /search）',cmd:(p,t)=>`curl -i 'https://kumo-site.example.com/search?${t===undefined?'q=':t.slice(0)}'`,run:(t,p,pr)=>{
+      if(!t.startsWith('q='))return null;const q=t.slice(2);
+      if(q.includes("OR '1'='1"))return `HTTP/1.1 200 OK\n\n結果：すべての記事\n${pr.allRows}`;
+      if(q.endsWith("'"))return 'HTTP/1.1 500 Internal Server Error\n\nSQL error: unterminated quote';
+      return `HTTP/1.1 200 OK\n\n結果：「${q}」の記事 3件`;}},
+    comment:{label:'HTMLのコメントを抜き出す',cmd:()=>"curl -s https://kumo-site.example.com/ | grep '<!--'",run:t=>{const m=[...t.matchAll(/<!--([\s\S]*?)-->/g)].map(x=>x[1].trim());return m.length?m.join('\n'):null}},
+    hidden:{label:'hidden欄の値を抜き出す',cmd:()=>"curl -s https://kumo-site.example.com/ | grep 'type=\"hidden\"'",run:t=>{const m=[...t.matchAll(/type="hidden"[^>]*value="([^"]*)"/g)].map(x=>x[1]);return m.length?m.join('\n'):null}},
+    disallow:{label:'robots.txt の Disallow（番号）',cmd:p=>`curl -s https://kumo-site.example.com/robots.txt | grep Disallow | sed -n '${p+1}p'`,par:true,run:(t,p)=>{if(!t.startsWith('User-agent'))return null;const l=t.split('\n').filter(x=>x.startsWith('Disallow:'))[p];return l===undefined?null:l.slice(9).trim()}},
+    extract:{label:'フラグだけ抜き出す',cmd:()=>"grep -o 'GK{[a-z0-9]*}'",run:t=>{const m=t.match(/GK\{[a-z0-9]+\}/);return m?m[0]:null}}
+  },
+  make(pat){
+    const ans=cflag();let pr={};
+    const news=gpickA(['news.txt','menu.txt','hours.txt','notice.txt','sale.txt']);
+    const secretName=gpickA(['secret.txt','key-memo.txt','backup.txt','notes.txt','token.txt']);
+    if(pat==='wb-trav'){
+      pr={start:`/view?file=${news}`,secretName,
+        site:{[`/view?file=${news}`]:'HTTP/1.1 200 OK\n\n今月の営業時間は、変わりません。',[`/view?file=../${secretName}`]:`HTTP/1.1 200 OK\n\nsecret: ${ans}`,'/':'HTTP/1.1 200 OK\n\nKumo Shop'},
+        ops:['up','get','extract'],solve:[{op:'up'},{op:'get'},{op:'extract'}],file:'/view'};
+    }else if(pat==='wb-sqli'){
+      const q=gpickA(['apple','tea','books','music','bread']);
+      const titles=['なつのイベント','冬のセール','新作のお知らせ','配送について'];
+      pr={start:`q=${q}`,allRows:`記事：${gpickA(titles)}\n記事：${gpickA(titles)}\nsecret: ${ans}`,ops:['quote','orop','search','extract'],solve:[{op:'orop'},{op:'search'},{op:'extract'}],file:'/search'};
+    }else if(pat==='wb-robots'){
+      const secret=gpickA(['/admin-x','/internal-notes','/staff-only','/backup-old','/dev-tools']);
+      const decoy=gpickA(['/login','/cart','/about','/contact']);
+      const robots=`User-agent: *\nDisallow: ${decoy}\nDisallow: ${secret}`;
+      const site={[decoy]:`HTTP/1.1 200 OK\n\n${decoy} のページです。`,'/robots.txt':'HTTP/1.1 200 OK\n\n'+robots,'/':'HTTP/1.1 200 OK\n\nKumo Shop',[secret]:`HTTP/1.1 200 OK\n\n社内メモ\nsecret: ${ans}`};
+      const items=shuffle([decoy,secret]).map(path=>({label:`GET ${path}（robots.txt に書かれた道）`,value:site[path],good:path===secret,why:'これは、ただのログイン画面。手がかりではない'}));
+      const gi=items.findIndex(x=>x.good);
+      pr={start:null,card:robots,rows:items.map(x=>({label:x.label,value:x.value,good:x.good,why:x.why})),site,ops:['extract'],
+        bstart:robots,bsolve:[{op:'disallow',p:1},{op:'get'},{op:'extract'}],solve:[{row:gi},{op:'extract'}],file:'/robots.txt'};
+      pr.bsolve=[{op:'disallow',p:robots.split('\n').filter(x=>x.startsWith('Disallow:')).findIndex(x=>x.endsWith(secret))},{op:'get'},{op:'extract'}];
+    }else{
+      const hidden=CG.rnd()<.5;
+      const title=gpickA(['Kumo Shop','Kumo Note','Night Shop','Ghost Run']);
+      const csrf=gpickA(['x9Q2aa','k3Zp71','mQ8rT0']);
+      const note=gpickA(['TODO: 画像を差し替える','TODO: 送料を確認','FIXME: 古い在庫表示','debug token']);
+      const inner=hidden?`<form><input type="hidden" name="csrf" value="${csrf}"><input type="hidden" name="token" value="${ans}"></form>`:`<!-- ${note}: ${ans} -->`;
+      const html=`<html><head><title>${title}</title></head>\n<body>\n<h1>${title}</h1>\n${CG.rnd()<.5?inner+'\n<p>ようこそ</p>':'<p>ようこそ</p>\n'+inner}\n</body></html>`;
+      pr={start:html,ops:['comment','hidden','extract'],solve:[{op:hidden?'hidden':'comment'},{op:'extract'}],file:'/index.html'};
+    }
+    pr.done=t=>isFlag(t)&&t===ans;
+    pr.text=`${gpickA(SETW)}：${(CG.rnd()<.5?gpickA(WPHRASE[pat].jp):gpickA(WPHRASE[pat].en))}`;
+    pr.phrase=pr.text.split('：')[1];pr.ans=ans;
+    return pr;
+  },
+  res:{win:'サイトの奥から、フラグを取り出した！',lose:'フラグに届かなかった',sumWin:'ずらす・書き換える・案内を読む・ソースを見る。どれも、サイトが見せている情報の延長だった。',sumLose:'サイトに話しかける順番を、もう一度考えよう。'},
+  rev:[['../（ディレクトリトラバーサル）','ファイル名の ../ で上の階層へ。見せてはいけないファイルに届くことがある',true],['SQLインジェクション','検索欄の引用符が命令を壊すと、全部のデータが出てくることがある（ステージ9の発展）',true],['robots.txt','検索ロボットへの案内。隠したい道まで書かれていると、そこが手がかりになる',true],['ソース（コメント・hidden）','ブラウザには出ないが、ページのソースに残っていることがある',true]],
+  extra:`<div class="real"><div>振り返り：<b>サイトは、見せていないものを、ソースや案内の中に残すことがある</b>。</div>
+    <code>curl -i 'https://kumo-site.example.com/'</code><div class="m">ページを開いて、レスポンス（ヘッダと中身）を見る</div>
+    <code>curl -s https://kumo-site.example.com/robots.txt</code><div class="m">検索ロボットへの案内を見る</div></div>
+    <div class="warn"><b>安全メモ</b><ul><li>実在のサイトに、このような入力を送らない。練習用に用意されたサイトだけで試す</li><li>見つけた情報は、そのまま使わず、サイトの持ち主に伝える</li></ul></div>`,
+  next(key){if(key==='13-1')return '次は13-2「ドリル」。問題文のヒント語から、どの手口かを当てよう。';if(key==='13-2')return '次は13-3「ボス戦」。道具を並べて、サイトの奥のフラグを取り出そう。';return '次はステージ14「Pwn」。箱の大きさを超えると、隣の変数まで書き換わる。';},
+  dur1:120,par1:80,dur2:120,dur3:200,par3:160
+};
+const GAMES_WB={'13-1':()=>runStart(mkPuz(WB,4)),'13-2':()=>runStart(mkDri(WB,8)),'13-3':()=>runStart(mkBos(WB,3,3))};
 const GAMES={
   ...GAMES_FO,
+  ...GAMES_WB,
   '1':()=>{newGame();requestAnimationFrame(loop)},
   '2-1':()=>{newGame21();requestAnimationFrame(loop21)},
   '2-2':()=>{newGame2();requestAnimationFrame(loop2)},
