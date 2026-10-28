@@ -258,6 +258,42 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
 .dres{display:grid;gap:6px}
 .dres .rv .why b{display:block}.zi.locked:active{transform:none}
 .zi.locked b{font-family:var(--f-term);letter-spacing:.2em;color:var(--muted)}
+.panel{position:relative;min-height:0;overflow-y:auto;display:flex;flex-direction:column;gap:10px;padding:12px;background:var(--panel);border-radius:14px 14px 4px 4px}
+.pcue{position:absolute;inset:0;z-index:3;display:grid;place-content:center;justify-items:center;gap:8px;text-align:center;background:rgba(14,17,38,.82);animation:cuein .25s ease-out}
+.pcue b{font-family:var(--f-display);font-weight:800;font-size:24px;line-height:1.3}
+.pcue span{font-family:var(--f-display);font-weight:800;font-size:16px;color:var(--amber)}
+.pguide{position:absolute;z-index:2;transform:translate(-50%,-100%);pointer-events:none;white-space:nowrap;font-family:var(--f-display);font-weight:800;font-size:12px;padding:3px 10px;border-radius:99px;background:#fff;color:#3a2300;box-shadow:0 3px 10px rgba(0,0,0,.35);animation:bob .8s ease-in-out infinite}
+.pbar{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
+.pbar b{color:var(--ink)}
+.pbar .sp{margin-left:auto}
+.plives{display:inline-flex;gap:4px}
+.plives .pip{background:var(--shut-deep)}
+.plives .pip.on{background:var(--attacker)}
+.pnote{margin:0;font-size:13px;color:var(--muted);line-height:1.6;min-height:2.6em}
+.acts3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.acts3 .act{min-height:58px}
+.act small{font-weight:500;font-size:11px;opacity:.85;line-height:1.3}
+.panel .guide{animation:guide 1s ease-in-out infinite}
+.slot{min-height:120px}
+.scard{background:var(--night);border-radius:14px;padding:12px;display:grid;gap:8px;box-shadow:0 4px 0 #14183a}
+.scard .sh{font-family:var(--f-display);font-weight:800;font-size:15px}
+.ppre{font-family:var(--f-term);font-size:14px;line-height:1.6;color:var(--ink);background:#0f1229;border-radius:10px;padding:8px 10px;word-break:break-all}
+.ppre .c{color:var(--ok)}
+.slide{animation:slidein .35s ease-out}
+@keyframes slidein{from{transform:translateX(36px);opacity:0}}
+.pm{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;font-size:13px;background:#0f1229;border-radius:10px;padding:10px;font-family:var(--f-term)}
+.pm b{font-size:15px;color:var(--ink);font-weight:400}
+.pm .ok{color:var(--ok);font-family:var(--f-body)}.pm .ng{color:var(--attacker);font-family:var(--f-body)}
+.plist{display:grid;gap:6px}
+.prow{all:unset;box-sizing:border-box;cursor:pointer;touch-action:manipulation;display:grid;grid-template-columns:1fr auto;gap:2px 8px;padding:9px 11px;border-radius:12px;background:var(--night);box-shadow:0 3px 0 #14183a;font-size:13px;line-height:1.5;transition:transform .06s,box-shadow .06s}
+.prow:active{transform:translateY(2px);box-shadow:0 1px 0 #14183a}
+.prow.sel{outline:3px solid var(--amber);outline-offset:1px}
+.prow:focus-visible{outline:3px solid var(--ink);outline-offset:2px}
+.prow small{grid-column:1/-1;color:var(--muted);font-size:12px;font-family:var(--f-term);word-break:break-all}
+.prow.hit{animation:hit .3s}.prow.sad{animation:sad .4s}
+.prow.gone{opacity:.25;pointer-events:none}
+.ptag{font-size:11px;font-weight:800;padding:2px 8px;border-radius:99px;background:var(--panel);color:var(--muted);white-space:nowrap}
+.ptag.bad{color:#ffb3b0}.ptag.ok{color:var(--ok)}
 .shake{animation:shk .35s}
 @keyframes shk{20%{transform:translate(-6px,2px)}40%{transform:translate(5px,-3px)}60%{transform:translate(-4px,1px)}80%{transform:translate(3px,0)}}
 @media (prefers-reduced-motion:reduce){.shake,.door.hit,.door.sad,.act.hit,.act.sad,.act.guide,.ip.guide,.pt.sad,.pt.gone,.ln,.bin.hit,.bin.sad,.bin.guide,.acts.hint .act,.pointer,.cue,.cue i{animation:none}.door,.big,.act,.bin{transition:none}}
@@ -278,9 +314,10 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
     </div>
     <div class="timebar"><i id="time"></i></div>
   </div>
-  <div class="skywrap" id="sky"><canvas id="cv"></canvas><div class="skylabel">インターネット</div>
+  <div class="skywrap" id="sky" data-only="1 2-1 2-2 2-3"><canvas id="cv"></canvas><div class="skylabel">インターネット</div>
     <div class="logs" id="logs" data-only="2-3" hidden></div><div class="pointer" id="pointer23" hidden>▼ 次はこれ</div>
     <div class="cue" id="cue" hidden><b id="cueB"></b><span id="cueS"></span><i aria-hidden="true">▼</i></div></div>
+  <div class="panel" id="panel" data-only="3-1 3-2 4 5 6 7 8 9-1 9-2 10-1 10-2" hidden></div>
   <div class="doors" id="doors" data-only="1"></div>
   <div class="gate" id="gate" data-only="2-2" hidden>
     <div class="door door22" id="door22"><span class="num">22</span><span class="nm">SSH</span><span class="st" id="door22st">パスワード</span></div>
@@ -336,6 +373,21 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
       <button class="big" id="dStart">はじめる</button>
       <button class="sub" id="dZukan">用語図鑑を見る</button>
     </div>
+  </div>
+</div>
+
+<div class="overlay" id="allclear" hidden>
+  <div class="card">
+    <div class="eyebrow">ALL CLEAR</div>
+    <h1>全ステージクリア！</h1>
+    <div class="stars">★★★</div>
+    <p>サーバーを守る仕事を、最後まで守りきった。</p>
+    <div class="real">
+      <div>次は、本物のLinuxで練習しよう。自分のパソコンにLinuxを入れる（仮想マシンでもOK）と、このゲームのコマンドを、そのまま打って試せる。</div>
+      <code>ls ~/.ssh</code>
+      <div class="m">まずはここから。鍵を見るだけなら、何も壊れない</div>
+    </div>
+    <div class="btns"><button class="big" id="allBack">ステージ一覧へ</button></div>
   </div>
 </div>
 
@@ -484,7 +536,49 @@ const STAGES=[
             <p>★は「クリア」「まちがいなし」「22秒以内」で1つずつ。</p>`
         }}
     ]},
-  {id:3, name:'緊急パッチ',   sub:'脆弱性を確認して更新する'},
+  {id:3, name:'緊急パッチ',   sub:'脆弱性を確認して更新する', ready:true,
+    rounds:[
+      {name:'対象を見極める',
+        hud:['3-1 対象を見極める','どのサーバーが危ないか'],
+        room:'<span class="chip">サーバー</span><span class="arrow">→</span><span class="chip">すぐ更新 ／ 対象外 ／ 引っ越し</span>',
+        cue:['どれが危ない？','バージョンの番号を読んで、振り分けよう'],
+        brief:{
+          situation:['2026年10月21日、PHPとNode.jsに深刻な<b>脆弱性</b>（作った人も気づいていなかった弱点）が同時に見つかった。世界中のサイトが、いっせいに直しを急いでいる。あなたのサーバーも、対象かどうか確かめる必要がある。'],
+          doorsTitle:'画面に出てくるもの',
+          doors:[
+            ['node -v','Node.js のバージョン','v22.20.0 のような番号。22 が大きな版、20 が小さな版'],
+            ['php -v','PHP のバージョン','PHP 8.3.20 のような番号。入っていなければ command not found'],
+            ['修正版','直したあとの版（パッチ）','Node.js は 22.23.4／24.22.1／26.12.1 以上、PHP は 8.2.35／8.3.36／8.4.27／8.5.12 以上']
+          ],
+          real:['まず「自分のサーバーが対象か」を見分ける。修正版より古い版は<b>すぐ更新</b>。修正版と同じか新しい版、または入っていないものは<b>対象外</b>。サポートが終わった版（Node.js 20以下、PHP 8.1以下）には修正版が出ないので、<b>引っ越し</b>が必要。'],
+          howto:`<div class="legend">
+              <div><span class="dot r"></span>すぐ更新 ＝ 修正版より古い。修正版まで上げる</div>
+              <div><span class="dot k"></span>対象外 ＝ 修正版と同じか新しい。または入っていない</div>
+              <div><span class="dot d"></span>引っ越し ＝ サポート終了。新しい版へ移す</div>
+            </div>
+            <p>10台のカードを、3つのボタンで振り分ける。まちがいは3回まで。</p>`
+        }},
+      {name:'正しい手順',
+        hud:['3-2 正しい手順','更新のあとの再起動まで'],
+        room:'<span class="chip">apt</span><span class="arrow">→</span><span class="chip">pm2</span><span class="arrow">→</span><span class="chip">再起動</span>',
+        cue:['順番どおりに','上から押していこう。まちがえると、古いまま動き続ける'],
+        brief:{
+          situation:['修正版（パッチ）は入れた。でも、それで終わりではない。<b>動いているプログラムは、古い版のまま</b>。再起動しないと、新しい版は使われない。'],
+          doorsTitle:'手順に出てくるもの',
+          doors:[
+            ['apt','パッケージを更新するコマンド','apt update で一覧を取り、apt upgrade で新しい版にする'],
+            ['pm2','プログラムを動かし続ける管理ツール','pm2 restart で起き直し、pm2 list で新しい版かを見る'],
+            ['再起動','動いているものを止めて、起き直す','OSの心臓部（カーネル）が新しくなったときは、OSごと再起動する']
+          ],
+          real:['順番は、<b>更新 → プログラムの再起動 → 確認 → OSの再起動</b>。更新しただけでは、動いているものは変わらない。ここを飛ばすと「直したつもり」で危ないまま動き続ける。'],
+          howto:`<div class="legend">
+              <div><span class="dot d"></span>上から順番に、ボタンを押す</div>
+              <div><span class="dot r"></span>まちがえると、ミスになる（3回で失敗）</div>
+              <div><span class="dot k"></span>「pm2 list」は、再起動したあとでないと新しい版にならない</div>
+            </div>
+            <p>すべて押せたらクリア。★は「まちがいなし」「70秒以内」で1つずつ。</p>`
+        }}
+    ]},
   {id:4, name:'古い料理人',   sub:'サポート終了版には修正が出ない'},
   {id:5, name:'部品屋の罠',   sub:'npmの部品の乗っ取り'},
   {id:6, name:'秘密の置き忘れ',sub:'APIキーをGitHubに公開してしまう'},
@@ -515,7 +609,7 @@ const GLOSSARY=[
     s:'関係ない人に読めないよう、中身を変換すること',e:'自分たちだけが読み方を知っている暗号で、手紙を書くこと'},
   {id:'nginx',   w:'nginx（エンジンエックス）',at:['1'],a:['nginx'],
     s:'Webの受付係。来た通信を中のプログラムへ取り次ぐ',e:'ホテルのフロント。お客さんは直接部屋には行かず、フロントが案内する'},
-  {id:'node',    w:'Node.js',         at:['1'],a:['Node.js','Node'],
+  {id:'node',    w:'Node.js',         at:['1','3-1','3-2','4'],a:['Node.js','Node'],
     s:'JavaScriptでサーバーのプログラムを動かすしくみ',e:'お店の厨房の料理人。客席（外）から直接は入らせない'},
   {id:'db',      w:'データベース（DB）',at:['1'],a:['データベース','DB'],
     s:'データを整理して、しまっておく倉庫',e:'お店の金庫つき倉庫。外から直接入れたら、全部持っていかれる'},
@@ -561,7 +655,7 @@ const GLOSSARY=[
     s:'サーバーのプログラムを起動・停止・再起動するコマンド',e:'お店の機械のスイッチ盤'},
   {id:'nano',    w:'nano（ナノ）',    at:['2-2'],a:['nano'],
     s:'黒い画面で使う、かんたんな文字の編集ソフト',e:'メモ帳。設定ファイルを書き直すのに使う'},
-  {id:'apt',     w:'apt',             at:['2-2'],a:['apt'],
+  {id:'apt',     w:'apt',             at:['2-2','3-2'],a:['apt'],
     s:'Linux（Ubuntu）でソフトを入れる・更新するコマンド',e:'アプリストア。名前を言えば取り寄せて入れてくれる'},
   {id:'f2b',     w:'fail2ban',        at:['2-2','2-3'],a:['fail2ban'],
     s:'何度も失敗する相手を、自動でブロックするソフト',e:'同じ人が何度も暗証番号をまちがえたら、しばらく出入り禁止にする警備員'},
@@ -580,7 +674,23 @@ const GLOSSARY=[
   {id:'terminal',w:'ターミナル',      at:['1'],a:['ターミナル'],
     s:'コマンドを打つための黒い画面',e:'サーバーと文字でやりとりするチャット窓'},
   {id:'vps',     w:'VPS（ブイピーエス）',at:['1'],a:['VPS'],
-    s:'インターネット上に借りている、自分専用のサーバー',e:'大きなマンション（データセンター）の一室を借りている感じ'}
+    s:'インターネット上に借りている、自分専用のサーバー',e:'大きなマンション（データセンター）の一室を借りている感じ'},
+  {id:'php',     w:'PHP（ピーエイチピー）',at:['3-1','3-2'],a:['PHP'],
+    s:'Webサイトのプログラムを動かす言語（とその仕組み）',e:'お店の厨房で使うレシピ本の種類のひとつ。Webの料理を作るための本'},
+  {id:'vuln',    w:'脆弱性（ぜいじゃくせい）',at:['3-1','4'],a:['脆弱性'],
+    s:'作った人も気づいていなかった、攻撃されうる弱点',e:'建物の窓の鍵が壊れている状態。見つかったら、すぐ直さないと泥棒が入る'},
+  {id:'patch',   w:'パッチ（修正版）',at:['3-1','3-2'],a:['パッチ','修正版'],
+    s:'脆弱性を直すための、修正のプログラム（修正版）',e:'壊れた窓の鍵を交換する修理品'},
+  {id:'version', w:'バージョン',      at:['3-1'],a:['バージョン'],
+    s:'ソフトの「第何版か」を表す番号',e:'商品の型番。22.20.0 の 22 は大きな版、20 は小さな版'},
+  {id:'restart', w:'再起動',          at:['3-2'],a:['再起動'],
+    s:'動いているものを、いったん止めてから起動し直すこと',e:'パソコンの電源を入れ直す。アプリも閉じて開き直すと、新しい版が使われる'},
+  {id:'pm2',     w:'pm2（ピーエムツー）',at:['3-2'],a:['pm2'],
+    s:'Node.jsのプログラムを動かし続けて管理するツール',e:'店の看板を管理する店員。倒れたら起こして、開店し続けさせる'},
+  {id:'kernel',  w:'カーネル',        at:['3-2'],a:['カーネル'],
+    s:'OSの心臓部。OSの中で一番中心になるプログラム',e:'家の配電盤。取り替えると、電源を入れ直す（再起動）まで反映されない'},
+  {id:'eolsup',  w:'サポート終了',    at:['3-1','4'],a:['サポート終了'],
+    s:'修正のプログラムが、もう配られなくなった状態',e:'メーカーが部品の在庫を終えた製品。壊れても直してもらえない'}
 ];
 const GBYID=Object.fromEntries(GLOSSARY.map(g=>[g.id,g]));
 const GMATCH=GLOSSARY.flatMap(g=>g.a.map(a=>({a,g}))).sort((x,y)=>y.a.length-x.a.length);
@@ -611,7 +721,7 @@ function glossify(root,seen=new Set()){
 let PAUSE=false,gBack=null;
 function openCard(id,from){
   const g=GBYID[id];if(!g)return;
-  gBack=from||document.activeElement;PAUSE=!!(S&&S.running);
+  gBack=from||document.activeElement;PAUSE=!!((S&&S.running)||RUN.running);
   document.getElementById('gW').textContent=g.w;
   document.getElementById('gS').textContent=g.s;
   document.getElementById('gE').textContent=g.e;
@@ -839,7 +949,7 @@ function finish(win,st,o){
   const nb=document.getElementById('nextStage'),ag=document.getElementById('again');
   let nx;
   if(s.rounds&&rnd<s.rounds.length){const n=rnd+1;nx={label:`次のラウンドへ（${cur}-${n} ${s.rounds[n-1].name}）`,go:()=>openBrief(cur,'play',n)}}
-  else{const n=stageOf(cur+1);nx=!n?{label:'これで全ステージおしまい'}:n.ready?{label:`次のステージへ（${n.id} ${n.name}）`,go:()=>openStage(n.id)}:{label:`<span class="lock">${LOCK}</span> ステージ${n.id}「${n.name}」は準備中`}}
+  else{const n=stageOf(cur+1);nx=!n?{label:'全ステージクリア！',go:()=>{show('allclear')}}:n.ready?{label:`次のステージへ（${n.id} ${n.name}）`,go:()=>openStage(n.id)}:{label:`<span class="lock">${LOCK}</span> ステージ${n.id}「${n.name}」は準備中`}}
   nextGo=nx.go||null;
   nb.hidden=!win;nb.disabled=!nextGo;nb.innerHTML=nx.label;
   ag.className=win?'sub':'big';
@@ -1383,7 +1493,7 @@ function end23(win,why){
 }
 
 /* ---------- screens ---------- */
-function show(id){['select','brief','result','zukan','drill'].forEach(k=>{const el=document.getElementById(k);if(el)el.hidden=k!==id})}
+function show(id){['select','brief','result','zukan','drill','allclear'].forEach(k=>{const el=document.getElementById(k);if(el)el.hidden=k!==id})}
 function renderList(){
   document.getElementById('stageList').innerHTML=STAGES.map(s=>s.ready
     ?`<button class="sl" data-id="${s.id}"><span class="sn">${s.id}</span><span class="sm"><b>${s.name}</b><small>${s.sub}</small>${recHtml(s.id)}</span><span class="go">›</span></button>`
@@ -1401,7 +1511,7 @@ function recHtml(id){
   if(!r||(!r.last&&!r.best))return '<span class="rec">まだ遊んでいません</span>';
   return `<span class="rec"><span class="rs">${starsHtml(r.best)}</span>クリア ${r.clears}回${r.last?` ・ 最後に遊んだ日 ${dayLabel(r.last)}`:''}</span>`;
 }
-function openList(){if(S)S.running=false;['cue','pointer','pointer21','pointer23'].forEach(id=>document.getElementById(id).hidden=true);renderList();show('select');const f=document.querySelector('.sl:not(.locked)');f&&f.focus()}
+function openList(){if(S)S.running=false;runStop();['cue','pointer','pointer21','pointer23'].forEach(id=>document.getElementById(id).hidden=true);renderList();show('select');const f=document.querySelector('.sl:not(.locked)');f&&f.focus()}
 /* ブリーフィング。mode='play'：遊ぶ前（2回目からはスキップできる）／'review'：結果画面から読み返す */
 let briefMode='play';
 function openBrief(id,mode,r){
@@ -1540,17 +1650,172 @@ document.getElementById('dStart').addEventListener('click',e=>e.currentTarget.da
 document.getElementById('dZukan').addEventListener('click',()=>{if(DR)DR.running=false;openZukan()});
 document.getElementById('dBack').addEventListener('click',()=>{if(DR)DR.running=false;openList()});
 
+/* ---------- ステージ3以降の共通部品：#panel に画面を描き、RUN が時間を進める ---------- */
+const P=document.getElementById('panel');
+const RUN={def:null,running:false,t:0,last:0,cueT:0};
+let RAF=0;
+const firstTime=()=>{const s=stageOf(cur);return s.rounds?!rrec(rnd).played:!rec(cur).last};
+function lives(n,max){return Array.from({length:max},(_,k)=>`<i class="pip${k<n?' on':''}"></i>`).join('')}
+function setLives(n,max){const el=document.getElementById('pl');if(el)el.innerHTML=lives(n,max)}
+function mount(html){P.innerHTML=`<div class="pcue" id="pcue" hidden></div><div class="pguide" id="pguide" hidden>▼ 次はこれ</div>`+html;glossify(P)}
+function pcue(t,sub){const c=document.getElementById('pcue');if(!c)return;c.innerHTML=`<b>${t}</b><span>${sub}</span>`;c.hidden=false}
+// 初めて遊ぶときだけ、次に押すものを光らせて「▼ 次はこれ」を出す
+function guideOn(el){
+  P.querySelectorAll('.guide').forEach(x=>x.classList.remove('guide'));
+  const g=document.getElementById('pguide');if(!g)return;
+  if(!el||!firstTime()){g.hidden=true;return}
+  el.classList.add('guide');g.hidden=false;
+  const r=P.getBoundingClientRect(),q=el.getBoundingClientRect();
+  g.style.left=(q.left+q.width/2-r.left)+'px';g.style.top=(q.top-r.top+P.scrollTop-10)+'px';
+}
+function strike(el){if(el){el.classList.remove('sad');void el.offsetWidth;el.classList.add('sad')}sfx.sad();buzz([20,30,20]);flashRoom('bad')}
+function okFx(el){if(el){el.classList.remove('hit');void el.offsetWidth;el.classList.add('hit')}sfx.done();buzz(12);flashRoom('good')}
+function runStop(){RUN.running=false;if(RAF)cancelAnimationFrame(RAF);RAF=0;const c=document.getElementById('pcue');if(c)c.hidden=true}
+function runStart(def){
+  runStop();RUN.def=def;RUN.t=0;RUN.running=true;RUN.last=performance.now();
+  term('$ _','# 画面のボタンを押すと、本物のコマンドがここに出ます');
+  def.init();const c=unit().cue;if(c)pcue(c[0],c[1]);RUN.cueT=c?2.6:0;
+  RAF=requestAnimationFrame(runLoop);
+}
+function runLoop(now){
+  if(!RUN.running)return;
+  const dt=Math.min(.05,(now-RUN.last)/1000);RUN.last=now;
+  if(!PAUSE){
+    if(RUN.cueT>0){RUN.cueT-=dt;if(RUN.cueT<=0){const c=document.getElementById('pcue');if(c)c.hidden=true}}
+    else{
+      RUN.t+=dt;document.getElementById('time').style.width=Math.min(100,RUN.t/RUN.def.dur*100)+'%';
+      if(RUN.def.update)RUN.def.update(dt);
+      if(RUN.running&&RUN.t>=RUN.def.dur)RUN.def.onTime();
+    }
+  }
+  if(RUN.running)RAF=requestAnimationFrame(runLoop);
+}
+function runEnd(win,st,o){if(!RUN.running)return;runStop();win?sfx.win():sfx.lose();buzz(win?[20,60,20,60,40]:[80]);finish(win,st,o)}
+P.addEventListener('click',e=>{const b=e.target.closest('[data-act]');if(!b||!RUN.running||b.disabled||!RUN.def)return;RUN.def.tap(b.dataset.act,b)});
+function rvRows(list){return list.map(([pt,t,ok])=>`<div class="rv"><span class="pt">${pt}</span><span class="why">${t}</span><span class="mk ${ok===null?'na':ok?'ok':'ng'}">${ok===null?'－':ok?'○':'×'}</span></div>`).join('')}
+
+/* ===== ステージ3-1「対象を見極める」：バージョンを読んで、3つに振り分ける ===== */
+const FIX={22:'22.23.4',24:'24.22.1',26:'26.12.1'},FIXPHP={'8.2':'8.2.35','8.3':'8.3.36','8.4':'8.4.27','8.5':'8.5.12'};
+const VLABEL={update:'すぐ更新',skip:'対象外',eol:'引っ越し'};
+const vcmp=(a,b)=>{const x=a.split('.').map(Number),y=b.split('.').map(Number);for(let i=0;i<3;i++){const d=(x[i]||0)-(y[i]||0);if(d)return d}return 0};
+// 表示された結果から「正しい振り分け」を決める
+function judge(out){
+  if(/not found/.test(out))return 'skip';
+  let m=out.match(/^v(\d+)\.(\d+\.\d+)$/);
+  if(m){const major=+m[1];if(major<=20)return 'eol';return FIX[major]&&vcmp(out.slice(1),FIX[major])<0?'update':'skip'}
+  m=out.match(/^PHP (\d+)\.(\d+)\.(\d+)$/);
+  if(m){if(+m[1]===8&&+m[2]<=1)return 'eol';const line=m[1]+'.'+m[2];return FIXPHP[line]&&vcmp(out.slice(4),FIXPHP[line])<0?'update':'skip'}
+  return 'skip';
+}
+const HOSTS='ABCDEFGHIJ';
+function show31(){
+  const c=RUN.q[RUN.i];
+  document.getElementById('qN').textContent=`${RUN.i+1}/${RUN.q.length}`;
+  document.getElementById('slot').innerHTML=`<div class="scard slide"><div class="sh">サーバー ${c.host}</div><div class="ppre"><span class="c">$ ${c.cmd}</span><br>${c.out}</div></div>`;
+  term(`$ ${c.cmd}`,`# サーバー${c.host} の結果：${c.out}`);
+  guideOn(RUN.i<2?document.querySelector(`[data-act="${c.v}"]`):null);
+}
+function r31(st,win,why){return {eyebrow:win?'STAGE 3-1 CLEAR':'STAGE 3-1',title:win?'対象がわかった！':(why||'まちがえすぎた'),
+  summary:win?`${RUN.q.length}台を振り分けた（まちがい ${RUN.mist}回）。`:'まちがえが3回たまった。バージョンの数字だけを、落ち着いて読もう。',
+  review:rvRows([
+    ['すぐ更新','修正版より古い版（例：Node.js v22.20.0 は 22.23.4 以上へ）。同じ大きな版の中で、修正版の番号まで上げる',true],
+    ['対象外','もう修正版（例：v22.23.4）か、PHPが入っていない（php: command not found）。直す必要はない',true],
+    ['引っ越し','サポート終了。Node.js 20以下、PHP 8.1以下は、修正版が出ない。新しい版へ引っ越す（ステージ4で学ぶ）',true]]),
+  extra:`<div class="real"><div>振り返り：<b>バージョンは「第何版か」の番号</b>。何が危ないかは、この番号と修正版の番号を比べて決める。</div>
+    <code>node -v</code><div class="m">Node.js のバージョンを見る</div>
+    <code>php -v</code><div class="m">PHP のバージョンを見る（入っていなければ command not found）</div></div>`,
+  next:win?'次は3-2「正しい手順」。修正版を入れたあと、動いているプログラムをどう新しくするか。':''};}
+const U31={dur:90,
+  init(){
+    RUN.q=shuffle(['v20.19.0','v22.20.0','PHP 8.1.2','PHP 8.3.20','v24.22.1','PHP 8.4.27','v26.11.0','php: command not found','PHP 8.5.5','v22.23.4'])
+      .map((o,i)=>({out:o,host:HOSTS[i],cmd:o[0]==='v'?'node -v':'php -v',v:judge(o)}));
+    RUN.i=0;RUN.mist=0;
+    mount(`<div class="pbar"><span>台数 <b id="qN"></b></span><span class="sp"></span><span class="plives" id="pl">${lives(3,3)}</span></div>
+      <div class="slot" id="slot"></div>
+      <div class="acts3">
+        <button class="act" data-act="update">すぐ更新</button>
+        <button class="act" data-act="skip">対象外</button>
+        <button class="act" data-act="eol">引っ越し</button>
+      </div>
+      <p class="pnote" id="pnote">バージョンの番号を読んで、3つのボタンで振り分けよう。</p>`);
+    show31();
+  },
+  tap(act,el){
+    const c=RUN.q[RUN.i];
+    if(act===c.v){
+      okFx(el);RUN.i++;
+      if(RUN.i>=RUN.q.length){const st=1+(RUN.mist===0?1:0)+(RUN.t<=60?1:0);return runEnd(true,st,r31(st,true))}
+      show31();document.getElementById('pnote').textContent=`正解。${VLABEL[act]}でOK。`;
+    }else{
+      RUN.mist++;strike(el);setLives(3-RUN.mist,3);
+      document.getElementById('pnote').textContent=`ちがう。${c.out} は「${VLABEL[c.v]}」だよ。`;
+      if(RUN.mist>=3)runEnd(false,0,r31(0,false));
+    }
+  },
+  onTime(){runEnd(false,0,r31(0,false,'時間切れ'))}
+};
+
+/* ===== ステージ3-2「正しい手順」：更新・再起動・確認を、正しい順番で ===== */
+const STEP32=[['upd','sudo apt update','一覧を取る（まだ何も変わらない）'],['upg','sudo apt upgrade','パッケージを新しい版にする'],['rst','pm2 restart all','動いているプログラムを、新しい版で起き直す'],['lst','pm2 list','新しい版で動いているか確かめる'],['reb','sudo reboot','OSを再起動して、カーネルの更新を反映']];
+function pmShow(){const el=document.getElementById('pm');if(!el)return;
+  el.innerHTML=RUN.rs?`<span>node app.js</span><b>v22.23.4</b><span class="ok">新しい版で動いている</span>`
+    :`<span>node app.js</span><b>v22.20.0</b><span class="ng">${RUN.up?'apt で更新したけど、まだ古いまま':'古い版'}</span>`}
+function next32(){const exp=STEP32[RUN.n];guideOn(RUN.n<2?document.querySelector(`[data-act="${exp[0]}"]`):null)}
+function r32(win,st,why){return {eyebrow:win?'STAGE 3-2 CLEAR':'STAGE 3-2',title:win?'新しい版で動いている！':(why||'まちがえすぎた'),
+  summary:win?'更新と再起動をそろえて、動いているプログラムを新しい版にできた。':'順番がちがうと、直ったつもりで古いまま動き続けることになる。',
+  review:rvRows([
+    ['apt update','新しい部品の一覧を取る。これだけでは、何も変わらない',true],
+    ['apt upgrade','入っているものを新しい版にする。ただし、動いている分はまだ古い',true],
+    ['pm2 restart','動いているプログラムを起き直す。ここを忘れると、古い版のまま動き続ける（落とし穴）',true],
+    ['pm2 list','新しい版で動いているか、目で確かめる',true],
+    ['reboot','OSの心臓部（カーネル）が新しくなったときに、再起動して反映する',true]]),
+  extra:`<div class="real"><div>振り返り：<b>更新しただけでは、動いているものは変わらない</b>。</div>
+    <code>apt list --upgradable</code><div class="m">更新できるものがあるか見る</div>
+    <code>pm2 list</code><div class="m">動いているプログラムと、その版を見る</div></div>
+    <div class="warn"><b>安全メモ</b><ul><li>再起動すると、サーバーは数分止まる。サービスを止めてもいいか、先に決める</li><li>再起動のあと、SSHで入れるか必ず確かめる。今の接続を切らず、別の窓で入れるか見てから閉じる</li></ul></div>`,
+  next:win?'次はステージ4「古い料理人」。サポートが終わった版には、もう修正が出ない。':''};}
+const U32={dur:100,
+  init(){
+    RUN.n=0;RUN.mist=0;RUN.up=false;RUN.rs=false;
+    mount(`<div class="pbar"><span>手順 <b id="qN">0/5</b></span><span class="sp"></span><span class="plives" id="pl">${lives(3,3)}</span></div>
+      <div class="pm" id="pm"></div>
+      <div class="acts">${shuffle([...STEP32]).map(([k,c,say])=>`<button class="act" data-act="${k}"><span class="al">${c}</span><small>${say}</small></button>`).join('')}</div>
+      <p class="pnote" id="pnote">順番どおりに、ボタンを押そう。</p>`);
+    pmShow();next32();
+  },
+  tap(act,el){
+    const exp=STEP32[RUN.n];
+    if(act!==exp[0]){
+      RUN.mist++;strike(el);setLives(3-RUN.mist,3);
+      document.getElementById('pnote').textContent=act==='lst'&&!RUN.rs?'まだ古いまま！ 再起動していないので、pm2 list は古い版を表示する。':'順番がちがう。';
+      if(RUN.mist>=3)runEnd(false,0,r32(false,0));
+      return;
+    }
+    okFx(el);RUN.n++;if(act==='upg')RUN.up=true;if(act==='rst')RUN.rs=true;
+    term(`$ ${exp[1]}`,`# ${exp[2]}`);
+    el.disabled=true;el.classList.add('done');
+    document.getElementById('qN').textContent=`${RUN.n}/5`;
+    pmShow();
+    if(RUN.n>=5){const st=1+(RUN.mist===0?1:0)+(RUN.t<=70?1:0);return runEnd(true,st,r32(true,st))}
+    document.getElementById('pnote').textContent='よくできた。次の手順へ。';
+    next32();
+  },
+  onTime(){runEnd(false,0,r32(false,0,'時間切れ'))}
+};
+
 const GAMES={
   '1':()=>{newGame();requestAnimationFrame(loop)},
   '2-1':()=>{newGame21();requestAnimationFrame(loop21)},
   '2-2':()=>{newGame2();requestAnimationFrame(loop2)},
-  '2-3':()=>{newGame23();requestAnimationFrame(loop23)}
+  '2-3':()=>{newGame23();requestAnimationFrame(loop23)},
+  '3-1':()=>runStart(U31),
+  '3-2':()=>runStart(U32)
 };
 function start(){
   audio();show(null);
   const r=unitRec();if(!r.seen){r.seen=true;saveRec()}
   if(S)S.running=false;
-  setLayout();resize();GAMES[unitKey()]();S.last=performance.now();
+  setLayout();resize();runStop();GAMES[unitKey()]();if(S)S.last=performance.now();
 }
 document.getElementById('stageList').addEventListener('click',e=>{const b=e.target.closest('.sl:not(.locked)');if(b)openStage(+b.dataset.id)});
 document.getElementById('start').addEventListener('click',start);
@@ -1559,6 +1824,7 @@ document.getElementById('briefBack').addEventListener('click',()=>briefMode==='r
 document.getElementById('reread').addEventListener('click',()=>openBrief(cur,'review'));
 document.getElementById('again').addEventListener('click',start);
 document.getElementById('nextStage').addEventListener('click',()=>nextGo&&nextGo());
+document.getElementById('allBack').addEventListener('click',openList);
 document.getElementById('bRounds').addEventListener('click',e=>{const b=e.target.closest('.rtab:not(:disabled)');if(b)openBrief(cur,'play',+b.dataset.r)});
 ['hudBack','resultBack'].forEach(id=>document.getElementById(id).addEventListener('click',openList));
 resize();draw(0);renderList();
