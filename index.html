@@ -338,7 +338,7 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
   <div class="skywrap" id="sky" data-only="1 2-1 2-2 2-3"><canvas id="cv"></canvas><div class="skylabel">インターネット</div>
     <div class="logs" id="logs" data-only="2-3" hidden></div><div class="pointer" id="pointer23" hidden>▼ 次はこれ</div>
     <div class="cue" id="cue" hidden><b id="cueB"></b><span id="cueS"></span><i aria-hidden="true">▼</i></div></div>
-  <div class="panel" id="panel" data-only="3-1 3-2 4 5 6 7 8 9-1 9-2 10-1 10-2 11-1 11-2 11-3 12-1 12-2 12-3 13-1 13-2 13-3" hidden></div>
+  <div class="panel" id="panel" data-only="3-1 3-2 4 5 6 7 8 9-1 9-2 10-1 10-2 11-1 11-2 11-3 12-1 12-2 12-3 13-1 13-2 13-3 14-1 14-2 14-3" hidden></div>
   <div class="doors" id="doors" data-only="1"></div>
   <div class="gate" id="gate" data-only="2-2" hidden>
     <div class="door door22" id="door22"><span class="num">22</span><span class="nm">SSH</span><span class="st" id="door22st">パスワード</span></div>
@@ -918,6 +918,39 @@ const STAGES=[
           real:['リクエストとレスポンスを、自分で組み立てることが、Webの調査の基本。curl を使えば、同じことを本物のコマンドでできる。'],
           howto:`<div class="legend"><div><span class="dot d"></span>部品を押すと、レシピに下から足される（最大3手）</div><div><span class="dot k"></span>実行で、フラグが出れば勝ち</div></div>
             <p>3体のボス。</p><p>★は「まちがいなし」「160秒以内」で1つずつ。</p>`}}
+    ]},
+  {id:14, name:'Pwn', sub:'箱からはみ出す入力と、数値の並び順で、プログラムを乗っ取る', ready:true,
+    rounds:[
+      {name:'パズル',hud:['14-1 パズル','箱の大きさと、届く長さを数える'],
+        room:'<span class="chip">入力</span><span class="arrow">→</span><span class="chip">箱（バッファ）</span><span class="arrow">→</span><span class="chip">admin</span>',
+        cue:['模擬のプログラムに入力を送ろう','長さを合わせて、変数に届かせる'],
+        brief:{
+          situation:['練習用のプログラムには、名前を入れる<b>箱</b>（バッファ）と、その隣に<b>admin</b>（管理者かどうかを覚える変数）がある。箱より長い入力は、あふれて隣の変数を書き換える。'],
+          doorsTitle:'道具と手がかり',
+          doors:[['入力を N 文字にする','N を変えて、入力の長さを決める','箱の大きさを超えると、隣に届く'],['プログラムに入力を渡す','壊れたか、変数が書き換わったかを見る','ちょうどの長さだけ、フラグが出る'],['値を逆順にする','数値は下の桁のバイトから並ぶ（リトルエンディアン）','ボス戦で使う']],
+          real:['実際のプログラムでも、箱より長い入力を正しく止めないと、隣の変数や戻り先が書き換わる。これが Pwn（プログラムの弱点を突く問題）の入り口。'],
+          howto:`<div class="legend"><div><span class="dot d"></span>N を変えて、入力の長さを決める。マスが点灯するところを見る</div><div><span class="dot k"></span>フラグが出たら「答えを提出」</div></div>
+            <p>4問。全体で110秒。箱の大きさと、admin の位置を読んで、ちょうどの長さを見つけよう。</p><p>★は「やり直しが3回以内」「70秒以内」で1つずつ。</p>`}},
+      {name:'ドリル',hud:['14-2 ドリル','ヒント語から、手口を当てる'],
+        room:'<span class="chip">問題文</span><span class="arrow">→</span><span class="chip">ヒント語</span><span class="arrow">→</span><span class="chip">手口</span>',
+        cue:['ヒント語を読もう','あふれさせるか、並び順を変えるか'],
+        brief:{
+          situation:['Pwnの問題文には、手口を示すヒント語がある。「箱」「あふれる」「隣の変数」は、箱からはみ出させる手口。「下の桁」「逆順」「リトルエンディアン」は、数値を逆順に送る手口。'],
+          doorsTitle:'ヒント語の見分け方',
+          doors:[['箱・あふれる・隣の変数','箱からはみ出させる（バッファオーバーフロー）','長さを数えて、ちょうどを選ぶ'],['下の桁・逆順・並び順','数値を逆順に送る（リトルエンディアン）','バイトの向きに注意']],
+          real:['似た言葉に注意。「値」は、どの手口にもなりうる。箱の話か、並び順の話かで決めよう。'],
+          howto:`<div class="legend"><div><span class="dot k"></span>問題文を読んで、手口を2つから選ぶ</div><div><span class="dot r"></span>まちがいは3回まで</div></div>
+            <p>8問。問題は自動で作られる（毎回違う）。</p><p>★は「まちがいなし」「70秒以内」で1つずつ。</p>`}},
+      {name:'ボス戦',hud:['14-3 ボス戦','道具を並べて、フラグを出す'],
+        room:'<span class="chip">入力</span><span class="arrow">レシピ（3手まで）</span><span class="arrow">→</span><span class="chip">フラグ</span>',
+        cue:['ボスのプログラム','入力の長さか、数値の並び順を決めよう'],
+        brief:{
+          situation:['ボスのプログラムは、箱からはみ出した先の変数を書き換えないと、フラグを出さない。道具を順番に並べて、入力を作り、結果を見る。'],
+          doorsTitle:'レシピの部品',
+          doors:[['入力を N 文字にする','箱の大きさを超える長さを選ぶ','N はレシピの中で変えられる'],['プログラムに入力を渡す','結果（フラグか、壊れたか）を見る','最後に置く'],['値を逆順にする','リトルエンディアン','ビッグエンディアンは、この問題では違う']],
+          real:['入力の長さと、数値の並び順。このふたつを合わせられれば、模擬のプログラムは答えを出す。'],
+          howto:`<div class="legend"><div><span class="dot d"></span>部品を押すと、レシピに下から足される（最大3手）</div><div><span class="dot k"></span>実行で、フラグが出れば勝ち</div></div>
+            <p>3体のボス。</p><p>★は「まちがいなし」「150秒以内」で1つずつ。</p>`}}
     ]}
 ];
 
@@ -1127,7 +1160,13 @@ const GLOSSARY=[
   {id:'request', w:'リクエスト・レスポンス',at:['13-1','13-3'],a:['リクエスト','レスポンス'],
     s:'リクエストは「ページをください」という頼み。レスポンスは、サイトが返す答え',e:'注文書（リクエスト）と、届いた商品と納品書（レスポンス）'},
   {id:'htmlsrc', w:'HTML（エイチティーエムエル）',at:['13-2','13-3'],a:['HTML'],
-    s:'Webページの中身を書く言葉。コメントや hidden 欄も書ける',e:'ページの設計図。見えない場所に、メモを書き込める'}
+    s:'Webページの中身を書く言葉。コメントや hidden 欄も書ける',e:'ページの設計図。見えない場所に、メモを書き込める'},
+  {id:'endian',  w:'リトルエンディアン',at:['14-1','14-3'],a:['リトルエンディアン'],
+    s:'数値を、下の桁のバイトから並べる書き方',e:'住所を「番地」から先に書く。順番を逆にすると、別の場所になる'},
+  {id:'retaddr', w:'戻り先（戻りアドレス）',at:['14-1','14-3'],a:['戻り先','戻りアドレス'],
+    s:'関数が終わったあと、どこへ戻るかを覚えている場所',e:'用事を終えたあと、帰る道順のメモ。書き換えられると、知らない場所へ行く'},
+  {id:'hex16',   w:'16進数（ヘキサ）',at:['14-1','14-3'],a:['16進数'],
+    s:'0〜9とA〜Fで数を書く書き方。1バイトは2けたで表す',e:'0から15までを、1けたで書く数え方'}
 ];
 const GBYID=Object.fromEntries(GLOSSARY.map(g=>[g.id,g]));
 const GMATCH=GLOSSARY.flatMap(g=>g.a.map(a=>({a,g}))).sort((x,y)=>y.a.length-x.a.length);
@@ -3084,10 +3123,12 @@ function gres(G,key,win,st,why){
   return {eyebrow:win?`STAGE ${key} CLEAR`:`STAGE ${key}`,title:win?K.win:(why||K.lose),
     summary:win?K.sumWin:K.sumLose,review:rvRows(G.rev),extra:G.extra,next:win?G.next(key):''};
 }
+// 型の数より問題が多いときは、型を順に回して使う
+function pickPats(G,n){const order=shuffle([...G.pats]);return Array.from({length:n},(_,i)=>order[i%order.length])}
 // 1段目：パズル。道具を一段ずつ当てて、答え（フラグ）を出す
 function mkPuz(G,count){return {dur:G.dur1||110,
   init(){
-    RUN.G=G;RUN.pz=shuffle([...G.pats]).slice(0,count).map(p=>gmake(G,p));
+    RUN.G=G;RUN.pz=pickPats(G,count).map(p=>gmake(G,p));
     RUN.i=0;RUN.undo=0;RUN.p=1;RUN.solved=0;RUN.mist=0;RUN.hist=[];
     mount(`<div class="pbar"><span>問題 <b id="qN"></b></span><span class="sp"></span><span class="plives" id="pl">${lives(3,3)}</span></div>
       <div class="scard" id="gcard"></div>
@@ -3183,7 +3224,7 @@ function nextDri(){
 function mkBos(G,count,maxSteps){return {dur:G.dur3||200,
   init(){
     RUN.G=G;RUN.bi=0;RUN.mist=0;RUN.p=1;RUN.rec=[];RUN.max=maxSteps;
-    RUN.boss=shuffle([...G.pats]).slice(0,count).map(p=>gmake(G,p));
+    RUN.boss=pickPats(G,count).map(p=>gmake(G,p));
     mount(`<div class="pbar"><span>ボス <b id="qN"></b></span><span class="sp"></span><span class="plives" id="pl">${lives(3,3)}</span></div>
       <div class="scard" id="bossC"></div>
       <div class="acts3">${G.palette.map(k=>`<button class="act" data-act="add-${k}"><span class="al">${escH(G.OP[k].label)}</span></button>`).join('')}</div>
@@ -3383,9 +3424,67 @@ const WB={key1:'13-1',key2:'13-2',key3:'13-3',
   dur1:120,par1:80,dur2:120,dur3:200,par3:160
 };
 const GAMES_WB={'13-1':()=>runStart(mkPuz(WB,4)),'13-2':()=>runStart(mkDri(WB,8)),'13-3':()=>runStart(mkBos(WB,3,3))};
+/* ===== ステージ14「Pwn」：入力の長さと、数値の並び順で、模擬プログラムの変数を書き換える ===== */
+const SETP=['架空のゲーム「ゴーストラン」の名前入力','架空の受付端末のログイン（練習用）','練習用の小さなプログラム（./vuln）','学校の古い在庫管理ソフト（練習用）'];
+const PPHRASE={
+  'pw-offset':{jp:['箱より多く入れると、あふれた分が隣の変数に届く','admin という変数に届くまで、入力の長さを数えよう','入力は箱の中で止まらない。箱の後ろも書き換える'],en:['Input past the buffer spills into the next variable','Count how many bytes it takes to reach admin','The input does not stop at the end of the box']},
+  'pw-overwrite':{jp:['admin の値を、指定の数にしたい。メモリは下の桁から並ぶ','数値は、バイトを逆順に並べて送る（リトルエンディアン）','指定の値を逆順にして入れよう'],en:['Set admin to the exact value; memory stores the low byte first','Little-endian: send the bytes in reverse order','Reverse the target bytes before you send them']}
+};
+// 箱（入力）・admin（4バイト）・戻り先（4バイト）を、マスで見せる。入力が届いたマスは点灯する
+function pwView(B,n){const cells=[];for(let i=0;i<B+8;i++){const c=i<B?'#4a7':i<B+4?'#c84':'#84c';cells.push(`<span style="display:inline-block;width:12px;height:16px;margin:1px;border:1px solid #555;background:${i<n?c:'#222'}"></span>`)}
+  return `<div>${cells.join('')}</div><div class="pnote">緑：箱（${B}）／橙：admin（4）／紫：戻り先（4）。点灯＝入力が届いた場所</div>`}
+const PW={key1:'14-1',key2:'14-2',key3:'14-3',
+  pats:['pw-offset','pw-overwrite'],
+  pname:{'pw-offset':'箱からはみ出させる（バッファオーバーフロー）','pw-overwrite':'数値を逆順に送る（リトルエンディアン）'},
+  why:{'pw-offset':'箱より多く入れると、あふれた分が隣の変数を書き換える。届く長さを数えて、ちょうどを選ぶ','pw-overwrite':'メモリの数値は、下の桁のバイトから並ぶ（リトルエンディアン）。値を逆順にして送る'},
+  palette:['fill','send','le','be'],
+  OP:{
+    fill:{label:'入力を N 文字にする',par:true,cmd:p=>`python3 -c "print('A' * ${p})" > input.txt`,run:(t,p)=>'A'.repeat(p)},
+    send:{label:'プログラムに入力を渡す',cmd:()=>'./vuln < input.txt',run:(t,p,pr)=>{
+      if(pr.want!==undefined)return t===pr.want?pr.flag:'admin は書き換わらなかった';
+      const n=t.length;
+      if(n<pr.B+4)return `admin は変わらなかった（${n} 文字）`;
+      if(n<pr.B+8)return pr.flag;
+      return 'Segmentation fault（戻り先まで壊して、落ちた）';}},
+    le:{label:'値を逆順にする（リトルエンディアン）',cmd:(p,t)=>`python3 -c "import struct; print(struct.pack('<I', ${t===undefined?'0x41424344':t}).hex(' '))"`,run:t=>/^0x[0-9A-Fa-f]{8}$/.test(t)?t.slice(2).match(/../g).reverse().join(' '):null},
+    be:{label:'値をそのまま並べる（ビッグエンディアン）',cmd:(p,t)=>`python3 -c "import struct; print(struct.pack('>I', ${t===undefined?'0x41424344':t}).hex(' '))"`,run:t=>/^0x[0-9A-Fa-f]{8}$/.test(t)?t.slice(2).match(/../g).join(' '):null}
+  },
+  make(pat){
+    const ans=cflag();let pr={},note;
+    if(pat==='pw-offset'){
+      const B=gpickA([8,12,16]);
+      pr={start:'',B,view:t=>pwView(B,(t||'').length),
+        card:`箱（入力を入れる場所）：${B} バイト\nadmin（変数）：4 バイト（箱のすぐ後ろ）\n戻り先：4 バイト（その後ろ）`,
+        ops:['fill','send'],file:'./vuln',solve:[{op:'fill',p:B+4},{op:'send'}],bsolve:[{op:'fill',p:B+5},{op:'send'}]};
+      note=`箱は ${B} バイト`;
+    }else{
+      const target=gpickA(['0x41424344','0xDEADBEEF','0x0BADF00D','0x12345678']);
+      pr={start:target,want:target.slice(2).match(/../g).reverse().join(' '),ops:['le','be','send'],file:'./vuln',solve:[{op:'le'},{op:'send'}]};
+      note=`admin を ${target} にしたい`;
+    }
+    pr.flag=ans;pr.done=t=>isFlag(t)&&t===ans;
+    pr.text=`${gpickA(SETP)}：${gpickA(CG.rnd()<.5?PPHRASE[pat].jp:PPHRASE[pat].en)}（${note}）`;
+    pr.phrase=pr.text.split('：')[1];pr.ans=ans;
+    return pr;
+  },
+  res:{win:'模擬のプログラムの変数を書き換え、フラグを取り出した！',lose:'フラグに届かなかった',sumWin:'あふれる長さと、数値の並び順。このふたつで、プログラムの中の変数を書き換えられた。',sumLose:'箱の大きさと、変数の位置をもう一度数えよう。'},
+  rev:[['バッファオーバーフロー','箱より多く入れると、隣の変数と戻り先が書き換わる（ステージ10の発展）',true],['リトルエンディアン','数値のバイトは、下の桁から並ぶ。値を逆順にして送る',true]],
+  extra:`<div class="real"><div>振り返り：<b>箱からはみ出した入力は、隣の変数まで書き換える。数値は、逆順に並べて送る</b>。</div>
+    <code>python3 -c "print('A' * 12)" > input.txt</code><div class="m">長さを変えて入れて、どこで壊れるかを見る（練習用のプログラムで）</div>
+    <code>python3 -c "import struct; print(struct.pack('&lt;I', 0x41424344).hex(' '))"</code><div class="m">数値をリトルエンディアン（下の桁から）のバイト列にする</div></div>
+    <div class="warn"><b>安全メモ</b><ul><li>実在のプログラムに、わざと長い入力を送らない。壊れて止まることがある</li><li>練習用の模擬プログラムだけで行い、他人の機械には試さない</li></ul></div>`,
+  next(key){
+    if(key==='14-1')return '次は14-2「ドリル」。問題文のヒント語から、どの手口かを当てよう。';
+    if(key==='14-2')return '次は14-3「ボス戦」。道具を並べて、フラグを取り出そう。';
+    return '次はステージ15「Misc」。いろいろな形に包まれた文字を、順番にほどいてみよう。';
+  },
+  dur1:110,par1:70,dur2:120,dur3:200,par3:150
+};
+const GAMES_PW={'14-1':()=>runStart(mkPuz(PW,4)),'14-2':()=>runStart(mkDri(PW,8)),'14-3':()=>runStart(mkBos(PW,3,3))};
 const GAMES={
   ...GAMES_FO,
   ...GAMES_WB,
+  ...GAMES_PW,
   '1':()=>{newGame();requestAnimationFrame(loop)},
   '2-1':()=>{newGame21();requestAnimationFrame(loop21)},
   '2-2':()=>{newGame2();requestAnimationFrame(loop2)},
