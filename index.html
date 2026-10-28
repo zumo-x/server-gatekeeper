@@ -346,7 +346,7 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
   <div class="skywrap" id="sky" data-only="1 2-1 2-2 2-3"><canvas id="cv"></canvas><div class="skylabel">インターネット</div>
     <div class="logs" id="logs" data-only="2-3" hidden></div><div class="pointer" id="pointer23" hidden>▼ 次はこれ</div>
     <div class="cue" id="cue" hidden><b id="cueB"></b><span id="cueS"></span><i aria-hidden="true">▼</i></div></div>
-  <div class="panel" id="panel" data-only="3-1 3-2 4 5 6 7 8 9-1 9-2 10-1 10-2 11-1 11-2 11-3 11-4 11-5 11-6 12-1 12-2 12-3 12-4 12-5 12-6 13-1 13-2 13-3 14-1 14-2 14-3 15-1 15-2 15-3 16-1 16-2 16-3 17-1 17-2 17-3" hidden></div>
+  <div class="panel" id="panel" data-only="3-1 3-2 4 5 6 7 8 9-1 9-2 10-1 10-2 11-1 11-2 11-3 11-4 11-5 11-6 12-1 12-2 12-3 12-4 12-5 12-6 13-1 13-2 13-3 13-4 13-5 13-6 14-1 14-2 14-3 15-1 15-2 15-3 16-1 16-2 16-3 17-1 17-2 17-3" hidden></div>
   <div class="doors" id="doors" data-only="1"></div>
   <div class="gate" id="gate" data-only="2-2" hidden>
     <div class="door door22" id="door22"><span class="num">22</span><span class="nm">SSH</span><span class="st" id="door22st">パスワード</span></div>
@@ -991,7 +991,37 @@ const STAGES=[
           doors:[['../・GET','ファイルを指定して、開く','上の階層のファイルへ'],['robots.txt・Disallow','隠したい道を、番号で選ぶ','案内の中から、道を1つ'],['コメント・抜き出す','ソースや応答から、答えの行を取る','最後にフラグだけを残す']],
           real:['リクエストとレスポンスを、自分で組み立てることが、Webの調査の基本。curl を使えば、同じことを本物のコマンドでできる。'],
           howto:`<div class="legend"><div><span class="dot d"></span>部品を押すと、レシピに下から足される（最大3手）</div><div><span class="dot k"></span>実行で、フラグが出れば勝ち</div></div>
-            <p>3体のボス。</p><p>★は「まちがいなし」「160秒以内」で1つずつ。</p>`}}
+            <p>3体のボス。</p><p>★は「まちがいなし」「160秒以内」で1つずつ。</p>`}},
+      {name:'パズル（上級）',hud:['13-4 パズル','送る中身を変えて、管理者の画面を開く'],
+        room:'<span class="chip">リクエスト</span><span class="arrow">→</span><span class="chip">書き換え</span><span class="arrow">→</span><span class="chip">GK{…}</span>',
+        cue:['上級の Web に挑戦','Cookie・hidden・メソッドを書き換える'],
+        brief:{
+          situation:['20点の上級。送る中身を変えて、見えない画面を開く。<b>Cookie の改ざん</b>（role=user を admin に。Base64 で包まれている）、<b>隠しパラメータ</b>（hidden の値）、<b>メソッドの書き換え</b>（GET→POST）。ターミナル風の画面で、curl のように送る。'],
+          doorsTitle:'道具と手がかり',
+          doors:[['Cookie を戻す→admin に→送る','Base64 を戻し、role を書き換えて送る','3手で管理者に'],['hidden を1にして開く','見えない入力欄を書き換える','デバッグ画面が出る'],['POST で送る','GET が 405 なら POST を試す','入口が開く'],['GK{…} だけ拾う','まわりを捨てる','最後に使う']],
+          real:['本物でも、Cookie やパラメータの書き換えは基本の確認。サーバーが入力を信用しすぎると破られる。'],
+          howto:`<div class="legend"><div><span class="dot d"></span>道具を押すと、送る中身が変わる</div><div><span class="dot k"></span>GK{…} が出たら「答えを提出」</div></div>
+            <p>4問。全体で130秒。</p><p>★は「やり直しが3回以内」「85秒以内」で1つずつ。</p>`}},
+      {name:'ドリル（上級）',hud:['13-5 ドリル','ヒント語から、上級の手口を当てる'],
+        room:'<span class="chip">問題文</span><span class="arrow">→</span><span class="chip">ヒント語</span><span class="arrow">→</span><span class="chip">手口</span>',
+        cue:['ヒント語を読もう','Cookie・hidden・メソッドを見分ける'],
+        brief:{
+          situation:['上級の Web も、ヒント語で手口が分かる。「Cookie・role」は Cookie 改ざん、「hidden・隠しパラメータ」は hidden 書き換え、「GET/POST・405・メソッド」はメソッド変更。'],
+          doorsTitle:'ヒント語の見分け方',
+          doors:[['Cookie・role・Base64','Cookie の改ざん','権限を書き換える'],['hidden・隠しパラメータ','hidden の書き換え','見えない値をいじる'],['GET/POST・405・メソッド','メソッドの書き換え','送り方を変える']],
+          real:['どれも「送る中身」を変える手口。問題文の決め手の言葉を選ぼう。'],
+          howto:`<div class="legend"><div><span class="dot k"></span>問題文を読んで、手口を3つから選ぶ</div><div><span class="dot r"></span>まちがいは3回まで</div></div>
+            <p>8問。問題は自動で作られる（毎回違う）。</p><p>★は「まちがいなし」「70秒以内」で1つずつ。</p>`}},
+      {name:'ボス戦（上級）',hud:['13-6 ボス戦','道具を並べて、フラグを出す'],
+        room:'<span class="chip">入力</span><span class="arrow">レシピ（3手まで）</span><span class="arrow">→</span><span class="chip">フラグ</span>',
+        cue:['上級ボスの Web','送る中身を組み立てて、フラグを取り出そう'],
+        brief:{
+          situation:['ボスのサイトは、送る中身を正しく組み立てないと、管理者の情報を見せない。道具を順番に並べて、フラグを取り出す。'],
+          doorsTitle:'レシピの部品',
+          doors:[['Cookie を戻す→admin に→送る','Cookie 改ざんは3手','順番が大事'],['hidden を1に / POST で送る','手がかりに合う道具を選ぶ','1〜2手'],['GK{…} だけ拾う','まわりを捨てる','最後に置く']],
+          real:['curl で、Cookie・パラメータ・メソッドを自分で組み立てる。これが Web 調査の基本。'],
+          howto:`<div class="legend"><div><span class="dot d"></span>部品を押すと、レシピに下から足される（最大3手）</div><div><span class="dot k"></span>実行で、フラグが出れば勝ち</div></div>
+            <p>3体のボス。</p><p>★は「まちがいなし」「170秒以内」で1つずつ。</p>`}}
     ]},
   {id:14, name:'Pwn', sub:'箱からはみ出す入力と、数値の並び順で、プログラムを乗っ取る', ready:true,
     rounds:[
@@ -1350,6 +1380,12 @@ const GLOSSARY=[
     s:'リクエストは「ページをください」という頼み。レスポンスは、サイトが返す答え',e:'注文書（リクエスト）と、届いた商品と納品書（レスポンス）'},
   {id:'htmlsrc', w:'HTML（エイチティーエムエル）',at:['13-2','13-3'],a:['HTML'],
     s:'Webページの中身を書く言葉。コメントや hidden 欄も書ける',e:'ページの設計図。見えない場所に、メモを書き込める'},
+  {id:'cookie',  w:'Cookie（クッキー）',at:['13-4','13-5','13-6'],a:['Cookie'],
+    s:'サイトがブラウザに覚えさせる小さなメモ。ログイン情報や権限が入ることがある',e:'お店の会員証。書き換えられると、別の人になりすませる'},
+  {id:'hidden',  w:'隠しパラメータ(hidden)',at:['13-4','13-5','13-6'],a:['隠しパラメータ','hidden'],
+    s:'画面には出ないが、フォームが送る値。書き換えると動きが変わることがある',e:'注文票の裏に小さく書かれた、見落としがちな欄'},
+  {id:'method',  w:'メソッド(GET/POST)',at:['13-4','13-5','13-6'],a:['メソッド','GET/POST'],
+    s:'リクエストの送り方。GET は「ください」、POST は「渡します」。入口で使い分ける',e:'窓口の種類。受け取り窓口と、提出窓口で、できることが違う'},
   {id:'endian',  w:'リトルエンディアン',at:['14-1','14-3'],a:['リトルエンディアン'],
     s:'数値を、下の桁のバイトから並べる書き方',e:'住所を「番地」から先に書く。順番を逆にすると、別の場所になる'},
   {id:'retaddr', w:'戻り先（戻りアドレス）',at:['14-1','14-3'],a:['戻り先','戻りアドレス'],
@@ -4010,6 +4046,60 @@ const F2={key1:'12-4',key2:'12-5',key3:'12-6',
   dur1:130,par1:85,dur2:120,dur3:230,par3:170
 };
 const GAMES_F2={'12-4':()=>runStart(mkPuz(F2,4)),'12-5':()=>runStart(mkDri(F2,8)),'12-6':()=>runStart(mkBos(F2,3,3))};
+/* ---- Web 20点（ステージ13-4〜13-6）：Cookie改ざん・隠しパラメータ・GET/POST ---- */
+const W2PHRASE={
+  'w2-cookie':{jp:['Cookie の role=user を admin に書き換えたい','ログイン情報が Base64 の Cookie に入っている','Cookie をデコードして、権限を書き換える'],en:['Flip role=user to admin in the cookie','The cookie is base64 with your role','Decode the cookie and change the role']},
+  'w2-hidden':{jp:['ページのソースに、隠しパラメータ debug がある','hidden の値を 1 に変えると、何か出そう','見えない入力欄（hidden）を書き換える'],en:['A hidden debug parameter sits in the form','Flip the hidden value to reveal more','Tamper the hidden input and resend']},
+  'w2-method':{jp:['GET では 405。送り方（メソッド）を変える','POST なら通るかもしれない','メソッドを POST に変えて送る'],en:['GET returns 405; change the method','Try POST instead of GET','The endpoint wants POST, not GET']}
+};
+const W2={key1:'13-4',key2:'13-5',key3:'13-6',
+  pats:['w2-cookie','w2-hidden','w2-method'],
+  pname:{'w2-cookie':'Cookie の改ざん（role=user→admin）','w2-hidden':'隠しパラメータ(hidden)の書き換え','w2-method':'メソッド(GET→POST)の書き換え'},
+  why:{'w2-cookie':'Cookie に権限が入っていると、デコードして書き換えるだけで管理者になれることがある','w2-hidden':'画面に出ない hidden の値を信用しているページは、書き換えで動きが変わる','w2-method':'送り方（GET/POST）で入口が変わる。GET で弾かれても POST なら通ることがある'},
+  palette:['decode','promote','send','setdbg','get','post','xtr'],
+  OP:{
+    decode:{label:'Cookie を Base64 で戻す',cmd:(p,t)=>"echo $COOKIE | base64 -d",run:(t,p,pr)=>pr.cookie!==undefined?b64d(pr.cookie):null},
+    promote:{label:'role=user を role=admin に',cmd:()=>"sed 's/role=user/role=admin/'",run:t=>{t=String(t);return t.includes('role=user')?t.replace('role=user','role=admin'):null}},
+    send:{label:'書き換えた Cookie で開く',cmd:()=>"curl -b \"role=admin;...\" https://shop.example.com/mypage",run:(t,p,pr)=>String(t).includes('role=admin')?pr.flag:'HTTP/1.1 200 OK — ゲスト画面'},
+    setdbg:{label:'hidden の debug を 1 にする',cmd:()=>'（hidden: debug 0 → 1）',run:t=>{t=String(t);return t.includes('name="debug" value="0"')?t.replace('name="debug" value="0"','name="debug" value="1"'):null}},
+    get:{label:'書き換えた内容で開く(GET)',cmd:()=>"curl 'https://shop.example.com/?debug=1'",run:(t,p,pr)=>String(t).includes('value="1"')?pr.page:null},
+    post:{label:'POST で送る',cmd:(p,t)=>`curl -X POST https://shop.example.com${t&&t.path?t.path:'/admin'}`,run:(t,p,pr)=>pr.resp},
+    xtr:{label:'フラグの形(GK{…})だけ拾う',cmd:()=>"grep -o 'GK{[a-z0-9]*}'",run:t=>{const m=String(t).match(/GK\{[a-z0-9]+\}/);return m?m[0]:null}}
+  },
+  make(pat){
+    const ans=cflag();let pr={};
+    if(pat==='w2-cookie'){
+      const uid=cint(100,999);const cookie=b64e(`role=user;uid=${uid}`);
+      pr={start:cookie,cookie,flag:ans,card:`Set-Cookie: session=${cookie}\n（Base64 を戻すと role=user;uid=${uid}）`,term:`$ curl -b "session=${cookie}" https://shop.example.com/mypage\nHTTP/1.1 200 OK — ようこそ user さん`,
+        view(){return termView(pr)},ops:['decode','promote','send'],file:'cookie.txt',solve:[{op:'decode'},{op:'promote'},{op:'send'}]};
+    }else if(pat==='w2-hidden'){
+      const fld=gpickA(['/cart','/order','/mypage','/review']);
+      pr={start:`<form action="${fld}">\n  <input type="hidden" name="debug" value="0">\n  <button>送信</button>\n</form>`,page:`デバッグ画面：内部メモ secret: ${ans}`,card:`フォーム：${fld}（hidden の debug がある）`,term:`$ curl '${fld}?debug=1'`,
+        view(){return termView(pr)},ops:['setdbg','get','xtr'],file:'page.html',solve:[{op:'setdbg'},{op:'get'},{op:'xtr'}]};
+    }else{
+      const ep=gpickA(['/admin','/api/flag','/debug','/internal']);
+      pr={start:`HTTP/1.1 405 Method Not Allowed\nAllow: POST\n\n（GET ${ep} は許可されていません）`,resp:`HTTP/1.1 200 OK\n\nsecret: ${ans}`,card:`入口：${ep}（GET は 405、POST は？）`,term:`$ curl -X POST https://shop.example.com${ep}`,
+        view(){return termView(pr)},ops:['post','xtr'],file:'resp.txt',solve:[{op:'post'},{op:'xtr'}]};
+    }
+    pr.done=t=>isFlag(t)&&t===ans;
+    pr.text=`${gpickA(SET20)}：${gpickA(CG.rnd()<.5?W2PHRASE[pat].jp:W2PHRASE[pat].en)}`;
+    pr.phrase=pr.text.split('：')[1];pr.ans=ans;
+    return pr;
+  },
+  res:{win:'リクエストを組み立てて、管理者の情報を取り出した！',lose:'フラグに届かなかった',sumWin:'Cookie・隠しパラメータ・メソッド。送る中身を変えると、見えなかった画面が開く。',sumLose:'送る中身（Cookie・hidden・メソッド）を、もう一度考えよう。'},
+  rev:[['Cookie の改ざん','権限が Cookie に入っていると、書き換えで管理者になれることがある。Base64 は鍵ではない',true],['隠しパラメータ','画面に出ない hidden の値を信用すると、書き換えで動きが変わる',true],['メソッドの書き換え','GET で弾かれても POST なら通る入口がある',true]],
+  extra:`<div class="real"><div>振り返り：<b>サーバーは、送られてきた Cookie やパラメータを信用しすぎると、書き換えで破られる</b>。</div>
+    <code>curl -b "session=...;role=admin" https://practice.example.com/mypage</code><div class="m">Cookie を変えて送る（ブラウザの開発者ツールや curl で）</div>
+    <code>curl -X POST https://practice.example.com/admin</code><div class="m">メソッドを POST に変えて送る</div></div>
+    <div class="warn"><b>安全メモ</b><ul><li>実在のサイトに、このような書き換えを送らない。練習用のサイトだけで試す</li><li>権限の判定は、サーバー側でやり直すのが正しい。Cookie だけを信じない</li></ul></div>`,
+  next(key){
+    if(key==='13-4')return '次は13-5「ドリル(上級)」。問題文のヒント語から、どの手口かを当てよう。';
+    if(key==='13-5')return '次は13-6「ボス戦(上級)」。道具を並べて、フラグを取り出そう。';
+    return 'Web の20点は、これで一区切り。ほかのジャンルの20点にも挑戦しよう。';
+  },
+  dur1:130,par1:85,dur2:120,dur3:230,par3:170
+};
+const GAMES_W2={'13-4':()=>runStart(mkPuz(W2,4)),'13-5':()=>runStart(mkDri(W2,8)),'13-6':()=>runStart(mkBos(W2,3,3))};
 const GAMES={
   ...GAMES_FO,
   ...GAMES_WB,
@@ -4019,6 +4109,7 @@ const GAMES={
   ...GAMES_NW,
   ...GAMES_C2,
   ...GAMES_F2,
+  ...GAMES_W2,
   '1':()=>{newGame();requestAnimationFrame(loop)},
   '2-1':()=>{newGame21();requestAnimationFrame(loop21)},
   '2-2':()=>{newGame2();requestAnimationFrame(loop2)},
