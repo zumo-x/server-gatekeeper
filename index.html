@@ -297,6 +297,16 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
 .mlink{all:unset;box-sizing:border-box;cursor:pointer;touch-action:manipulation;display:block;padding:9px 10px;border-radius:10px;background:#0f1229;color:var(--ok);font-family:var(--f-term);font-size:13px;line-height:1.5;word-break:break-all;-webkit-user-select:none;user-select:none}
 .mlink:focus-visible{outline:3px solid var(--ink);outline-offset:2px}
 .prow.gone{opacity:.25;pointer-events:none}
+.locker{display:grid;gap:8px}
+.lkname{font-size:12px;color:var(--muted)}
+.cells{display:flex;flex-wrap:wrap;gap:4px}
+.cell{position:relative;display:grid;place-items:center;min-width:34px;height:44px;padding:0 4px;border-radius:8px;background:var(--night);font-style:normal;font-family:var(--f-term);font-size:16px;color:var(--ink);box-shadow:0 3px 0 #14183a}
+.cell small{position:absolute;top:-14px;left:0;right:0;text-align:center;font-family:var(--f-body);font-size:10px;color:var(--muted);white-space:nowrap}
+.cell.on{background:#2c3a6e}
+.cell.flag{min-width:70px;background:#0f1229;color:var(--muted);font-family:var(--f-body);font-size:14px;font-weight:800}
+.cell.flag.admin{background:var(--attacker);color:#3a0f0f;box-shadow:0 3px 0 #a84a46;animation:hit .4s}
+.cell.over{background:transparent;border:2px dashed var(--shut);color:var(--muted);font-family:var(--f-body);font-size:12px;box-shadow:none;min-width:48px}
+.hl{background:rgba(255,111,107,.35);color:#ffd6d4;border-radius:3px}
 .shake{animation:shk .35s}
 @keyframes shk{20%{transform:translate(-6px,2px)}40%{transform:translate(5px,-3px)}60%{transform:translate(-4px,1px)}80%{transform:translate(3px,0)}}
 @media (prefers-reduced-motion:reduce){.shake,.door.hit,.door.sad,.act.hit,.act.sad,.act.guide,.ip.guide,.pt.sad,.pt.gone,.ln,.bin.hit,.bin.sad,.bin.guide,.acts.hint .act,.pointer,.cue,.cue i{animation:none}.door,.big,.act,.bin{transition:none}}
@@ -726,7 +736,49 @@ const STAGES=[
             <p>★は「まちがいなし」「45秒以内」で1つずつ。</p>`
         }}
     ]},
-  {id:10,name:'溢れるロッカー',sub:'バッファオーバーフロー'}
+  {id:10,name:'溢れるロッカー',sub:'バッファオーバーフロー', ready:true,
+    rounds:[
+      {name:'溢れさせる',
+        hud:['10-1 溢れさせる','箱より多く入れると？'],
+        room:'<span class="chip">名前の箱（8文字）</span><span class="arrow">→</span><span class="chip">管理者？</span>',
+        cue:['箱は8文字まで','9文字目は、どこに入る？'],
+        brief:{
+          situation:['プログラムは、データを入れる<b>バッファ</b>（決まった大きさの箱）を用意する。箱より大きいデータを入れると、隣の箱の中身まで書き換わることがある。これを<b>バッファオーバーフロー</b>という。<b>メモリ</b>（作業用の机）の上で、箱は隣同士に並んでいる。'],
+          doorsTitle:'画面に出てくるもの',
+          doors:[
+            ['名前の箱','8文字まで入る（バッファ）','入る文字は、ここに入る'],
+            ['管理者？','隣の箱。「いいえ」なら、ふつうのユーザー','9文字目が、ここに入ってしまう。「はい」になると、管理者'],
+            ['溢れ','箱の外へ、はみ出た文字','さらに増えると、もっと遠くの箱まで書き換わる']
+          ],
+          real:['このしくみは、<b>C言語</b>で作られた古いプログラムで、昔からよく起きる。<b>CTF</b>（セキュリティの腕を試す競技）の<b>Pwn</b>（プログラムの弱点を突く問題）は、ここから入門する。ここでは、ゲームの中のロッカーだけで体験する。'],
+          howto:`<div class="legend">
+              <div><span class="dot d"></span>「文字を入れる」を、1文字ずつ押す</div>
+              <div><span class="dot r"></span>8文字を超えると、管理者？が「はい」に変わる</div>
+              <div><span class="dot k"></span>管理者？が「はい」になったら「管理者でログイン」</div>
+            </div>
+            <p>管理者になれたらクリア。★は「9文字でちょうど」「30秒以内」で1つずつ。</p>`
+        }},
+      {name:'防ぐ',
+        hud:['10-2 防ぐ','箱に入る前に確かめる'],
+        room:'<span class="chip">入力</span><span class="arrow">→</span><span class="chip">長さチェック</span><span class="arrow">→</span><span class="chip">名前の箱</span>',
+        cue:['箱の前で止めよう','どれが溢れを防げる？'],
+        brief:{
+          situation:['溢れを防ぐには、<b>箱に入る前に、長さを確かめる</b>。これを<b>入力チェック</b>という。箱の中で気をつけるのではなく、入る前に止めるのがポイント。'],
+          doorsTitle:'選択肢に出てくるもの',
+          doors:[
+            ['A','長さのチェック','箱に入る前に、8文字を超えたら拒否する'],
+            ['B','警告だけ','画面に出すだけ。入力は入ってしまう'],
+            ['C','場所を変える','溢れる先が変わるだけ。別の箱が壊れる']
+          ],
+          real:['C言語では、コピーのとき箱の大きさ（上限）を必ず指定する。自分の作るプログラムも、入力の長さは必ず確かめる。'],
+          howto:`<div class="legend">
+              <div><span class="dot k"></span>入る前に拒否する ＝ 正解</div>
+              <div><span class="dot r"></span>警告だけ・場所を変えるだけ ＝ まちがい（3回で失敗）</div>
+            </div>
+            <p>選ぶと、9文字の入力で試す結果が出る。</p>
+            <p>★は「まちがいなし」「45秒以内」で1つずつ。</p>`
+        }}
+    ]}
 ];
 
 /* ---------- 用語（GLOSSARY） ----------
@@ -885,7 +937,19 @@ const GLOSSARY=[
   {id:'placeholder',w:'プレースホルダ',at:['9-2'],a:['プレースホルダ'],
     s:'入力は「データ」として別に渡し、命令の一部として混ざらないようにする書き方',e:'注文書の空欄に、中身をそっと書き入れる。空欄の外には命令を書かない'},
   {id:'inputcheck',w:'入力チェック',    at:['9-2','10-2'],a:['入力チェック'],
-    s:'受け取る前に、入力が決まりに合っているか確かめること',e:'郵便局の「重さ・大きさ制限」。大きすぎる荷物は受け付けない'}
+    s:'受け取る前に、入力が決まりに合っているか確かめること',e:'郵便局の「重さ・大きさ制限」。大きすぎる荷物は受け付けない'},
+  {id:'memory',  w:'メモリ',         at:['10-1'],a:['メモリ'],
+    s:'プログラムが使う、作業用の机（一時的に物を置く場所）',e:'机の上。隣り合う引き出しが、同じ机の上で続いている'},
+  {id:'buffer',  w:'バッファ',        at:['10-1'],a:['バッファ'],
+    s:'データを入れておく、決まった大きさの箱',e:'ロッカーの1つ。決まった大きさのものしか入らない'},
+  {id:'bof',     w:'バッファオーバーフロー',at:['10-1','10-2'],a:['バッファオーバーフロー'],
+    s:'箱の大きさを超えて書き込み、隣の箱の中身まで書き換えてしまうこと',e:'ロッカーに入らない荷物を無理に押し込み、隣のロッカーの中身まで壊す'},
+  {id:'ctlang',  w:'C言語',           at:['10-1'],a:['C言語'],
+    s:'OSやソフトを作るときによく使われる、古いが速いプログラミング言語',e:'職人の道具。自由度が高い分、扱いを間違えると危ない'},
+  {id:'ctf',     w:'CTF（シーティーエフ）',at:['10-1'],a:['CTF'],
+    s:'セキュリティの腕を試す、問題を解く競技',e:'謎解きイベント。鍵を探し出すとポイントがもらえる'},
+  {id:'pwn',     w:'Pwn（ピーウィン）',at:['10-1'],a:['Pwn'],
+    s:'プログラムの弱点を突いて、思い通りに動かす問題のジャンル',e:'金庫の仕組みを理解して、扉を開けるような問題'}
 ];
 const GBYID=Object.fromEntries(GLOSSARY.map(g=>[g.id,g]));
 const GMATCH=GLOSSARY.flatMap(g=>g.a.map(a=>({a,g}))).sort((x,y)=>y.a.length-x.a.length);
@@ -2461,6 +2525,103 @@ function r92(win,why){return {eyebrow:win?'STAGE 9-2 CLEAR':'STAGE 9-2',title:wi
     <div class="warn"><b>安全メモ</b><ul><li>攻撃の入力を、実在のサービスに試さない。自分のサービスは、テスト用の環境で確かめる</li><li>入力は、必ずプレースホルダか、ライブラリの安全な機能で扱う</li></ul></div>`,
   next:win?'次はステージ10「溢れるロッカー」。入力の長さを超えると、隣のメモリまで書き換わる。':''};}
 
+/* ===== ステージ10「溢れるロッカー」：箱より大きい入力が、隣の箱（管理者？）を書き換える ===== */
+// 名前の箱は8文字まで。9文字目が、隣の「管理者？」のマスに入ってしまう（練習用のシミュレーション）
+const BOX10=8;
+function draw101(){
+  const n=RUN.len,lk=document.getElementById('lk');
+  let h='';
+  for(let i=0;i<BOX10;i++)h+=`<i class="cell${i<Math.min(n,BOX10)?' on':''}"><small>${i}</small>${i<n?'x':''}</i>`;
+  const admin=n>BOX10;
+  h+=`<i class="cell flag${admin?' admin':''}"><small>管理者？</small>${admin?'はい':'いいえ'}</i>`;
+  if(n>BOX10+1)h+=`<i class="cell over"><small>外へ</small>溢れ</i>`;
+  lk.innerHTML=`<div class="lkname">名前（8文字）</div><div class="cells">${h}</div>`;
+  document.getElementById('qN').textContent=n;
+}
+const U101={dur:60,
+  init(){
+    RUN.len=0;RUN.mist=0;
+    mount(`<div class="pbar"><span>入れた文字 <b id="qN">0</b></span></div>
+      <div class="locker" id="lk"></div>
+      <div class="acts">
+        <button class="act" data-act="add"><span class="al">文字を入れる</span><small>1文字ずつ</small></button>
+        <button class="act" data-act="del"><span class="al">1文字消す</span><small>やり直し</small></button>
+        <button class="act" data-act="login"><span class="al">管理者でログイン</span><small>管理者？を確かめる</small></button>
+        <button class="act" data-act="none" disabled><span class="al">（待機）</span><small>&nbsp;</small></button>
+      </div>
+      <p class="pnote" id="pnote">名前の箱は8文字まで。入る文字を増やして、管理者になれるか試そう。</p>`);
+    draw101();
+    term('$ ./login（名前を入力）','# 名前の箱（8文字）の隣に、管理者？の印がある');
+    guideOn(document.querySelector('[data-act="add"]'));
+  },
+  tap(act,el){
+    if(act==='none')return;
+    if(act==='add'){RUN.len++;sfx.click();buzz(8);draw101();
+      if(RUN.len===BOX10+1)term('! 9文字目が、隣の「管理者？」に入った','# 箱から溢れて、隣の箱の中身を書き換えた');
+      if(RUN.len>BOX10)document.getElementById('pnote').textContent='箱から溢れた文字は、隣のマスを書き換える。';
+      guideOn(RUN.len<1?document.querySelector('[data-act="add"]'):null);return}
+    if(act==='del'){RUN.len=Math.max(0,RUN.len-1);draw101();return}
+    if(act==='login'){
+      if(RUN.len>BOX10){okFx(el);term('$ ./login → 管理者として入れた','# 名前の入力で、管理者？の印を書き換えた');
+        const st=1+(RUN.len===BOX10+1?1:0)+(RUN.t<=30?1:0);return runEnd(true,st,r101(true,st))}
+      RUN.mist++;strike(el);
+      document.getElementById('pnote').textContent='ふつうのユーザーのまま。管理者？を「はい」にするには、箱より多い文字が必要。';
+      if(RUN.mist>=3)runEnd(false,0,r101(false,0,'まちがえすぎた'));
+    }
+  },
+  onTime(){runEnd(false,0,r101(false,0,'時間切れ'))}
+};
+function r101(win,st,why){return {eyebrow:win?'STAGE 10-1 CLEAR':'STAGE 10-1',title:win?'箱から溢れて、管理者になった！':(why||'管理者になれなかった'),
+  summary:win?`名前の箱（8文字）に、${RUN.len}文字を入れた。溢れた文字が、隣の管理者？を書き換えた。`:'箱の大きさを超えて入れると、隣の箱の中身が変わる。',
+  review:rvRows([
+    ['メモリ','プログラムが使う、作業用の机。隣り合う箱が、同じ机の上で続いている',true],
+    ['バッファ','データを入れる、決まった大きさの箱（ここでは名前の8文字）',true],
+    ['バッファオーバーフロー','箱の大きさを超えて書き込み、隣の箱の中身まで書き換えてしまうこと',true],
+    ['C言語','OSやソフトを作るとき、昔からよく使われる言語。速い分、箱の大きさを自分で守る必要がある',true]]),
+  extra:`<div class="real"><div>振り返り：<b>CTF（セキュリティの腕を試す競技）のPwn問題は、この仕組みを理解するところから</b>始まる。</div>
+    <code>char name[8];</code><div class="m">C言語で「8文字の箱」を作る書き方の例</div>
+    <code>strcpy(name, input);</code><div class="m">長さを確かめずにコピーすると、溢れることがある（危ない例）</div></div>`,
+  next:win?'次は10-2「防ぐ」。箱に入る前に、長さを確かめる。':''};}
+
+// 10-2：溢れを防ぐ方法を選ぶ。選んだら、9文字の入力で試す
+const FIX10=[
+  {k:'A',lab:'入力の長さを8文字までにチェック',res:'9文字目は、箱に入る前に拒否される。管理者？は書き換わらない',ok:true},
+  {k:'B',lab:'警告の文字を画面に出すだけ',res:'警告は出るが、入力は箱に入ってしまい、管理者になる',ok:false},
+  {k:'C',lab:'管理者？を、名前の箱の前に置く',res:'管理者？は守れるが、溢れた文字が別の値（ユーザー名の欄）を壊す。溢れる場所が変わっただけ',ok:false}
+];
+const U102={dur:70,
+  init(){
+    RUN.mist=0;
+    mount(`<div class="pbar"><span>どう防ぐ？</span><span class="sp"></span><span class="plives" id="pl">${lives(3,3)}</span></div>
+      <div class="plist">${FIX10.map(f=>`<button class="prow" data-act="${f.k}"><span>${f.k}：${f.lab}</span></button>`).join('')}</div>
+      <div class="pm" id="pm">選ぶと、9文字の入力で試す。</div>
+      <p class="pnote" id="pnote">箱の大きさを超えないように、入力のほうを確かめよう。</p>`);
+    term('$ 9文字の名前を入力','# 箱（8文字）より1文字多い。さて、どう防ぐ？');
+  },
+  tap(act,el){
+    const f=FIX10.find(x=>x.k===act);
+    document.getElementById('pm').innerHTML=`<span>9文字の入力：</span><b class="${f.ok?'ok':'ng'}">${f.res}</b>`;
+    term(`# ${f.lab}`,`# ${f.res}`);
+    if(f.ok){okFx(el);return runEnd(true,1+(RUN.mist===0?1:0)+(RUN.t<=45?1:0),r102(true))}
+    RUN.mist++;strike(el);setLives(3-RUN.mist,3);
+    document.getElementById('pnote').textContent='これは防ぎきれていない。入力の長さを、箱に入る前に確かめよう。';
+    if(RUN.mist>=3)runEnd(false,0,r102(false,'まちがえすぎた'));
+  },
+  onTime(){runEnd(false,0,r102(false,'時間切れ'))}
+};
+function r102(win,why){return {eyebrow:win?'STAGE 10-2 CLEAR':'STAGE 10-2',title:win?'溢れを止めた！':(why||'防ぎきれなかった'),
+  summary:win?'箱に入る前に長さを確かめると、溢れた文字は、そもそも入らない。':'場所を変えたり、警告を出すだけでは、溢れは止まらない。',
+  review:rvRows([
+    ['入力チェック','箱に入る前に、長さを確かめて、大きすぎれば拒否する。正解',true],
+    ['警告だけ','警告は出るが、入ってしまう。止めるのは、入る前に拒否すること',false],
+    ['場所を変える','溢れる先が変わるだけ。根本の、長さを確かめる仕組みがないと、別の場所が壊れる',false],
+    ['安全なコピー','C言語では、コピーの上限（箱の大きさ）を必ず指定する',true]]),
+  extra:`<div class="real"><div>振り返り：<b>箱に入る前に、長さを確かめる</b>。</div>
+    <code>if (input.length > 8) reject();</code><div class="m">入る前に拒否する（入力チェック）</div>
+    <code>strncpy(name, input, 8);</code><div class="m">C言語で、上限を指定してコピーする例</div></div>
+    <div class="warn"><b>安全メモ</b><ul><li>本物の脆弱性を探して、他人のサービスで試さない。CTFは、練習用に用意された問題で遊ぶ</li><li>自分で作るプログラムは、入力の長さを必ず確かめる</li></ul></div>`,
+  next:win?'ステージ10まで、クリアおめでとう！ 本物のLinuxで練習してみよう。':''};}
+
 const GAMES={
   '1':()=>{newGame();requestAnimationFrame(loop)},
   '2-1':()=>{newGame21();requestAnimationFrame(loop21)},
@@ -2474,7 +2635,9 @@ const GAMES={
   '7':()=>runStart(U7),
   '8':()=>runStart(U8),
   '9-1':()=>runStart(U91),
-  '9-2':()=>runStart(U92)
+  '9-2':()=>runStart(U92),
+  '10-1':()=>runStart(U101),
+  '10-2':()=>runStart(U102)
 };
 function start(){
   audio();show(null);
