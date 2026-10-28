@@ -287,6 +287,32 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
 .tool .pkt.on{outline:2px solid var(--accent)}
 .tool table{width:100%;border-collapse:collapse}
 .tool td,.tool th{border-bottom:1px solid #20244a;padding:3px 6px;text-align:left;color:var(--ink)}
+/* 本物の画面（SCREENS）。実在のツールの出力を HTML/CSS で再現する */
+.scr{margin:10px 0;border-radius:10px;overflow:hidden;border:1px solid #2a2f5a;font-family:var(--f-term);font-size:12px;line-height:1.55}
+.scr .scrbar{display:flex;align-items:center;gap:6px;background:#2b2f3a;color:#cfd3e6;padding:5px 9px;font-size:11px}
+.scr .scrbar .dots{display:flex;gap:4px}.scr .scrbar .dots i{width:9px;height:9px;border-radius:50%;display:inline-block}
+.scr .scrbar .dots i:nth-child(1){background:#ff5f56}.scr .scrbar .dots i:nth-child(2){background:#ffbd2e}.scr .scrbar .dots i:nth-child(3){background:#27c93f}
+.scr .scrbody{margin:0;padding:9px 10px;white-space:pre;overflow-x:auto;-webkit-overflow-scrolling:touch}
+.scr.web .scrbody{white-space:pre-wrap;word-break:break-word}
+.scr.term .scrbody{background:#0c0c14;color:#d6dbe8}
+.scr .tr{color:#ff6b6b}.scr .tg{color:#4ec977}.scr .ty{color:#e8c552}.scr .tb{color:#5aa9ff}.scr .tc{color:#48c9c9}.scr .tm{color:#c678dd}.scr .td{color:#7a7f99}.scr .tw{color:#fff;font-weight:700}
+.scr .mk{all:unset;cursor:pointer;border-bottom:2px dotted currentColor;padding-bottom:1px;font:inherit;color:inherit}
+.scr .mk:active{background:rgba(255,255,255,.12)}
+.scr.web .scrbody{background:#f4f5f7;color:#222}.scr.web .wpath{color:#0a58ca}
+.scr.web .sqlerr{background:#fff3f3;border:1px solid #e3a0a0;border-radius:6px;padding:8px;margin-top:6px;color:#a11}
+.scr.cyber .cols{display:grid;grid-template-columns:1fr;gap:1px;background:#2a2f5a}
+.scr.cyber .col{background:#10131f;padding:7px 9px}.scr.cyber .col h4{margin:0 0 4px;font-size:10px;letter-spacing:.1em;color:#8b90ad;font-weight:700}
+.scr.cyber .op{background:#1b2440;border-left:3px solid #4ec977;padding:3px 7px;margin:3px 0;border-radius:3px;color:#d6dbe8}
+.scr.wire .pane{padding:6px 9px}.scr.wire .pane+.pane{border-top:1px solid #2a2f5a}
+.scr.wire .plist .row{display:grid;grid-template-columns:2ch 7ch 7ch 5ch 1fr;gap:6px}
+.scr.wire .plist .row.sel{background:#243a6b;border-radius:4px}
+.scr.wire h4{margin:0 0 3px;font-size:10px;letter-spacing:.1em;color:#8b90ad;font-weight:700}
+.scrhint{font-size:12px;color:var(--muted);margin:2px 0 6px}
+#mkpop{position:fixed;left:0;right:0;bottom:0;z-index:70;background:var(--night);border-top:2px solid var(--accent);border-radius:16px 16px 0 0;padding:14px 16px calc(16px + env(safe-area-inset-bottom));box-shadow:0 -8px 24px rgba(0,0,0,.4);max-width:560px;margin:0 auto}
+#mkpop .mkx{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:6px}
+#mkpop code{font-family:var(--f-term);font-size:13px;color:var(--accent);word-break:break-all}
+#mkpop p{margin:0;font-size:14px;line-height:1.6}
+#mkpop .mkclose{all:unset;cursor:pointer;font-size:22px;line-height:1;color:var(--muted);padding:2px 8px}
 .slide{animation:slidein .35s ease-out}
 @keyframes slidein{from{transform:translateX(36px);opacity:0}}
 .pm{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;font-size:13px;background:#0f1229;border-radius:10px;padding:10px;font-family:var(--f-term)}
@@ -466,6 +492,7 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
     <button class="big" id="gClose">とじる</button>
   </div>
 </div>
+<div id="mkpop" hidden></div>
 
 <script>
 const PORTS=[
@@ -1277,6 +1304,10 @@ const STAGES=[
     ]}
 ];
 
+// 各ステージ(ラウンド)のブリーフィング・振り返りに出す「本物の画面」
+const BRIEF_SCREENS={'1':['s1-ufw','s1-ss'],'2-1':['s2-ls','s2-sshd'],'2-2':['s2-sshd'],'2-3':['s2-journal','s2-fail2ban'],'3-1':['s3-node','s3-uname'],'3-2':['s3-apt','s3-pm2'],'4':['s4-os'],'5':['s5-audit'],'6':['s6-status','s6-ignore'],'7':['s7-mail'],'8':['s8-nginx'],'9-1':['s9-sql'],'9-2':['s9-sql'],'10-1':['s10-smash'],'10-2':['s10-smash'],'11-1':['s11-cyber'],'11-4':['s11-cyber'],'12-1':['s12-wire'],'12-4':['s12-wire'],'13-1':['s13-kali'],'13-4':['s13-kali'],'14-1':['s14-kali'],'14-4':['s14-kali'],'15-1':['s15-cyber'],'15-4':['s15-cyber'],'16-1':['s16-py'],'16-4':['s16-py'],'17-1':['s17-wire'],'17-4':['s17-wire']};
+for(const k in BRIEF_SCREENS){const parts=k.split('-'),id=+parts[0],r=+parts[1]||1,st=STAGES.find(x=>x.id===id);if(!st)continue;const b=st.rounds?((st.rounds[r-1]||{}).brief):st.brief;if(b)b.screens=BRIEF_SCREENS[k];}
+
 /* ---------- 用語（GLOSSARY） ----------
    w：見出し　s：ひとことで言うと　e：たとえ　at：出てくるステージ（ラウンド）
    a：本文の中で見つける書き方（長いものから順に探す）　no：この書き方で始まるときは用語ではない
@@ -1547,7 +1578,11 @@ const GLOSSARY=[
   {id:'basicauth',w:'Basic認証',       at:['17-4','17-5','17-6'],a:['Basic認証'],
     s:'user:パスワードを Base64 にしてヘッダで送る、簡単な認証。中身は丸見え',e:'合い言葉を、薄い紙に書いて窓口に見せるだけのしくみ'},
   {id:'dnsexfil', w:'DNS exfil（DNSでの持ち出し）',at:['17-4','17-5','17-6'],a:['DNS exfil','exfil'],
-    s:'DNS の問い合わせ名に、こっそりデータを紛れ込ませて外へ運ぶ手口',e:'宛名の書き方に暗号を混ぜて、手紙そのものではなく宛名で情報を送る'}
+    s:'DNS の問い合わせ名に、こっそりデータを紛れ込ませて外へ運ぶ手口',e:'宛名の書き方に暗号を混ぜて、手紙そのものではなく宛名で情報を送る'},
+  {id:'canary',   w:'スタックカナリア',at:['10-2','14-4'],a:['スタックカナリア'],
+    s:'あふれ(バッファオーバーフロー)を見張るための、見張り用の値。壊れると異常終了する',e:'炭鉱に連れて行くカナリア。危険をいち早く知らせる見張り役'},
+  {id:'kali',     w:'Kali Linux（カーリー）',at:['13-4','14-4'],a:['Kali Linux','Kali'],
+    s:'セキュリティの調査・演習に使う道具が最初から入った Linux',e:'検査の道具がひとそろい入った、専用の工具箱'}
 ];
 const GBYID=Object.fromEntries(GLOSSARY.map(g=>[g.id,g]));
 const GMATCH=GLOSSARY.flatMap(g=>g.a.map(a=>({a,g}))).sort((x,y)=>y.a.length-x.a.length);
@@ -1555,9 +1590,257 @@ const isWordCh=c=>!!c&&/[A-Za-z0-9_]/.test(c);
 function unitLabel(k){const [id,r]=k.split('-'),s=stageOf(+id);return r?`${k} ${s.rounds[r-1].name}`:`ステージ${id} ${s.name}`}
 function unitTerms(k){return GLOSSARY.filter(g=>g.at.includes(k))}
 /* 文章の中の専門用語に点線を付ける（同じまとまりの中では、それぞれ最初の1回だけ） */
+/* ---------- 本物の画面（SCREENS）：実在のツール出力を再現し、大事な部分をタップで説明する ---------- */
+const SCREENS={};
+
+// ===== ステージ1 門番 =====
+SCREENS['s1-ufw']={t:'sudo ufw status verbose',k:'term',body:[
+  'Status: active',
+  ['Logging: on (low)'],
+  [{x:'Default: deny (incoming)',ex:'入ってくる通信は、既定で拒否。開けたポートだけ通す（安全な初期設定）',c:'g'},', allow (outgoing), disabled (routed)'],
+  'New profiles: skip',
+  '',
+  'To                         Action      From',
+  '--                         ------      ----',
+  '22/tcp                     ALLOW IN    Anywhere',
+  '80/tcp                     ALLOW IN    Anywhere',
+  '443/tcp                    ALLOW IN    Anywhere',
+  [{x:'3306/tcp                   ALLOW IN    Anywhere',ex:'MySQL(データベース)のポートが、誰からでも入れる状態。外に開けてはいけない',c:'r'}]
+]};
+SCREENS['s1-ss']={t:'sudo ss -tlnp',k:'term',body:[
+  'State    Recv-Q  Send-Q   Local Address:Port   Peer Address:Port  Process',
+  ['LISTEN   0       128          0.0.0.0:22          ',{x:'0.0.0.0:*',ex:'どのIPからの接続でも受ける、という意味',c:'y'},'  users:(("sshd",pid=712))'],
+  'LISTEN   0       511          0.0.0.0:80          0.0.0.0:*  users:(("nginx",pid=900))',
+  [{x:'LISTEN   0       151        127.0.0.1:3306',ex:'127.0.0.1 は自分自身だけ。外からは入れない＝安全な待ち受け方',c:'g'},'        0.0.0.0:*  users:(("mysqld",pid=840))'],
+  [{x:'LISTEN   0       128          0.0.0.0:3000',ex:'開発用サーバー(node)が 0.0.0.0 で全世界に見えている。閉じるべき',c:'r'},'        0.0.0.0:*  users:(("node",pid=1033))']
+]};
+// ===== ステージ2 鍵 =====
+SCREENS['s2-journal']={t:'sudo journalctl -u ssh',k:'term',body:[
+  'nov 05 02:14:08 server sshd[21877]: Failed password for root from 203.0.113.45 port 51324 ssh2',
+  [{x:'nov 05 02:14:11 server sshd[21877]: Failed password for root',ex:'root のパスワードを続けて間違えている＝総当たり攻撃の兆候',c:'r'},' from 203.0.113.45 port 51324 ssh2'],
+  ['nov 05 02:14:15 server sshd[21880]: ',{x:'Invalid user admin',ex:'存在しないユーザー名 admin を当てずっぽうで試している印',c:'y'},' from 203.0.113.45 port 51402'],
+  'nov 05 02:14:15 server sshd[21880]: Failed password for invalid user admin from 203.0.113.45 port 51402 ssh2',
+  ['nov 05 02:14:19 server sshd[21884]: ',{x:'Invalid user test',ex:'test も存在しないユーザー名。よくある名前を次々に試している',c:'y'},' from 203.0.113.45 port 51520'],
+  ['nov 05 02:14:22 server sshd[21884]: Failed password for invalid user test from ',{x:'203.0.113.45',ex:'同じIPから連続して失敗＝一人(一台)の攻撃者',c:'r'},' port 51520 ssh2']
+]};
+SCREENS['s2-ls']={t:'ls -la ~/.ssh',k:'term',body:[
+  'total 20',
+  [{x:'drwx------',ex:'このフォルダは自分だけ読み書きできる(700)。鍵を他人に見せないための権限',c:'g'},'  2 user user 4096 Nov  5 09:12 .'],
+  'drwxr-xr-x 18 user user 4096 Nov  5 09:00 ..',
+  ['-rw-------  1 user user  571 Nov  5 09:12 ',{x:'authorized_keys',ex:'ログインを許す公開鍵の一覧。ここに載った鍵の持ち主だけ入れる',c:'b'}],
+  ['-rw-------  1 user user 2602 Nov  5 09:10 ',{x:'id_ed25519',ex:'秘密鍵。絶対に他人に渡さない。権限は -rw------- (600)',c:'r'}],
+  ['-rw-r--r--  1 user user  571 Nov  5 09:10 ',{x:'id_ed25519.pub',ex:'公開鍵。相手のサーバーに登録する。配ってよい',c:'g'}]
+]};
+SCREENS['s2-sshd']={t:'/etc/ssh/sshd_config（該当行）',k:'term',body:[
+  '#PermitRootLogin prohibit-password',
+  [{x:'PermitRootLogin no',ex:'root で直接ログインさせない。乗っ取りの入口をひとつ塞ぐ',c:'g'}],
+  [{x:'PasswordAuthentication no',ex:'パスワードでのログインを禁止し、鍵だけにする。※先に自分の鍵を登録してから。でないと締め出される',c:'y'}],
+  [{x:'PubkeyAuthentication yes',ex:'公開鍵でのログインを許可する',c:'g'}]
+]};
+SCREENS['s2-fail2ban']={t:'sudo fail2ban-client status sshd',k:'term',body:[
+  'Status for the jail: sshd',
+  '|- Filter',
+  '|  |- Currently failed: 2',
+  ['|  |- ',{x:'Total failed:     214',ex:'これまでの失敗回数の合計。攻撃が多いほど増える',c:'y'}],
+  '|  `- Journal matches:  _SYSTEMD_UNIT=ssh.service + _COMM=sshd',
+  '`- Actions',
+  ['   |- ',{x:'Currently banned: 1',ex:'いま自動でブロック中のIPの数',c:'g'}],
+  '   |- Total banned:     9',
+  ['   `- ',{x:'Banned IP list:   203.0.113.45',ex:'何度も失敗したので締め出したIP。fail2ban が自動でやる',c:'r'}]
+]};
+// ===== ステージ3 緊急パッチ =====
+SCREENS['s3-node']={t:'node -v',k:'term',body:[
+  ['$ node -v'],
+  [{x:'v20.11.1',ex:'Node.js のバージョン(第20版)。修正版の番号と比べて、更新が要るか決める',c:'g'}]
+]};
+SCREENS['s3-uname']={t:'uname -r',k:'term',body:[
+  '$ uname -r',
+  [{x:'6.8.0-45-generic',ex:'Linux カーネル(OSの中心)のバージョン',c:'g'}]
+]};
+SCREENS['s3-apt']={t:'sudo apt upgrade',k:'term',body:[
+  '$ sudo apt upgrade',
+  'Reading package lists... Done',
+  'Building dependency tree... Done',
+  'The following packages will be upgraded:',
+  ['  ',{x:'nodejs openssl libssl3',ex:'更新される部品の名前。脆弱性のあるものが新しくなる',c:'b'}],
+  [{x:'3 upgraded, 0 newly installed, 0 to remove',ex:'3つが更新される、という意味',c:'g'},' and 0 not upgraded.'],
+  'Need to get 28.4 MB of archives.',
+  'After this operation, 1,024 kB of additional disk space will be used.',
+  [{x:'Do you want to continue? [Y/n]',ex:'Y を押すと更新を実行する',c:'y'}]
+]};
+SCREENS['s3-pm2']={t:'pm2 list（簡略化した例）',k:'term',body:[
+  'id  name  mode     status    restart   mem',
+  '--  ----  -------  --------  -------   ------',
+  ['0   web   fork     ',{x:'online',ex:'アプリが動いている状態',c:'g'},'    0         62.1mb'],
+  ['1   api   cluster  ',{x:'online',ex:'こちらも稼働中',c:'g'},'    ',{x:'3',ex:'再起動した回数。多いと不安定のサイン',c:'y'},'         88.4mb']
+]};
+// ===== ステージ4 古い料理人 =====
+SCREENS['s4-os']={t:'cat /etc/os-release',k:'term',body:[
+  ['PRETTY_NAME="',{x:'Ubuntu 22.04.4 LTS',ex:'OSの名前と版。LTS は長期サポート版で、長く修正が出る',c:'g'},'"'],
+  'NAME="Ubuntu"',
+  [{x:'VERSION_ID="22.04"',ex:'このOSの版。サポート期限が切れていないかを、この番号で調べる',c:'b'}],
+  'VERSION="22.04.4 LTS (Jammy Jellyfish)"',
+  'VERSION_CODENAME=jammy',
+  'ID=ubuntu'
+]};
+// ===== ステージ5 部品屋の罠 =====
+SCREENS['s5-audit']={t:'npm audit',k:'term',body:[
+  '# npm audit report',
+  '',
+  'minimist  <1.2.6',
+  [{x:'Severity: critical',ex:'危険度は critical(最も危険)。すぐ直すべき',c:'r'}],
+  'Prototype Pollution in minimist',
+  'https://github.com/advisories/GHSA-xvch-5gv4-984h',
+  [{x:'fix available via `npm audit fix`',ex:'直す方法がある、という意味',c:'g'}],
+  'node_modules/minimist',
+  '',
+  '1 critical severity vulnerability',
+  '',
+  'To address all issues, run:',
+  ['  ',{x:'npm audit fix',ex:'脆弱な部品を、まとめて安全な版に直すコマンド',c:'g'}]
+]};
+// ===== ステージ6 秘密の置き忘れ =====
+SCREENS['s6-status']={t:'git status',k:'term',body:[
+  '$ git status',
+  'On branch main',
+  "Your branch is up to date with 'origin/main'.",
+  '',
+  'Untracked files:',
+  '  (use "git add <file>..." to include in what will be committed)',
+  ['        ',{x:'.env',ex:'APIキーやパスワードを書くファイル。これを公開(push)すると秘密が漏れる',c:'r'}],
+  '',
+  [{x:'nothing added to commit but untracked files present',ex:'まだコミットに入れていないが、管理外のファイルがある、という意味',c:'y'}]
+]};
+SCREENS['s6-ignore']={t:'cat .gitignore',k:'term',body:[
+  'node_modules/',
+  [{x:'.env',ex:'この行があると、.env は Git に入らない＝公開されない。秘密を守る要',c:'g'}],
+  '*.log',
+  'dist/'
+]};
+// ===== ステージ7 偽メール =====
+SCREENS['s7-mail']={t:'メールのヘッダ',k:'term',body:[
+  ['From: GitHub Support <support@',{x:'gitthub-alerts.example.com',ex:'本物そっくりの偽ドメイン(github でなく gitthub、t が2つ)。差出人名は自由に書ける',c:'r'},'>'],
+  ['Return-Path: <bounce@',{x:'mail-x7.example.net',ex:'実際の送信元。From と別のドメイン＝差出人を偽装している疑い',c:'y'},'>'],
+  'Reply-To: no-reply@gitthub-alerts.example.com',
+  'To: user@example.com',
+  [{x:'Subject: [Action required] Your account will be suspended',ex:'急がせて不安にさせ、リンクを押させる定番の件名',c:'y'}],
+  'Date: Tue, 05 Nov 2026 02:30:11 +0000'
+]};
+// ===== ステージ8 足あと探し =====
+SCREENS['s8-nginx']={t:'/var/log/nginx/access.log（combined 形式）',k:'term',body:[
+  ['203.0.113.45 - - [05/Nov/2026:02:14:07 +0000] "GET ',{x:'/admin',ex:'管理画面を探している。存在しなければ 404',c:'y'},' HTTP/1.1" 404 162 "-" "curl/8.5.0"'],
+  ['203.0.113.45 - - [05/Nov/2026:02:14:08 +0000] "GET ',{x:'/.env',ex:'秘密ファイルを直接取りに来ている＝攻撃の偵察',c:'r'},' HTTP/1.1" 404 162 "-" "curl/8.5.0"'],
+  ['203.0.113.45 - - [05/Nov/2026:02:14:09 +0000] "GET /wp-login.php HTTP/1.1" ',{x:'404',ex:'見つからず失敗(HTTPステータス404)。使っていないWordPressを狙う自動探索',c:'y'},' 162 "-" "curl/8.5.0"'],
+  ['198.51.100.23 - - [05/Nov/2026:02:15:01 +0000] "GET / HTTP/1.1" ',{x:'200',ex:'正常なアクセス(200)。ふつうの利用者',c:'g'},' 5120 "-" "Mozilla/5.0"'],
+  ['203.0.113.45 - - [05/Nov/2026:02:14:12 +0000] "POST /login HTTP/1.1" 200 733 "-" "',{x:'curl/8.5.0',ex:'ブラウザでなく道具(curl)でのアクセス。自動化された試行の印',c:'r'},'"']
+]};
+// ===== ステージ9 入力の罠 =====
+SCREENS['s9-sql']={t:'検索ページ（エラーが出てしまった）',k:'web',head:'検索結果',err:[
+  'Warning: mysqli_query(): You have an error in your SQL syntax; check the manual ... near ',
+  {x:"'''",ex:"入力した ' が SQL 文を壊した印。ここから命令を注入できてしまう",c:'r'},
+  ' at line 1 in ',
+  {x:'/var/www/html/search.php on line 42',ex:'サーバーの中のファイルの場所まで画面に漏れている(攻撃者に手がかりを与える)',c:'y'}
+]};
+// ===== ステージ10 溢れるロッカー =====
+SCREENS['s10-smash']={t:'./vuln に長い入力を入れた',k:'term',body:[
+  '$ ./vuln',
+  ['名前を入力してください: ',{x:'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',ex:'箱(バッファ)より長い入力。あふれて隣のメモリを壊す',c:'y'}],
+  [{x:'*** stack smashing detected ***: terminated',ex:'はみ出しを見張るしくみ(スタックカナリア)が壊れを検知して止めた',c:'r'}],
+  'Aborted (core dumped)',
+  '',
+  '$ ./vuln2',
+  [{x:'Segmentation fault (core dumped)',ex:'触ってはいけないメモリを触って、プログラムが落ちた',c:'r'}]
+]};
+
+// ===== ステージ11 Crypto / 15 Misc：CyberChef =====
+SCREENS['s11-cyber']={t:'CyberChef',k:'cyber',
+  input:[{x:'34 37 34 62 7b ...',ex:'暗号文(16進数)。左の INPUT 欄に貼り付ける',c:'c'}],
+  recipe:[[{x:'From Hex',ex:'16進数を、もとのバイトに戻す操作',c:'g'}],['XOR  Key: ',{x:'cat',ex:'くり返し鍵。レシピは上から順に実行される',c:'y'},'  (UTF8)'],'Extract: GK{[a-z0-9]+}'],
+  output:[{x:'GK{...}',ex:'レシピを通した結果(OUTPUT)。これがフラグ',c:'g'}]};
+SCREENS['s15-cyber']={t:'CyberChef（Magic で層を見分ける）',k:'cyber',
+  input:[{x:'VWJyaX... (何重にも包まれた文字列)',ex:'順番の分からない重ねがけ。まず Magic にかける',c:'c'}],
+  recipe:[[{x:'Magic',ex:'どのエンコードか自動で見分けて、候補を出す機能',c:'g'}],'From Base64','From Hex','ROT13'],
+  output:[{x:'GK{...}',ex:'外側から順にはがした結果',c:'g'}]};
+// ===== ステージ12 / 17：Wireshark =====
+SCREENS['s12-wire']={t:'Wireshark',k:'wire',
+  list:[{cells:['1','192.0.2.5','203.0.113.9','TCP','SYN']},
+    {cells:['2','203.0.113.9','192.0.2.5','TCP','SYN, ACK']},
+    {cells:['3','192.0.2.5','203.0.113.9','HTTP','GET /notes']},
+    {sel:true,cells:['4','203.0.113.9','192.0.2.5','HTTP',[{x:'200 OK (text/plain)',ex:'このHTTP応答を選ぶと、下の詳細に中身が出る',c:'g'}]]}],
+  detail:['Hypertext Transfer Protocol','  HTTP/1.1 200 OK','  Content-Type: text/plain',['  ',{x:'Line-based text data: secret=GK{...}',ex:'応答の本文(ストリームを追うと読める)。ここにフラグがある',c:'y'}]],
+  hex:['0000  48 54 54 50 2f 31 2e 31  20 32 30 30  HTTP/1.1 200',['0030  73 65 63 72 65 74 3d  ',{x:'47 4b 7b',ex:'47 4b 7b は GK{ の16進数。本文にフラグがある印',c:'y'},'  secret=GK{']]};
+SCREENS['s17-wire']={t:'Wireshark',k:'wire',
+  list:[{cells:['1','192.0.2.5','203.0.113.9','HTTP','GET /admin']},
+    {cells:['2','203.0.113.9','192.0.2.5','HTTP','401 Unauthorized']},
+    {sel:true,cells:['3','192.0.2.5','203.0.113.9','HTTP',[{x:'GET /admin (Authorization: Basic ...)',ex:'認証つきの再要求。この中に Base64 のパスワードがある',c:'y'}]]},
+    {cells:['4','192.0.2.5','203.0.113.9','DNS',[{x:'A 474b7b..example.com',ex:'問い合わせ名に16進数でデータを紛れ込ませている(DNS exfil)',c:'r'}]]}],
+  detail:['Hypertext Transfer Protocol','  GET /admin HTTP/1.1',['  ',{x:'Authorization: Basic YWRtaW46R0t7...',ex:'Basic 認証。user:パスワードを Base64 にしただけ＝デコードで丸見え',c:'r'}]],
+  hex:['0000  47 45 54 20 2f 61 64 6d  69 6e 20 48 54 54 50  GET /admin HTTP','0020  41 75 74 68 6f 72 69 7a  61 74 69 6f 6e        Authorization']};
+// ===== ステージ13 / 14：Kali Linux ターミナル =====
+SCREENS['s13-kali']={t:'Kali Linux（ターミナル）',k:'term',body:[
+  [{x:'┌──(user㉿kali)-[~]',ex:'Kali Linux の既定のプロンプト。user はユーザー名、kali はホスト名',c:'g'}],
+  ['└─$ ',{x:"curl -i 'https://practice.example.com/mypage' -b 'session=...;role=admin'",ex:'-b は送る Cookie の指定。role を admin に書き換えて送っている',c:'b'}],
+  'HTTP/1.1 200 OK',
+  'Content-Type: text/html',
+  '',
+  ['<h1>管理者ページ</h1> secret: ',{x:'GK{...}',ex:'admin として開けたページに、フラグがある',c:'y'}]
+]};
+SCREENS['s14-kali']={t:'Kali Linux（pwntools・簡略化した例）',k:'term',body:[
+  '┌──(user㉿kali)-[~]',
+  ['└─$ ',{x:'python3 exploit.py',ex:'攻撃用の小さな Python スクリプトを動かす',c:'b'}],
+  ['[+] ',{x:"Starting local process './vuln'",ex:'練習用のプログラムを起動した',c:'g'}],
+  ['[*] ',{x:"payload = b'A'*offset + p32(win)",ex:'A をオフセットぶん並べ、戻り先に win() のアドレスを置く(p32 がリトルエンディアンにする)',c:'y'}],
+  ['[+] ',{x:'Switching to interactive mode',ex:'うまく飛べると、当たりの関数が動く',c:'g'}],
+  'You win! flag: GK{...}'
+]};
+// ===== ステージ16：Python ターミナル =====
+SCREENS['s16-py']={t:'Python（ターミナル）',k:'term',body:[
+  ['$ ',{x:'python3 solve.py',ex:'自分で書いた解答プログラムを動かす',c:'b'}],
+  ['>>> ',{x:'from pwn import *',ex:'pwntools を読み込む(通信や自動化に使う道具)',c:'d'}],
+  ">>> io = remote('203.0.113.9', 7000)",
+  ['>>> ',{x:'for _ in range(1000): io.sendline(str(a+b).encode())',ex:'1000問の計算に、ループで自動で答える(手では無理)',c:'y'}],
+  ['[+] ',{x:'Receiving all data: GK{...}',ex:'全部正しく答えると、サーバーがフラグを返す',c:'g'}]
+]};
+//__SCREENS__
+// 1行は、文字列か、パーツの配列。パーツは文字列か {x:表示文字, ex:タップ説明, c:色クラス(r/g/y/b/c/m/d/w)}
+function partHTML(p){
+  if(typeof p==='string')return escH(p);
+  const cls=((p.c?'t'+p.c:'')+(p.ex?' mk':'')).trim();
+  return `<span${cls?` class="${cls}"`:''}${p.ex?` data-ex="${escH(p.ex)}"`:''}>${escH(p.x)}</span>`;
+}
+const lineHTML=l=>Array.isArray(l)?l.map(partHTML).join(''):escH(l);
+const dotsBar=t=>`<figcaption class="scrbar"><span class="dots"><i></i><i></i><i></i></span>${escH(t)}</figcaption>`;
+function screenHTML(id){
+  const s=SCREENS[id];if(!s)return '';
+  const k=s.k||'term';
+  if(k==='cyber'){
+    return `<figure class="scr cyber">${dotsBar(s.t||'CyberChef')}<div class="cols">`+
+      `<div class="col"><h4>INPUT</h4>${lineHTML(s.input)}</div>`+
+      `<div class="col"><h4>RECIPE</h4>${(s.recipe||[]).map(r=>`<div class="op">${lineHTML(r)}</div>`).join('')}</div>`+
+      `<div class="col"><h4>OUTPUT</h4>${lineHTML(s.output)}</div></div></figure>`;
+  }
+  if(k==='wire'){
+    return `<figure class="scr wire">${dotsBar(s.t||'Wireshark')}`+
+      `<div class="pane"><h4>パケット一覧</h4><div class="plist">${(s.list||[]).map((r,i)=>`<div class="row${r.sel?' sel':''}">${r.cells.map(lineHTML).join('')}</div>`).join('')}</div></div>`+
+      `<div class="pane"><h4>詳細（選んだパケット）</h4>${(s.detail||[]).map(l=>`<div>${lineHTML(l)}</div>`).join('')}</div>`+
+      `<div class="pane"><h4>16進数（バイト）</h4><pre class="scrbody" style="padding:0;background:none">${(s.hex||[]).map(lineHTML).join('\n')}</pre></div></figure>`;
+  }
+  if(k==='web')return `<figure class="scr web">${dotsBar(s.t||'ブラウザ')}<div class="scrbody">${s.head?`<b>${escH(s.head)}</b>`:''}<div class="sqlerr">${lineHTML(s.err||[])}</div></div></figure>`;
+  const body=(s.body||[]).map(lineHTML).join('\n');
+  return `<figure class="scr ${k}">${dotsBar(s.t||'')}<pre class="scrbody">${body}</pre></figure>`;
+}
+function screensSection(ids){return ids&&ids.length?`<section class="sec"><h2>本物ではこう見える</h2><p class="scrhint">色のついた（点線の）部分をタップすると、それが何かを説明します。</p>${ids.map(screenHTML).join('')}</section>`:'';}
+// タップ説明（下から出る小さなシート）
+function showMk(m){const p=document.getElementById('mkpop');p.innerHTML=`<div class="mkx"><code>${escH(m.textContent)}</code><button class="mkclose" aria-label="とじる">×</button></div><p>${escH(m.dataset.ex)}</p>`;p.hidden=false;}
+function hideMk(){const p=document.getElementById('mkpop');if(p){p.hidden=true;p.innerHTML=''}}
+document.addEventListener('click',e=>{
+  const m=e.target.closest('.mk[data-ex]');
+  if(m){e.preventDefault();e.stopPropagation();showMk(m);return}
+  if(e.target.closest('.mkclose')||!e.target.closest('#mkpop'))hideMk();
+},true);
 function glossify(root,seen=new Set()){
   if(!root)return seen;
-  const w=document.createTreeWalker(root,NodeFilter.SHOW_TEXT,{acceptNode:n=>n.parentElement.closest('button,.gw')?NodeFilter.FILTER_REJECT:NodeFilter.FILTER_ACCEPT});
+  const w=document.createTreeWalker(root,NodeFilter.SHOW_TEXT,{acceptNode:n=>n.parentElement.closest('button,.gw,.scr,.tool')?NodeFilter.FILTER_REJECT:NodeFilter.FILTER_ACCEPT});
   const nodes=[];while(w.nextNode())nodes.push(w.currentNode);
   for(const node of nodes){
     const t=node.nodeValue,frag=document.createDocumentFragment();let i=0,last=0,hit=false;
@@ -1801,7 +2084,7 @@ function finish(win,st,o){
   document.getElementById('rStars').innerHTML=starsHtml(st);
   document.getElementById('rSummary').textContent=o.summary;
   document.getElementById('rReview').innerHTML=o.review;
-  document.getElementById('rExtra').innerHTML=o.extra||'';
+  {const bs=(unit()||{}).brief,rs=bs&&(bs.reviewScreens||bs.screens);document.getElementById('rExtra').innerHTML=(o.extra||'')+screensSection(rs);}
   const rn=document.getElementById('rNext');rn.textContent=o.next||'';rn.hidden=!o.next;
   const nb=document.getElementById('nextStage'),ag=document.getElementById('again');
   let nx;
@@ -2386,6 +2669,7 @@ function openBrief(id,mode,r){
     `<section class="sec"><h2>状況</h2>${b.situation.map(t=>`<p>${t}</p>`).join('')}</section>`+
     `<section class="sec"><h2>${b.doorsTitle||'ドアの番号の意味'}</h2><div class="ports">${b.doors.map(([p,n,t])=>`<div class="pr"><span class="pt">${p}</span><span><b>${n}</b>${t}</span></div>`).join('')}</div></section>`+
     `<section class="sec"><h2>現実ではどう見分けるか</h2>${b.real.map(t=>`<p>${t}</p>`).join('')}</section>`+
+    screensSection(b.screens)+
     `<section class="sec"><h2>遊び方</h2>${b.howto}</section>`;
   glossify(document.getElementById('bBody'));
   const review=mode==='review';
